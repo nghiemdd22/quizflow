@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-QuizflowApplication<quizflow>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "vn.edu.hust.quizflow.QuizflowApplication",
+            "projectName": "quizflow",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
