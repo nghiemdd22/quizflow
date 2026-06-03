@@ -7,6 +7,13 @@ spring:
     username: ${DB_USER:quizflow_user}
     password: ${DB_PASSWORD:quizflow_password}
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX:20}
+      minimum-idle: ${DB_POOL_MIN:5}
+      idle-timeout: 300000 # 5 phút
+      max-lifetime: 600000 # 10 phút
+      connection-timeout: 20000 # 20 giây
+      leak-detection-threshold: 5000 # 5 giây phát hiện rò rỉ kết nối
 
   jpa:
     hibernate:
