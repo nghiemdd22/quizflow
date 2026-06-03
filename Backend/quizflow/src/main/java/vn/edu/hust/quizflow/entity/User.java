@@ -32,9 +32,11 @@ public class User {
     @Column(nullable = false)
     private UserRole role;
 
+    @Convert(converter = vn.edu.hust.quizflow.security.AesEncryptorConverter.class)
     @Column(name = "cccd_encrypted")
     private String cccdEncrypted;
 
+    @Convert(converter = vn.edu.hust.quizflow.security.AesEncryptorConverter.class)
     @Column(name = "phone_encrypted")
     private String phoneEncrypted;
 
