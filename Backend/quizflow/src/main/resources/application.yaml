@@ -34,3 +34,12 @@ spring:
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USER:guest}
     password: ${RABBITMQ_PASSWORD:guest}
+
+encryption:
+  secret-key: ${ENCRYPTION_SECRET_KEY:vdtprojectsecretkeyquizflow123456}
+  iv: ${ENCRYPTION_IV:quizflowdefaultiv}
+
+jwt:
+  secret: ${JWT_SECRET:quizflowjwtsecretkey2026hustuniversity}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
