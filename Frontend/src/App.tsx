@@ -99,6 +99,8 @@ function App() {
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [identityCard, setIdentityCard] = useState('')
+  const [isTeacher, setIsTeacher] = useState(false)
+  const [inviteCode, setInviteCode] = useState('')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userEmail, setUserEmail] = useState('')
 
@@ -183,7 +185,7 @@ function App() {
             fullName,
             phone,
             identityCard,
-            role: 'STUDENT'
+            inviteCode: isTeacher ? inviteCode : null
           })
         })
         
@@ -842,6 +844,33 @@ function App() {
                   className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:border-neo-green font-bold bg-white"
                 />
               </div>
+
+              {authMode === 'signup' && (
+                <div className="bg-slate-50 border-2 border-slate-900 p-3 rounded-lg shadow-[2px_2px_0px_#0f172a] mt-2">
+                  <label className="flex items-center gap-2 cursor-pointer mb-2">
+                    <input
+                      type="checkbox"
+                      checked={isTeacher}
+                      onChange={(e) => setIsTeacher(e.target.checked)}
+                      className="w-4 h-4 text-neo-green border-2 border-slate-900 rounded cursor-pointer"
+                    />
+                    <span className="text-sm font-black text-slate-800">Đăng ký dành cho Giáo viên</span>
+                  </label>
+                  {isTeacher && (
+                    <div>
+                      <label className="block text-xs font-black text-slate-800 mb-1">MÃ LỜI MỜI (INVITE CODE)</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Nhập mã do trường cung cấp"
+                        value={inviteCode}
+                        onChange={(e) => setInviteCode(e.target.value)}
+                        className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:border-neo-green font-bold bg-white"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Submit button */}
               <button
