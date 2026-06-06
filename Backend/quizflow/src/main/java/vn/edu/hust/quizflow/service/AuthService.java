@@ -95,6 +95,7 @@ public class AuthService {
 
         // Đóng gói kết quả trả về
         return AuthResponse.builder()
+                .id(user.getId())
                 .token(token)
                 .username(user.getUsername())
                 .fullName(user.getFullName())

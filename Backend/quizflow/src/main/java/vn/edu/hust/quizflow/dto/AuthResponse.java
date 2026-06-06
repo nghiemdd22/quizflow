@@ -14,6 +14,7 @@ import vn.edu.hust.quizflow.entity.UserRole;
 @AllArgsConstructor
 @Builder
 public class AuthResponse {
+    private Long id;
     private String token;
     private String username;
     private String fullName;
