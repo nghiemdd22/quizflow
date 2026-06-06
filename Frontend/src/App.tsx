@@ -96,8 +96,29 @@ function App() {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [identityCard, setIdentityCard] = useState('')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userEmail, setUserEmail] = useState('')
+
+  // Scroll state
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true)
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsHeaderVisible(false) // cuộn xuống -> ẩn
+      } else {
+        setIsHeaderVisible(true) // cuộn lên -> hiện
+      }
+      lastScrollY = currentScrollY
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   // State thanh tiến trình giả lập trên Hero Card (tự động tăng động)
   const [progressPercent, setProgressPercent] = useState(65)
@@ -125,30 +146,67 @@ function App() {
     return matchesCategory && matchesSearch
   })
 
-  // Hàm giả lập đăng nhập/đăng ký
-  const handleAuthSubmit = (e: React.FormEvent) => {
+  // Hàm gọi API đăng nhập/đăng ký
+  const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email || !password) return alert('Vui lòng điền đầy đủ thông tin!')
     
     if (authMode === 'login') {
-      setIsLoggedIn(true)
-      setUserEmail(email)
+      if (!email || !password) return alert('Vui lòng điền đầy đủ thông tin!')
+      try {
+        const res = await fetch('/api/v1/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: email, password })
+        })
+        const data = await res.json()
+        if (res.ok) {
+          setIsLoggedIn(true)
+          setUserEmail(data.username || email)
+          setIsAuthOpen(false)
+          setEmail('')
+          setPassword('')
+        } else {
+          alert(data.error || 'Tên đăng nhập hoặc mật khẩu không chính xác!')
+        }
+      } catch {
+        alert('Có lỗi xảy ra khi kết nối server')
+      }
     } else {
-      setIsLoggedIn(true)
-      setUserEmail(email)
-      alert('Đăng ký tài khoản thành công!')
+      if (!email || !password || !fullName || !phone || !identityCard) return alert('Vui lòng điền đầy đủ thông tin!')
+      try {
+        const res = await fetch('/api/v1/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: email,
+            password,
+            fullName,
+            phone,
+            identityCard,
+            role: 'STUDENT'
+          })
+        })
+        
+        if (res.ok) {
+          alert('Đăng ký tài khoản thành công! Vui lòng đăng nhập.')
+          setAuthMode('login')
+        } else {
+          const data = await res.json()
+          alert(data.error || 'Đăng ký thất bại!')
+        }
+      } catch {
+        alert('Có lỗi xảy ra khi kết nối server')
+      }
     }
-    setIsAuthOpen(false)
-    setEmail('')
-    setPassword('')
   }
 
   return (
-    <div className="min-h-screen bg-[#fbfbf8] text-slate-900 font-sans selection:bg-neo-green selection:text-white">
+    <div className="min-h-screen bg-[#fbfbf8] text-slate-900 font-sans selection:bg-neo-green selection:text-white pt-28">
       {/* ==========================================
           NAVBAR SECTION
           ========================================== */}
-      <div className="w-full max-w-7xl mx-auto px-4 pt-6">
+      <div className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+        <div className="w-full max-w-7xl mx-auto px-4 pt-6">
         <nav className="bg-white neo-card px-6 py-4 flex items-center justify-between">
           {/* Logo LearnHub */}
           <a href="#" className="flex items-center gap-3 group">
@@ -198,6 +256,7 @@ function App() {
             )}
           </div>
         </nav>
+        </div>
       </div>
 
       {/* ==========================================
@@ -719,10 +778,11 @@ function App() {
             {/* Form */}
             <form onSubmit={handleAuthSubmit} className="flex flex-col gap-4 text-left">
               <div>
-                <label className="block text-xs font-black text-slate-800 mb-1">EMAIL ADDRESS</label>
+                <label className="block text-xs font-black text-slate-800 mb-1">EMAIL ADDRESS (USERNAME)</label>
                 <input
-                  type="email"
+                  type="text"
                   required
+                  minLength={3}
                   placeholder="name@company.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -730,11 +790,52 @@ function App() {
                 />
               </div>
 
+              {authMode === 'signup' && (
+                <>
+                  <div>
+                    <label className="block text-xs font-black text-slate-800 mb-1">FULL NAME</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Nguyễn Văn A"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:border-neo-green font-bold bg-white"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-black text-slate-800 mb-1">PHONE NUMBER</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="0987654321"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:border-neo-green font-bold bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-black text-slate-800 mb-1">IDENTITY CARD (CCCD)</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="012345678910"
+                        value={identityCard}
+                        onChange={(e) => setIdentityCard(e.target.value)}
+                        className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:border-neo-green font-bold bg-white"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
               <div>
                 <label className="block text-xs font-black text-slate-800 mb-1">PASSWORD</label>
                 <input
                   type="password"
                   required
+                  minLength={6}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
