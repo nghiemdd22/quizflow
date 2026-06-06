@@ -9,18 +9,17 @@ interface Subject {
 
 interface QuestionBank {
   id: number
-  name: string
+  title: string
   description: string
   subjectId: number
 }
 
 interface Question {
   id: number
-  bankId: number
+  questionBankId: number
   content: string
   type: string
-  points: number
-  metadata: string
+  metadata: any
 }
 
 export const TeacherDashboard: React.FC = () => {
@@ -37,8 +36,7 @@ export const TeacherDashboard: React.FC = () => {
 
   const [isNewQuestionModalOpen, setIsNewQuestionModalOpen] = useState(false)
   const [newQContent, setNewQContent] = useState('')
-  const [newQType, setNewQType] = useState('SINGLE_CHOICE')
-  const [newQPoints, setNewQPoints] = useState(1)
+  const [newQType, setNewQType] = useState('SINGLE')
   const [newQOptions, setNewQOptions] = useState([{ id: 1, text: '', isCorrect: false }])
 
   const userId = Number(localStorage.getItem('userId'))
@@ -129,11 +127,10 @@ export const TeacherDashboard: React.FC = () => {
       const res = await apiFetch('/api/v1/questions', {
         method: 'POST',
         body: JSON.stringify({
-          bankId: selectedBank.id,
+          questionBankId: selectedBank.id,
           content: newQContent,
           type: newQType,
-          points: newQPoints,
-          metadata: JSON.stringify(metadataObj)
+          metadata: metadataObj
         })
       })
       if (res.ok) {
@@ -156,7 +153,7 @@ export const TeacherDashboard: React.FC = () => {
   }
 
   const handleCorrectToggle = (id: number) => {
-    if (newQType === 'SINGLE_CHOICE') {
+    if (newQType === 'SINGLE') {
       setNewQOptions(opts => opts.map(o => ({ ...o, isCorrect: o.id === id })))
     } else {
       setNewQOptions(opts => opts.map(o => o.id === id ? { ...o, isCorrect: !o.isCorrect } : o))
@@ -205,7 +202,7 @@ export const TeacherDashboard: React.FC = () => {
             {banks.map(bank => (
               <div key={bank.id} className="bg-white neo-card p-6 flex flex-col justify-between">
                 <div>
-                  <h3 className="text-xl font-extrabold mb-2">{bank.name}</h3>
+                  <h3 className="text-xl font-extrabold mb-2">{bank.title}</h3>
                   <p className="text-xs font-bold text-slate-500 mb-4">{bank.description}</p>
                 </div>
                 <button
@@ -231,7 +228,7 @@ export const TeacherDashboard: React.FC = () => {
         <div>
           <div className="flex justify-between items-center mb-6 border-b-4 border-slate-900 pb-4">
             <div>
-              <h2 className="text-2xl font-black">Ngân hàng: {selectedBank.name}</h2>
+              <h2 className="text-2xl font-black">Ngân hàng: {selectedBank.title}</h2>
               <p className="text-xs font-bold text-slate-500">{selectedBank.description}</p>
             </div>
             <button
@@ -244,13 +241,13 @@ export const TeacherDashboard: React.FC = () => {
 
           <div className="flex flex-col gap-4">
             {questions.map((q, idx) => {
-              const meta = JSON.parse(q.metadata || '{}')
+              const meta = typeof q.metadata === 'string' ? JSON.parse(q.metadata || '{}') : (q.metadata || {})
               return (
                 <div key={q.id} className="bg-white neo-card p-4">
                   <div className="flex justify-between items-start mb-2">
                     <h4 className="font-extrabold text-sm">Câu {idx + 1}: {q.content}</h4>
                     <span className="text-[10px] font-black bg-orange-100 text-orange-800 px-2 py-1 border border-slate-900 rounded">
-                      {q.type} - {q.points}đ
+                      {q.type}
                     </span>
                   </div>
                   <ul className="text-xs font-semibold text-slate-600 mt-2 space-y-1">
@@ -338,7 +335,7 @@ export const TeacherDashboard: React.FC = () => {
                   className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] font-bold h-24"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="block text-xs font-black text-slate-800 mb-1">LOẠI CÂU HỎI</label>
                   <select
@@ -346,20 +343,9 @@ export const TeacherDashboard: React.FC = () => {
                     onChange={e => setNewQType(e.target.value)}
                     className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] font-bold"
                   >
-                    <option value="SINGLE_CHOICE">Trắc nghiệm 1 đáp án</option>
-                    <option value="MULTIPLE_CHOICE">Trắc nghiệm nhiều đáp án</option>
+                    <option value="SINGLE">Trắc nghiệm 1 đáp án</option>
+                    <option value="MULTIPLE">Trắc nghiệm nhiều đáp án</option>
                   </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-black text-slate-800 mb-1">ĐIỂM</label>
-                  <input
-                    type="number"
-                    min={1}
-                    required
-                    value={newQPoints}
-                    onChange={e => setNewQPoints(Number(e.target.value))}
-                    className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] font-bold"
-                  />
                 </div>
               </div>
 
@@ -368,7 +354,7 @@ export const TeacherDashboard: React.FC = () => {
                 {newQOptions.map((opt, idx) => (
                   <div key={opt.id} className="flex items-center gap-2 mb-2">
                     <input
-                      type={newQType === 'SINGLE_CHOICE' ? 'radio' : 'checkbox'}
+                      type={newQType === 'SINGLE' ? 'radio' : 'checkbox'}
                       name="correct-answer"
                       checked={opt.isCorrect}
                       onChange={() => handleCorrectToggle(opt.id)}

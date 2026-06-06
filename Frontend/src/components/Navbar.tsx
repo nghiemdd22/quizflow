@@ -24,7 +24,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   setCurrentView
 }) => {
   return (
-    <div className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+    <div className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${isHeaderVisible ? 'translate-y-0' : '-translate-y-[calc(100%+20px)]'}`}>
       <div className="w-full max-w-7xl mx-auto px-4 pt-6">
         <nav className="bg-white neo-card px-6 py-4 flex items-center justify-between">
           {/* Logo LearnHub */}
