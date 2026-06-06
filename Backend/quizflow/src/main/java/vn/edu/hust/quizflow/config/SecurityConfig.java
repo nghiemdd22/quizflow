@@ -54,7 +54,21 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             // Thêm Filter xác thực JWT tự chế (jwtAuthenticationFilter) vào trước Filter xác thực mặc định của Spring
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            
+            // Tùy chỉnh phản hồi khi gặp lỗi ở tầng Filter (Chưa đăng nhập 401 hoặc Không đủ quyền 403)
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.setStatus(401);
+                    response.getWriter().write("{\"error\": \"Bạn chưa đăng nhập hoặc phiên làm việc đã hết hạn!\"}");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.setStatus(403);
+                    response.getWriter().write("{\"error\": \"Bạn không có quyền thực hiện hành động này!\"}");
+                })
+            );
 
         return http.build();
     }

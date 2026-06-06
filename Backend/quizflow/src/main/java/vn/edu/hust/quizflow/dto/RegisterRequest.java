@@ -28,8 +28,7 @@ public class RegisterRequest {
     @Size(max = 100, message = "Họ và tên tối đa 100 ký tự")
     private String fullName;
 
-    @NotNull(message = "Vai trò không được để trống")
-    private UserRole role;
+    private String inviteCode;
 
     @NotBlank(message = "Số điện thoại không được để trống")
     private String phone;

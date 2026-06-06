@@ -48,13 +48,23 @@ public class AuthService {
             throw new IllegalArgumentException("Tên đăng nhập đã tồn tại trong hệ thống!");
         }
 
+        // Xử lý gán Role dựa trên Invite Code
+        vn.edu.hust.quizflow.entity.UserRole finalRole = vn.edu.hust.quizflow.entity.UserRole.STUDENT;
+        if (request.getInviteCode() != null && !request.getInviteCode().trim().isEmpty()) {
+            if ("SCHOOL-TEACHER-2026".equals(request.getInviteCode().trim())) {
+                finalRole = vn.edu.hust.quizflow.entity.UserRole.TEACHER;
+            } else {
+                throw new IllegalArgumentException("Mã lời mời (Invite Code) không hợp lệ!");
+            }
+        }
+
         // Tạo đối tượng thực thể User mới
         User user = User.builder()
                 .username(request.getUsername())
                 // Băm mật khẩu bằng BCrypt
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .fullName(request.getFullName())
-                .role(request.getRole())
+                .role(finalRole)
                 // Các trường cccd và phone được truyền vào dưới dạng rõ, JPA Converter sẽ tự động mã hóa AES-256
                 .cccdEncrypted(request.getIdentityCard())
                 .phoneEncrypted(request.getPhone())
