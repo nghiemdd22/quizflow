@@ -36,8 +36,8 @@ spring:
     password: ${RABBITMQ_PASSWORD:guest}
 
 encryption:
-  secret-key: ${ENCRYPTION_SECRET_KEY:vdtprojectsecretkeyquizflow123456}
-  iv: ${ENCRYPTION_IV:quizflowdefaultiv}
+  secret-key: ${ENCRYPTION_SECRET_KEY:vdtprojectsecretkeyquizflow12345}
+  iv: ${ENCRYPTION_IV:quizflowdefaulti}
 
 jwt:
   secret: ${JWT_SECRET:quizflowjwtsecretkey2026hustuniversity}

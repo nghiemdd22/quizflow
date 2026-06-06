@@ -17,11 +17,11 @@ import java.util.Base64;
 public class EncryptionUtils {
 
     // Lấy khóa bí mật từ file cấu hình application.yaml, mặc định là chuỗi 32 ký tự nếu không cấu hình
-    @Value("${encryption.secret-key:vdtprojectsecretkeyquizflow123456}")
+    @Value("${encryption.secret-key:vdtprojectsecretkeyquizflow12345}")
     private String secretKey;
 
     // Lấy vector khởi tạo (IV) từ file cấu hình, mặc định là chuỗi 16 ký tự nếu không cấu hình
-    @Value("${encryption.iv:quizflowdefaultiv}")
+    @Value("${encryption.iv:quizflowdefaulti}")
     private String iv;
 
     // Các biến static dùng để chia sẻ khóa và IV cho phương thức static (sử dụng trong JPA Converter)
