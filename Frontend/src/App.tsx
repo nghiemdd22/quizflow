@@ -57,7 +57,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fbfbf8] text-slate-900 font-sans selection:bg-neo-green selection:text-white pt-28">
+    <div className="min-h-screen bg-[#fbfbf8] text-slate-900 font-sans selection:bg-neo-green selection:text-white pt-28 flex flex-col">
       <Navbar
         isHeaderVisible={isHeaderVisible}
         isLoggedIn={isLoggedIn}
@@ -70,14 +70,16 @@ function App() {
         setCurrentView={setCurrentView}
       />
 
-      {currentView === 'landing' ? (
-        <LandingPage
-          onOpenSignup={() => setIsAuthOpen(true)}
-          onCourseRegister={handleCourseRegister}
-        />
-      ) : (
-        <TeacherDashboard />
-      )}
+      <main className="flex-1 w-full flex flex-col">
+        {currentView === 'landing' ? (
+          <LandingPage
+            onOpenSignup={() => setIsAuthOpen(true)}
+            onCourseRegister={handleCourseRegister}
+          />
+        ) : (
+          <TeacherDashboard />
+        )}
+      </main>
 
       <Footer />
 

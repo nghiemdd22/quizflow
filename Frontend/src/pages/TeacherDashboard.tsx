@@ -90,12 +90,12 @@ export const TeacherDashboard: React.FC = () => {
   const handleCreateBank = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newBankSubject) return alert('Vui lòng chọn môn học')
-    
+
     try {
       const res = await apiFetch('/api/v1/question-banks', {
         method: 'POST',
         body: JSON.stringify({
-          name: newBankName,
+          title: newBankName,
           description: newBankDesc,
           subjectId: newBankSubject
         })
