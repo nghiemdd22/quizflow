@@ -29,6 +29,12 @@
   box-shadow: 7px 7px 0px #0f172a;
 }
 
+/* neo-header-hover: Khi di chuột sẽ thụt xuống nhẹ để tạo cảm giác nhấn */
+.neo-header-hover:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #0f172a;
+}
+
 /* neo-btn: Nút bấm viền đen, bóng đổ 4px */
 .neo-btn {
   border: 3px solid #0f172a;

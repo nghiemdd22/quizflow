@@ -26,7 +26,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <div className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${isHeaderVisible ? 'translate-y-0' : '-translate-y-[calc(100%+20px)]'}`}>
       <div className="w-full max-w-7xl mx-auto px-4 pt-6">
-        <nav className="bg-white neo-card px-6 py-4 flex items-center justify-between">
+        <nav className="bg-white neo-card neo-header-hover px-6 py-4 flex items-center justify-between">
           {/* Logo LearnHub */}
           <a href="#" onClick={(e) => { e.preventDefault(); setCurrentView('landing'); }} className="flex items-center gap-3 group">
             <div className="w-10 h-10 rounded-full bg-neo-coral flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] group-hover:translate-x-[-1px] group-hover:translate-y-[-1px] group-hover:shadow-[3px_3px_0px_#0f172a] transition-all">
