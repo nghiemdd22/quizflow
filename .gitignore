@@ -4,4 +4,5 @@ erd.md
 .agent/
 ui-ux-pro-max-skill.nextlevelbuilder.io_demo_educational-platform.png
 question_for_interview.md
-.gitignore
+generate_sample.py
+sample_questions.xlsx

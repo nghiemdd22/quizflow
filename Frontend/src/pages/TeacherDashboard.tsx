@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { apiFetch } from '../utils/api'
+import React, { useState, useEffect, useRef } from 'react'
+import { apiFetch, apiFetchMultipart } from '../utils/api'
 
 interface Subject {
   id: number
@@ -38,6 +38,8 @@ export const TeacherDashboard: React.FC = () => {
   const [newQContent, setNewQContent] = useState('')
   const [newQType, setNewQType] = useState('SINGLE')
   const [newQOptions, setNewQOptions] = useState([{ id: 1, text: '', isCorrect: false }])
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const userId = Number(localStorage.getItem('userId'))
 
@@ -148,6 +150,61 @@ export const TeacherDashboard: React.FC = () => {
     }
   }
 
+  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !selectedBank) return
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Dung lượng file vượt quá 5MB')
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const res = await apiFetchMultipart(`/api/v1/questions/bank/${selectedBank.id}/import`, {
+        method: 'POST',
+        body: formData
+      })
+      if (res.ok) {
+        alert('Nhập danh sách câu hỏi thành công!')
+        loadQuestions(selectedBank.id)
+      } else {
+        const data = await res.json()
+        alert(data.error || 'Lỗi nhập file Excel')
+      }
+    } catch {
+      alert('Có lỗi xảy ra khi tải file')
+    }
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const handleExportExcel = async () => {
+    if (!selectedBank) return
+    try {
+      const res = await apiFetchMultipart(`/api/v1/questions/bank/${selectedBank.id}/export`, {
+        method: 'GET'
+      })
+      if (res.ok) {
+        const blob = await res.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `questions_bank_${selectedBank.id}.xlsx`
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+        window.URL.revokeObjectURL(url)
+      } else {
+        alert('Lỗi xuất file Excel')
+      }
+    } catch {
+      alert('Có lỗi xảy ra khi xuất file')
+    }
+  }
+
+
   const handleOptionChange = (id: number, text: string) => {
     setNewQOptions(opts => opts.map(o => o.id === id ? { ...o, text } : o))
   }
@@ -231,12 +288,33 @@ export const TeacherDashboard: React.FC = () => {
               <h2 className="text-2xl font-black">Ngân hàng: {selectedBank.title}</h2>
               <p className="text-xs font-bold text-slate-500">{selectedBank.description}</p>
             </div>
-            <button
-              onClick={() => setIsNewQuestionModalOpen(true)}
-              className="px-4 py-2 bg-neo-green hover:bg-neo-green-hover text-white neo-btn text-sm"
-            >
-              + Thêm Câu hỏi
-            </button>
+            <div className="flex gap-2">
+              <input 
+                type="file" 
+                accept=".xlsx,.xls" 
+                ref={fileInputRef} 
+                onChange={handleImportExcel} 
+                className="hidden" 
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2 bg-neo-blue hover:bg-blue-600 text-white neo-btn text-sm"
+              >
+                Nhập Excel
+              </button>
+              <button
+                onClick={handleExportExcel}
+                className="px-4 py-2 bg-neo-purple hover:bg-purple-600 text-white neo-btn text-sm"
+              >
+                Xuất Excel
+              </button>
+              <button
+                onClick={() => setIsNewQuestionModalOpen(true)}
+                className="px-4 py-2 bg-neo-green hover:bg-neo-green-hover text-white neo-btn text-sm"
+              >
+                + Thêm Câu hỏi
+              </button>
+            </div>
           </div>
 
           <div className="flex flex-col gap-4">
