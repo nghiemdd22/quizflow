@@ -1,71 +1,71 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
 
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --color-neo-bg: #fbfbf8;
-  --color-neo-green: #10b981;
-  --color-neo-green-hover: #059669;
+  --font-sans: 'Nunito', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --color-neo-bg: #fff5f4;
+  --color-neo-green: #22c55e;
+  --color-neo-green-hover: #16a34a;
   --color-neo-blue: #3b82f6;
   --color-neo-yellow: #eab308;
   --color-neo-purple: #a855f7;
-  --color-neo-coral: #f97316;
+  --color-neo-coral: #ff7e67;
 }
 
 /* Custom CSS Classes for Neo-Brutalism */
 
-/* neo-card: Card có viền đen dày 3px và bóng đổ phẳng 4px cứng */
+/* neo-card: Card có viền đen dày 2px và bóng đổ phẳng 3px cứng */
 .neo-card {
-  border: 3px solid #0f172a;
-  border-radius: 1rem;
-  box-shadow: 4px 4px 0px #0f172a;
+  border: 2px solid #0f172a;
+  border-radius: 1.5rem;
+  box-shadow: 3px 3px 0px #0f172a, 0px 10px 20px -5px rgba(0, 0, 0, 0.15);
   transition: all 0.2s ease-in-out;
 }
 
 /* neo-card-hover: Khi di chuột sẽ đẩy nhẹ card lên góc trên bên trái, làm bóng dày thêm */
 .neo-card-hover:hover {
   transform: translate(-3px, -3px);
-  box-shadow: 7px 7px 0px #0f172a;
+  box-shadow: 6px 6px 0px #0f172a, 0px 15px 25px -5px rgba(0, 0, 0, 0.2);
 }
 
 /* neo-header-hover: Khi di chuột sẽ thụt xuống nhẹ để tạo cảm giác nhấn */
 .neo-header-hover:hover {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0px #0f172a;
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0px #0f172a, 0px 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-/* neo-btn: Nút bấm viền đen, bóng đổ 4px */
+/* neo-btn: Nút bấm viền đen, bóng đổ 3px */
 .neo-btn {
-  border: 3px solid #0f172a;
+  border: 2px solid #0f172a;
   border-radius: 0.75rem;
-  box-shadow: 4px 4px 0px #0f172a;
+  box-shadow: 3px 3px 0px #0f172a, 0px 8px 15px -3px rgba(0, 0, 0, 0.15);
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 /* neo-btn: Khi hover (di chuột vào), nút hơi thụt xuống, bóng đổ giảm */
 .neo-btn:hover {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0px #0f172a;
+  transform: translate(1.5px, 1.5px);
+  box-shadow: 1.5px 1.5px 0px #0f172a, 0px 4px 10px -2px rgba(0, 0, 0, 0.1);
 }
 
 /* neo-btn: Khi active (click vào), nút lùi xuống hoàn toàn, bóng đổ biến mất */
 .neo-btn:active {
-  transform: translate(4px, 4px);
+  transform: translate(3px, 3px);
   box-shadow: 0px 0px 0px #0f172a;
 }
 
 /* neo-badge: Nhãn dán viền đen, thích hợp cho các tag nhỏ */
 .neo-badge {
   border: 2px solid #0f172a;
-  border-radius: 9999px;
-  box-shadow: 2px 2px 0px #0f172a;
-  font-weight: 700;
+  border-radius: 0.75rem;
+  box-shadow: 2px 2px 0px #0f172a, 0px 4px 6px -1px rgba(0, 0, 0, 0.1);
+  font-weight: 800;
   display: inline-flex;
   align-items: center;
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
@@ -73,15 +73,19 @@
 
 .neo-badge:hover {
   transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0px #0f172a;
+  box-shadow: 3px 3px 0px #0f172a, 0px 6px 10px -2px rgba(0, 0, 0, 0.15);
 }
 
 /* Các Input/Textarea cơ bản có bo viền shadow */
-input, select, textarea {
+input,
+select,
+textarea {
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   transform: translate(1px, 1px);
   box-shadow: 1px 1px 0px #0f172a !important;
   outline: none;

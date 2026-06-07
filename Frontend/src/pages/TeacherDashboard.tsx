@@ -350,8 +350,14 @@ export const TeacherDashboard: React.FC = () => {
 
       {/* NEW BANK MODAL */}
       {isNewBankModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#fbfbf8] neo-card p-6 md:p-8 max-w-md w-full relative">
+        <div 
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setIsNewBankModalOpen(false)}
+        >
+          <div 
+            className="bg-neo-bg neo-card p-6 md:p-8 max-w-md w-full relative"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={() => setIsNewBankModalOpen(false)}
               className="absolute right-4 top-4 w-8 h-8 rounded-full border-2 border-slate-900 bg-white hover:bg-slate-50 flex items-center justify-center font-bold"
@@ -396,8 +402,14 @@ export const TeacherDashboard: React.FC = () => {
 
       {/* NEW QUESTION MODAL */}
       {isNewQuestionModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#fbfbf8] neo-card p-6 md:p-8 max-w-2xl w-full relative max-h-[90vh] overflow-y-auto">
+        <div 
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setIsNewQuestionModalOpen(false)}
+        >
+          <div 
+            className="bg-neo-bg neo-card p-6 md:p-8 max-w-2xl w-full relative max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={() => setIsNewQuestionModalOpen(false)}
               className="absolute right-4 top-4 w-8 h-8 rounded-full border-2 border-slate-900 bg-white hover:bg-slate-50 flex items-center justify-center font-bold"

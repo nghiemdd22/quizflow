@@ -4,10 +4,11 @@ interface AuthModalProps {
   isOpen: boolean
   onClose: () => void
   onLoginSuccess: (token: string, username: string, role: string, id: number) => void
+  initialMode?: 'login' | 'signup'
 }
 
-export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }) => {
-  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
+export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, initialMode = 'login' }) => {
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialMode)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
@@ -15,6 +16,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
   const [identityCard, setIdentityCard] = useState('')
   const [isTeacher, setIsTeacher] = useState(false)
   const [inviteCode, setInviteCode] = useState('')
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setAuthMode(initialMode)
+    }
+  }, [isOpen, initialMode])
 
   if (!isOpen) return null
 
@@ -72,8 +79,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
   }
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#fbfbf8] neo-card p-6 md:p-8 max-w-md w-full relative">
+    <div 
+      className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-neo-bg neo-card p-6 md:p-8 max-w-md w-full relative"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           onClick={onClose}
           className="absolute right-4 top-4 w-8 h-8 rounded-full border-2 border-slate-900 bg-white hover:bg-slate-50 flex items-center justify-center font-bold cursor-pointer"

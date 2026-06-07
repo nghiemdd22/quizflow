@@ -1,4 +1,5 @@
 import React from 'react'
+import { BookOpen } from 'lucide-react'
 
 export const Footer: React.FC = () => {
   return (
@@ -8,9 +9,9 @@ export const Footer: React.FC = () => {
         <div className="sm:col-span-2 lg:col-span-2 flex flex-col items-start gap-4">
           <a href="#" className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-neo-coral flex items-center justify-center border-2 border-slate-900 shadow-[1px_1px_0px_#0f172a]">
-              <span className="text-white text-xs">📖</span>
+              <BookOpen className="text-white w-4 h-4" strokeWidth={3} />
             </div>
-            <span className="text-xl font-black">LearnHub</span>
+            <span className="text-xl font-black">Quizflow</span>
           </a>
           <p className="text-xs text-slate-500 leading-relaxed font-medium max-w-sm">
             Empowering millions of learners worldwide with quality education accessible to everyone.
@@ -67,7 +68,7 @@ export const Footer: React.FC = () => {
 
       {/* Footer Bottom copyright lines */}
       <div className="w-full max-w-7xl mx-auto px-4 border-t-2 border-slate-100 pt-8 mt-10 flex flex-col sm:flex-row justify-between items-center text-[10px] font-bold text-slate-400 gap-4">
-        <p>© 2026 LearnHub. All rights reserved.</p>
+        <p>© 2026 Quizflow. All rights reserved.</p>
         <div className="flex gap-6">
           <a href="#" className="hover:text-slate-900">Privacy</a>
           <a href="#" className="hover:text-slate-900">Terms</a>

@@ -1,3 +1,5 @@
+import React from 'react';
+
 export interface Course {
   id: string
   title: string
@@ -8,7 +10,7 @@ export interface Course {
   hours: number
   students: string
   rating: number
-  icon: string
+  icon: React.ReactNode
   iconBg: string
   iconColor: string
   description: string

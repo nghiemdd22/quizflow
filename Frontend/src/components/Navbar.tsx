@@ -1,4 +1,5 @@
 import React from 'react'
+import { BookOpen } from 'lucide-react'
 
 interface NavbarProps {
   isHeaderVisible: boolean
@@ -27,12 +28,12 @@ export const Navbar: React.FC<NavbarProps> = ({
     <div className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${isHeaderVisible ? 'translate-y-0' : '-translate-y-[calc(100%+20px)]'}`}>
       <div className="w-full max-w-7xl mx-auto px-4 pt-6">
         <nav className="bg-white neo-card neo-header-hover px-6 py-4 flex items-center justify-between">
-          {/* Logo LearnHub */}
+          {/* Logo Quizflow */}
           <a href="#" onClick={(e) => { e.preventDefault(); setCurrentView('landing'); }} className="flex items-center gap-3 group">
             <div className="w-10 h-10 rounded-full bg-neo-coral flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] group-hover:translate-x-[-1px] group-hover:translate-y-[-1px] group-hover:shadow-[3px_3px_0px_#0f172a] transition-all">
-              <span className="text-white text-lg font-bold">📖</span>
+              <BookOpen className="text-white w-5 h-5" strokeWidth={3} />
             </div>
-            <span className="text-2xl font-extrabold tracking-tight">LearnHub</span>
+            <span className="text-2xl font-extrabold tracking-tight">Quizflow</span>
           </a>
 
           {/* Navigation Links (Desktop) */}
@@ -83,15 +84,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               <>
                 <button
                   onClick={onOpenLogin}
-                  className="font-bold text-sm hover:text-neo-green transition-colors cursor-pointer px-2 py-1"
+                  className="px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-900 text-sm neo-btn"
                 >
-                  Log In
+                  Đăng nhập
                 </button>
                 <button
                   onClick={onOpenSignup}
                   className="px-5 py-2.5 bg-neo-green hover:bg-neo-green-hover text-white text-sm neo-btn"
                 >
-                  Start Free
+                  Đăng ký
                 </button>
               </>
             )}

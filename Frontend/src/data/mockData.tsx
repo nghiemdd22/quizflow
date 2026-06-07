@@ -1,4 +1,5 @@
 import type { Course } from '../types'
+import { Code, Palette, BarChart, Smartphone } from 'lucide-react'
 
 export const COURSES_DATA: Course[] = [
   {
@@ -11,7 +12,7 @@ export const COURSES_DATA: Course[] = [
     hours: 24,
     students: '12.5K',
     rating: 4.9,
-    icon: '</>',
+    icon: <Code size={24} />,
     iconBg: 'bg-orange-100',
     iconColor: 'text-orange-600',
     description: 'Học lập trình web từ cơ bản đến nâng cao. Làm chủ HTML, CSS, JavaScript, React và Node.js thông qua các dự án thực tế.'
@@ -26,7 +27,7 @@ export const COURSES_DATA: Course[] = [
     hours: 18,
     students: '8.2K',
     rating: 4.8,
-    icon: '❏',
+    icon: <Palette size={24} />,
     iconBg: 'bg-blue-100',
     iconColor: 'text-blue-600',
     description: 'Thiết kế giao diện và trải nghiệm người dùng chuyên nghiệp. Làm chủ Figma, wireframe, thiết kế tương tác và nghiên cứu người dùng.'
@@ -41,7 +42,7 @@ export const COURSES_DATA: Course[] = [
     hours: 30,
     students: '15.3K',
     rating: 4.9,
-    icon: '📊',
+    icon: <BarChart size={24} />,
     iconBg: 'bg-purple-100',
     iconColor: 'text-purple-600',
     description: 'Khám phá thế giới dữ liệu lớn. Học cách xử lý dữ liệu với Pandas, trực quan hóa với Matplotlib, và xây dựng mô hình Machine Learning.'
@@ -56,7 +57,7 @@ export const COURSES_DATA: Course[] = [
     hours: 22,
     students: '9.8K',
     rating: 4.7,
-    icon: '📱',
+    icon: <Smartphone size={24} />,
     iconBg: 'bg-green-100',
     iconColor: 'text-green-600',
     description: 'Xây dựng các ứng dụng di động đa nền tảng tuyệt đẹp cho cả iOS và Android sử dụng React Native hoặc Flutter.'

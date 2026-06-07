@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Navbar } from './components/Navbar'
 import { Footer } from './components/Footer'
 import { AuthModal } from './components/AuthModal'
@@ -13,6 +13,7 @@ function App() {
 
   // Auth States
   const [isAuthOpen, setIsAuthOpen] = useState(false)
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userEmail, setUserEmail] = useState('')
   const [userRole, setUserRole] = useState<string | null>(null)
@@ -52,20 +53,20 @@ function App() {
 
   const handleCourseRegister = (course: Course) => {
     setIsLoggedIn(true)
-    setUserEmail('trial@learnhub.com')
+    setUserEmail('trial@quizflow.com')
     alert(`Đăng ký học thử khóa "${course.title}" thành công!`)
   }
 
   return (
-    <div className="min-h-screen bg-[#fbfbf8] text-slate-900 font-sans selection:bg-neo-green selection:text-white pt-28 flex flex-col">
+    <div className="min-h-screen bg-neo-bg text-slate-900 font-sans selection:bg-neo-green selection:text-white pt-28 flex flex-col transition-colors duration-300">
       <Navbar
         isHeaderVisible={isHeaderVisible}
         isLoggedIn={isLoggedIn}
         userEmail={userEmail}
         role={userRole}
         onLogout={handleLogout}
-        onOpenLogin={() => setIsAuthOpen(true)}
-        onOpenSignup={() => setIsAuthOpen(true)}
+        onOpenLogin={() => { setAuthMode('login'); setIsAuthOpen(true) }}
+        onOpenSignup={() => { setAuthMode('signup'); setIsAuthOpen(true) }}
         currentView={currentView}
         setCurrentView={setCurrentView}
       />
@@ -73,7 +74,7 @@ function App() {
       <main className="flex-1 w-full flex flex-col">
         {currentView === 'landing' ? (
           <LandingPage
-            onOpenSignup={() => setIsAuthOpen(true)}
+            onOpenSignup={() => { setAuthMode('signup'); setIsAuthOpen(true) }}
             onCourseRegister={handleCourseRegister}
           />
         ) : (
@@ -87,6 +88,7 @@ function App() {
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
         onLoginSuccess={handleLoginSuccess}
+        initialMode={authMode}
       />
     </div>
   )

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { COURSES_DATA } from '../data/mockData'
 import type { Course } from '../types'
 import { CourseModal } from '../components/CourseModal'
+import { Target, Star, Droplets, Library, Clock, GraduationCap, CheckCircle, Users, Search, BookOpen, User } from 'lucide-react'
 
 interface LandingPageProps {
   onOpenSignup: () => void
@@ -36,7 +37,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourse
       {/* HERO SECTION */}
       <section className="w-full max-w-7xl mx-auto px-4 py-12 md:py-20 grid md:grid-cols-12 gap-12 items-center">
         <div className="md:col-span-7 flex flex-col items-start text-left">
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-[#d1fae5] border-2 border-slate-900 rounded-full shadow-[2px_2px_0px_#0f172a] text-emerald-800 text-xs font-extrabold mb-8">
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-[#d1fae5] border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] text-emerald-800 text-xs font-extrabold mb-8">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
             <span>New: AI-Powered Learning</span>
           </div>
@@ -52,10 +53,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourse
           </p>
 
           <div className="flex flex-wrap gap-4 mb-12">
-            <a href="#courses" className="px-6 py-4 bg-neo-green hover:bg-[#0d9488] text-white neo-btn text-base gap-2">
+            <a href="#courses" className="px-6 py-4 bg-neo-green hover:bg-neo-green-hover text-white neo-btn text-base gap-2">
               Start Learning Free <span>➔</span>
             </a>
-            <a href="#courses" className="px-6 py-4 bg-white hover:bg-slate-50 text-slate-900 neo-btn text-base">
+            <a href="#courses" className="px-6 py-4 bg-blue-50 hover:bg-blue-100 text-slate-900 neo-btn text-base border-blue-200">
               Browse Courses
             </a>
           </div>
@@ -104,24 +105,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourse
             <button
               onClick={() => setIsStudying(!isStudying)}
               className={`w-full py-3.5 text-sm neo-btn text-white ${
-                isStudying ? 'bg-[#047857]' : 'bg-[#0f172a]'
+                isStudying ? 'bg-neo-green-hover' : 'bg-neo-green'
               }`}
             >
               {isStudying ? '⏸ Pause Simulation' : '▶ Continue Learning'}
             </button>
           </div>
 
-          <div className="absolute -top-6 -right-4 w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-xl z-20 animate-bounce">🎯</div>
-          <div className="absolute top-1/2 -right-8 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-lg z-20 animate-pulse">⭐</div>
-          <div className="absolute -bottom-4 -right-2 w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-sm z-20">💧</div>
-          <div className="absolute -bottom-6 -left-6 w-11 h-11 bg-indigo-100 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-lg rounded-xl z-20 rotate-[-12deg]">🥞</div>
+          <div className="absolute -top-6 -right-4 w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-rose-500 z-20 animate-bounce"><Target size={20} strokeWidth={3} /></div>
+          <div className="absolute top-1/2 -right-8 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-amber-500 z-20 animate-pulse"><Star size={18} strokeWidth={3} /></div>
+          <div className="absolute -bottom-4 -right-2 w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-cyan-500 z-20"><Droplets size={16} strokeWidth={3} /></div>
+          <div className="absolute -bottom-6 -left-6 w-11 h-11 bg-indigo-100 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-indigo-500 rounded-xl z-20 rotate-[-12deg]"><Library size={20} strokeWidth={3} /></div>
         </div>
       </section>
 
       {/* EXPLORE COURSES SECTION */}
-      <section id="courses" className="w-full bg-white border-t-4 border-b-4 border-slate-900 py-16 md:py-24">
+      <section id="courses" className="w-full bg-white py-16 md:py-24">
         <div className="w-full max-w-7xl mx-auto px-4 text-center">
-          <div className="inline-flex px-4 py-1.5 bg-[#e0f2fe] border-2 border-slate-900 rounded-full text-sky-800 text-xs font-extrabold mb-4 shadow-[2px_2px_0px_#0f172a]">
+          <div className="inline-flex px-4 py-1.5 bg-[#e0f2fe] border-2 border-slate-900 rounded-xl text-sky-800 text-xs font-extrabold mb-4 shadow-[2px_2px_0px_#0f172a]">
             Popular Courses
           </div>
           <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-3 tracking-tight">
@@ -180,8 +181,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourse
                       <span className="text-xs font-extrabold uppercase px-2.5 py-1 bg-slate-100 border border-slate-900 rounded">
                         {course.categoryLabel}
                       </span>
-                      <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded border border-emerald-900 bg-emerald-50 text-emerald-700 text-xs font-black">
-                        ⭐ {course.rating}
+                      <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border-2 border-emerald-900 bg-emerald-50 text-emerald-700 text-xs font-black shadow-[1px_1px_0px_#064e3b]">
+                        <Star size={12} fill="currentColor" /> {course.rating}
                       </div>
                     </div>
 
@@ -199,9 +200,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourse
                   </div>
 
                   <div className="flex items-center gap-5 border-t border-slate-200 pt-4 mt-4 text-xs font-bold text-slate-500">
-                    <span className="flex items-center gap-1">📖 {course.lessons} lessons</span>
-                    <span className="flex items-center gap-1">⏰ {course.hours}h</span>
-                    <span className="flex items-center gap-1">👤 {course.students} students</span>
+                    <span className="flex items-center gap-1"><BookOpen size={14} /> {course.lessons} lessons</span>
+                    <span className="flex items-center gap-1"><Clock size={14} /> {course.hours}h</span>
+                    <span className="flex items-center gap-1"><User size={14} /> {course.students} students</span>
                   </div>
 
                   <button
@@ -214,8 +215,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourse
               ))}
             </div>
           ) : (
-            <div className="max-w-md mx-auto py-12 px-6 border-4 border-dashed border-slate-300 rounded-2xl">
-              <span className="text-4xl">🔍</span>
+            <div className="max-w-md mx-auto py-12 px-6 border-4 border-dashed border-slate-300 rounded-2xl flex flex-col items-center">
+              <Search size={48} className="text-slate-400" />
               <h3 className="font-bold text-lg mt-4 text-slate-700">No courses found</h3>
               <p className="text-xs text-slate-500 mt-2">Try adjusting your filters or search keywords.</p>
             </div>
@@ -224,7 +225,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourse
           <div className="mt-12">
             <button
               onClick={() => { setActiveTab('all'); setSearchQuery(''); }}
-              className="px-6 py-4 bg-sky-100 hover:bg-sky-200 text-sky-900 neo-btn text-sm"
+              className="px-6 py-4 bg-blue-50 hover:bg-blue-100 border-blue-200 text-slate-900 neo-btn text-sm"
             >
               View All Courses <span>➔</span>
             </button>
@@ -234,7 +235,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourse
 
       {/* WHY CHOOSE US SECTION */}
       <section id="why-choose" className="w-full max-w-7xl mx-auto px-4 py-16 md:py-24 text-center">
-        <div className="inline-flex px-4 py-1.5 bg-[#fee2e2] border-2 border-slate-900 rounded-full text-rose-800 text-xs font-extrabold mb-4 shadow-[2px_2px_0px_#0f172a]">
+        <div className="inline-flex px-4 py-1.5 bg-[#fee2e2] border-2 border-slate-900 rounded-xl text-rose-800 text-xs font-extrabold mb-4 shadow-[2px_2px_0px_#0f172a]">
           Why Choose Us
         </div>
         <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-12 tracking-tight">
@@ -244,7 +245,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourse
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Card 1 */}
           <div className="bg-white p-6 rounded-2xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
-            <div className="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-xl font-bold border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-5">⏰</div>
+            <div className="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-5"><Clock size={24} strokeWidth={2.5} /></div>
             <h3 className="font-extrabold text-lg text-slate-900 mb-2">Learn at Your Pace</h3>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
               Access courses anytime, anywhere. Pause, rewind, and replay lessons as needed.
@@ -252,7 +253,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourse
           </div>
           {/* Card 2 */}
           <div className="bg-white p-6 rounded-2xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
-            <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-5">🎓</div>
+            <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-5"><GraduationCap size={24} strokeWidth={2.5} /></div>
             <h3 className="font-extrabold text-lg text-slate-900 mb-2">Expert Instructors</h3>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
               Learn from industry professionals with real-world, practical development experience.
@@ -260,7 +261,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourse
           </div>
           {/* Card 3 */}
           <div className="bg-white p-6 rounded-2xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
-            <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-xl font-bold border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-5">✔</div>
+            <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-5"><CheckCircle size={24} strokeWidth={2.5} /></div>
             <h3 className="font-extrabold text-lg text-slate-900 mb-2">Certificates</h3>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
               Earn recognized certificates to showcase your completed skills and build your portfolio.
@@ -268,7 +269,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourse
           </div>
           {/* Card 4 */}
           <div className="bg-white p-6 rounded-2xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
-            <div className="w-12 h-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center text-xl font-bold border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-5">👥</div>
+            <div className="w-12 h-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-5"><Users size={24} strokeWidth={2.5} /></div>
             <h3 className="font-extrabold text-lg text-slate-900 mb-2">Community Support</h3>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
               Join an active community of global learners. Ask questions and share project findings.
@@ -278,9 +279,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourse
       </section>
 
       {/* TESTIMONIALS SECTION */}
-      <section className="w-full bg-[#fbfbf8] border-t-4 border-slate-900 py-16 md:py-24 text-center">
+      <section className="w-full bg-white py-16 md:py-24 text-center">
         <div className="w-full max-w-7xl mx-auto px-4">
-          <div className="inline-flex px-4 py-1.5 bg-[#fef08a] border-2 border-slate-900 rounded-full text-yellow-800 text-xs font-extrabold mb-4 shadow-[2px_2px_0px_#0f172a]">
+          <div className="inline-flex px-4 py-1.5 bg-[#fef08a] border-2 border-slate-900 rounded-xl text-yellow-800 text-xs font-extrabold mb-4 shadow-[2px_2px_0px_#0f172a]">
             Student Stories
           </div>
           <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-12 tracking-tight">
@@ -290,9 +291,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourse
             {/* Review 1 */}
             <div className="bg-white p-6 neo-card text-left flex flex-col justify-between">
               <div>
-                <div className="text-amber-500 font-bold mb-4">⭐⭐⭐⭐⭐</div>
+                <div className="text-amber-500 flex gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" strokeWidth={0} />)}
+                </div>
                 <p className="text-sm text-slate-600 font-medium leading-relaxed mb-6">
-                  "LearnHub helped me transition from marketing to tech. The courses are well-structured and the community is incredibly supportive!"
+                  "Quizflow helped me transition from marketing to tech. The courses are well-structured and the community is incredibly supportive!"
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -306,7 +309,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourse
             {/* Review 2 */}
             <div className="bg-white p-6 neo-card text-left flex flex-col justify-between">
               <div>
-                <div className="text-amber-500 font-bold mb-4">⭐⭐⭐⭐⭐</div>
+                <div className="text-amber-500 flex gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" strokeWidth={0} />)}
+                </div>
                 <p className="text-sm text-slate-600 font-medium leading-relaxed mb-6">
                   "The UI/UX course was exactly what I needed. I landed my dream job just 3 months after completing it! The Figma practices are awesome."
                 </p>
@@ -322,7 +327,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourse
             {/* Review 3 */}
             <div className="bg-white p-6 neo-card text-left flex flex-col justify-between">
               <div>
-                <div className="text-amber-500 font-bold mb-4">⭐⭐⭐⭐⭐</div>
+                <div className="text-amber-500 flex gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" strokeWidth={0} />)}
+                </div>
                 <p className="text-sm text-slate-600 font-medium leading-relaxed mb-6">
                   "Best investment I've made in my career. The Python course gave me practical skills I use every day at work. High definition videos!"
                 </p>
@@ -340,7 +347,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourse
       </section>
 
       {/* CTA SECTION */}
-      <section id="cta" className="w-full bg-[#bfdbfe] border-t-4 border-b-4 border-slate-900 py-16 md:py-24">
+      <section id="cta" className="w-full bg-[#bfdbfe] py-16 md:py-24">
         <div className="w-full max-w-4xl mx-auto px-4">
           <div className="bg-white neo-card p-8 md:p-12 text-center">
             <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">
