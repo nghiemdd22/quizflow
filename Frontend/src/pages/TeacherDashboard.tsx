@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { apiFetch, apiFetchMultipart } from '../utils/api'
+import { ExamManagementTab } from '../components/ExamManagementTab'
 
 interface Subject {
   id: number
@@ -27,6 +28,7 @@ export const TeacherDashboard: React.FC = () => {
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [selectedBank, setSelectedBank] = useState<QuestionBank | null>(null)
   const [questions, setQuestions] = useState<Question[]>([])
+  const [activeTab, setActiveTab] = useState<'BANKS' | 'EXAMS'>('BANKS')
 
   // Modal states
   const [isNewBankModalOpen, setIsNewBankModalOpen] = useState(false)
@@ -230,9 +232,22 @@ export const TeacherDashboard: React.FC = () => {
       <div className="flex justify-between items-end mb-8">
         <div>
           <h1 className="text-4xl font-extrabold text-slate-900 mb-2">Teacher Dashboard</h1>
-          <p className="text-sm text-slate-600 font-bold">Quản lý Ngân hàng câu hỏi & Đề thi</p>
+          <div className="flex gap-4 mt-4">
+            <button
+              onClick={() => setActiveTab('BANKS')}
+              className={`px-4 py-2 font-black border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] rounded-lg transition-transform ${activeTab === 'BANKS' ? 'bg-neo-blue text-white' : 'bg-white hover:bg-slate-100'}`}
+            >
+              Ngân hàng câu hỏi
+            </button>
+            <button
+              onClick={() => setActiveTab('EXAMS')}
+              className={`px-4 py-2 font-black border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] rounded-lg transition-transform ${activeTab === 'EXAMS' ? 'bg-neo-blue text-white' : 'bg-white hover:bg-slate-100'}`}
+            >
+              Đề thi & Ca thi
+            </button>
+          </div>
         </div>
-        {selectedBank && (
+        {activeTab === 'BANKS' && selectedBank && (
           <button
             onClick={() => setSelectedBank(null)}
             className="px-4 py-2 bg-slate-200 hover:bg-slate-300 neo-btn text-xs"
@@ -242,8 +257,9 @@ export const TeacherDashboard: React.FC = () => {
         )}
       </div>
 
-      {!selectedBank ? (
-        // BANK LIST VIEW
+      {activeTab === 'BANKS' ? (
+        !selectedBank ? (
+          // BANK LIST VIEW
         <div>
           <div className="flex justify-between items-center mb-6 border-b-4 border-slate-900 pb-4">
             <h2 className="text-2xl font-black">Ngân hàng câu hỏi của tôi</h2>
@@ -346,6 +362,9 @@ export const TeacherDashboard: React.FC = () => {
             )}
           </div>
         </div>
+        )
+      ) : (
+        <ExamManagementTab subjects={subjects} banks={banks} />
       )}
 
       {/* NEW BANK MODAL */}
