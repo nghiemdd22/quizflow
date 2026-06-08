@@ -1,5 +1,5 @@
-import React from 'react'
-import { BookOpen } from 'lucide-react'
+import React, { useState, useRef, useEffect } from 'react'
+import { BookOpen, User } from 'lucide-react'
 
 interface NavbarProps {
   isHeaderVisible: boolean
@@ -24,6 +24,19 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentView,
   setCurrentView
 }) => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   return (
     <div className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${isHeaderVisible ? 'translate-y-0' : '-translate-y-[calc(100%+20px)]'}`}>
       <div className="w-full max-w-7xl mx-auto px-4 pt-6">
@@ -46,7 +59,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <a href="#footer" className="hover:text-neo-coral transition-colors">About</a>
               </>
             ) : (
-              <span className="text-slate-500 font-extrabold">Teacher Dashboard</span>
+              <>
+                <a href="#" className="text-neo-blue font-black border-b-2 border-neo-blue">Bảng điều khiển</a>
+                <a href="#" className="hover:text-neo-green transition-colors text-slate-500">Học sinh & Lớp</a>
+                <a href="#" className="hover:text-neo-purple transition-colors text-slate-500">Thống kê chung</a>
+                <a href="#" className="hover:text-neo-coral transition-colors text-slate-500">Trợ giúp</a>
+              </>
             )}
           </div>
 
@@ -70,15 +88,44 @@ export const Navbar: React.FC<NavbarProps> = ({
                     Home
                   </button>
                 )}
-                <span className="text-xs font-mono bg-slate-100 border-2 border-slate-900 px-2 py-1 rounded-md font-bold">
-                  {userEmail}
-                </span>
-                <button
-                  onClick={onLogout}
-                  className="px-4 py-2 text-xs neo-btn bg-red-100 hover:bg-red-200 text-red-700"
-                >
-                  Log Out
-                </button>
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="w-10 h-10 rounded-xl bg-neo-yellow border-2 border-slate-900 flex items-center justify-center shadow-[2px_2px_0px_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-[1px_1px_0px_#0f172a] active:shadow-none active:translate-y-[2px] active:translate-x-[2px] transition-all p-0"
+                  >
+                    <User className="w-5 h-5 text-slate-900" strokeWidth={3} />
+                  </button>
+                  
+                  {isDropdownOpen && (
+                    <div className="absolute right-0 mt-3 w-48 bg-white border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] rounded-xl flex flex-col p-2 z-50">
+                      <div className="px-3 py-2 border-b-2 border-slate-100 mb-2">
+                        <p className="text-xs font-bold text-slate-500">Tài khoản</p>
+                        <p className="text-sm font-black truncate">{userEmail}</p>
+                      </div>
+                      <button 
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="text-left px-3 py-2 text-sm font-bold hover:bg-slate-100 rounded-lg transition-colors"
+                      >
+                        Hồ sơ cá nhân
+                      </button>
+                      <button 
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="text-left px-3 py-2 text-sm font-bold hover:bg-slate-100 rounded-lg transition-colors"
+                      >
+                        Cài đặt
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setIsDropdownOpen(false)
+                          onLogout()
+                        }}
+                        className="text-left px-3 py-2 text-sm font-bold text-red-600 hover:bg-red-50 rounded-lg transition-colors mt-1"
+                      >
+                        Đăng xuất
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <>

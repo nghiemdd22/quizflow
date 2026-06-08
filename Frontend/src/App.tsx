@@ -14,9 +14,9 @@ function App() {
   // Auth States
   const [isAuthOpen, setIsAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [userEmail, setUserEmail] = useState('')
-  const [userRole, setUserRole] = useState<string | null>(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('token'))
+  const [userEmail, setUserEmail] = useState(() => localStorage.getItem('username') || '')
+  const [userRole, setUserRole] = useState<string | null>(() => localStorage.getItem('role'))
 
   useEffect(() => {
     const handleScroll = () => {
@@ -38,6 +38,7 @@ function App() {
     setUserRole(role)
     localStorage.setItem('token', token)
     localStorage.setItem('role', role)
+    localStorage.setItem('username', username)
     localStorage.setItem('userId', id.toString())
   }
 
@@ -48,6 +49,7 @@ function App() {
     setCurrentView('landing')
     localStorage.removeItem('token')
     localStorage.removeItem('role')
+    localStorage.removeItem('username')
     localStorage.removeItem('userId')
   }
 
