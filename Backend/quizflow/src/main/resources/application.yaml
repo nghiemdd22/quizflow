@@ -3,7 +3,7 @@ spring:
     name: quizflow
 
   datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:quizflow}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:quizflow}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh
     username: ${DB_USER:quizflow_user}
     password: ${DB_PASSWORD:quizflow_password}
     driver-class-name: com.mysql.cj.jdbc.Driver
