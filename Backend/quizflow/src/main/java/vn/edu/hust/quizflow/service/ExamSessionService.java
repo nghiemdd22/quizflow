@@ -9,19 +9,39 @@ import vn.edu.hust.quizflow.entity.Exam;
 import vn.edu.hust.quizflow.entity.ExamSession;
 import vn.edu.hust.quizflow.entity.ExamStatus;
 import vn.edu.hust.quizflow.entity.SessionStatus;
+import vn.edu.hust.quizflow.entity.SubmissionStatus;
+import vn.edu.hust.quizflow.entity.User;
+import vn.edu.hust.quizflow.entity.ExamSubmission;
+import vn.edu.hust.quizflow.entity.ExamQuestion;
+import vn.edu.hust.quizflow.dto.ExamRoomResponse;
+import vn.edu.hust.quizflow.dto.StudentQuestionDTO;
 import vn.edu.hust.quizflow.repository.ExamRepository;
 import vn.edu.hust.quizflow.repository.ExamSessionRepository;
+import vn.edu.hust.quizflow.repository.UserRepository;
+import vn.edu.hust.quizflow.repository.ExamSubmissionRepository;
+import vn.edu.hust.quizflow.repository.ExamQuestionRepository;
+import vn.edu.hust.quizflow.service.RedisService;
 
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
+/**
+ * Service xử lý các logic nghiệp vụ (Business Logic) liên quan đến các phiên thi (Exam Session).
+ */
 @Service
 @RequiredArgsConstructor
 public class ExamSessionService {
 
     private final ExamSessionRepository examSessionRepository;
     private final ExamRepository examRepository;
+    private final UserRepository userRepository;
+    private final ExamSubmissionRepository examSubmissionRepository;
+    private final ExamQuestionRepository examQuestionRepository;
+    private final RedisService redisService;
 
     private static final String DIGITS = "0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -106,5 +126,116 @@ public class ExamSessionService {
         dto.setDurationMinutes(session.getDurationMinutes());
         dto.setStatus(session.getStatus());
         return dto;
+    }
+
+    /**
+     * Xử lý nghiệp vụ khi học sinh tham gia vào một phiên thi (vào phòng thi).
+     * Hàm này chịu trách nhiệm kiểm tra mã PIN, kiểm tra thời gian thi, che giấu đáp án đúng,
+     * và tính toán thời gian làm bài thực tế của từng học sinh.
+     *
+     * @param pinCode Mã PIN của phòng thi do học sinh nhập
+     * @param username Tên đăng nhập của học sinh
+     * @return DTO chứa thông tin phòng thi và danh sách câu hỏi (đã che đáp án)
+     */
+    @Transactional
+    public ExamRoomResponse joinSession(String pinCode, String username) {
+        // 1. Kiểm tra mã PIN và lấy thông tin phiên thi
+        ExamSession session = examSessionRepository.findByPinCode(pinCode)
+                .orElseThrow(() -> new IllegalArgumentException("Mã PIN không hợp lệ"));
+
+        // 2. Lấy thông tin học sinh
+        User student = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy học sinh"));
+
+        // 3. Kiểm tra mốc thời gian (Ca thi đã đến giờ mở chưa, hoặc đã kết thúc chưa)
+        LocalDateTime now = LocalDateTime.now();
+        if (now.isBefore(session.getStartTime())) {
+            throw new IllegalArgumentException("Ca thi chưa bắt đầu");
+        }
+        if (now.isAfter(session.getEndTime())) {
+            throw new IllegalArgumentException("Ca thi đã kết thúc");
+        }
+
+        // 4. Nếu đây là học sinh đầu tiên vào thi (trạng thái phòng vẫn là UPCOMING), 
+        // thì tự động chuyển trạng thái phòng sang ACTIVE (Đang thi)
+        if (session.getStatus() == SessionStatus.UPCOMING) {
+            session.setStatus(SessionStatus.ACTIVE);
+            examSessionRepository.save(session);
+        }
+
+        // 5. Kiểm tra xem học sinh này đã có hồ sơ bài nộp (ExamSubmission) trong ca thi này chưa.
+        // - Nếu chưa có (nghĩa là mới vào lần đầu): Tạo mới một bản ghi để bắt đầu tính giờ làm bài.
+        // - Nếu có rồi (nghĩa là rớt mạng F5 vô lại): Dùng lại hồ sơ cũ, thời gian bắt đầu vẫn giữ nguyên.
+        ExamSubmission submission = examSubmissionRepository
+                .findByExamSessionIdAndStudentId(session.getId(), student.getId())
+                .orElseGet(() -> {
+                    ExamSubmission newSubmission = ExamSubmission.builder()
+                            .examSession(session)
+                            .student(student)
+                            .status(SubmissionStatus.PENDING)
+                            .startedAt(now)
+                            .build();
+                    return examSubmissionRepository.save(newSubmission);
+                });
+
+        // 6. Kéo danh sách câu hỏi của đề thi, sắp xếp theo đúng số thứ tự
+        List<ExamQuestion> examQuestions = examQuestionRepository.findByExamIdOrderByOrderIndexAsc(session.getExam().getId());
+        
+        // 7. BƯỚC BẢO MẬT QUAN TRỌNG: Che giấu đáp án đúng trước khi trả câu hỏi về cho học sinh (Frontend)
+        List<StudentQuestionDTO> studentQuestions = examQuestions.stream().map(eq -> {
+            // Clone (tạo bản sao) của metadata ra một Map mới để không vô tình sửa xóa luôn cả dữ liệu gốc trong DB
+            Map<String, Object> safeMetadata = new HashMap<>(eq.getQuestion().getMetadata());
+            // Xóa đi trường "correctAnswers", nhờ vậy học sinh không thể bấm F12 xem mã nguồn để gian lận đáp án được
+            safeMetadata.remove("correctAnswers");
+            
+            return StudentQuestionDTO.builder()
+                    .id(eq.getQuestion().getId())
+                    .type(eq.getQuestion().getType())
+                    .content(eq.getQuestion().getContent())
+                    .metadata(safeMetadata) // Đưa metadata "an toàn" vào DTO
+                    .build();
+        }).collect(Collectors.toList());
+
+        // 8. Tính toán mốc thời gian nộp bài chính xác cho từng cá nhân học sinh
+        // Mặc định, hạn chót nộp bài là giờ đóng cửa của toàn bộ ca thi (EndTime của ca)
+        LocalDateTime finalEndTime = session.getEndTime();
+        // Tuy nhiên, nếu đề thi có bấm giờ làm bài (ví dụ đề 45 phút - durationMinutes > 0)
+        if (session.getDurationMinutes() > 0) {
+            // Thì tính giờ hết hạn của riêng học sinh này = Thời điểm học sinh bấm bắt đầu (startedAt) + 45 phút
+            LocalDateTime durationEnd = submission.getStartedAt().plusMinutes(session.getDurationMinutes());
+            // So sánh 2 mốc thời gian trên và trả về mốc nào ĐẾN TRƯỚC.
+            // Điều này phòng chống trường hợp: Ca thi sắp đóng cửa vào lúc 10h, mà 9h45 học sinh mới vào, 
+            // thì làm được 15 phút là hệ thống vẫn bắt nộp bài vì ca thi đã đóng, dù cho thời gian làm bài quy định là 45p.
+            if (durationEnd.isBefore(finalEndTime)) {
+                finalEndTime = durationEnd;
+            }
+        }
+
+        // 9. Đóng gói toàn bộ dữ liệu hợp lệ và trả về cho Frontend hiển thị
+        return ExamRoomResponse.builder()
+                .sessionId(session.getId())
+                .examTitle(session.getExam().getTitle())
+                .status(session.getStatus())
+                .startTime(session.getStartTime())
+                .endTime(finalEndTime)
+                .serverTime(now)
+                .durationMinutes(session.getDurationMinutes())
+                .submissionId(submission.getId())
+                .questions(studentQuestions)
+                .build();
+    }
+
+    /**
+     * Lấy lại trạng thái bài làm (các đáp án đã chọn) của học sinh từ Redis.
+     * Dùng để đồng bộ giao diện khi học sinh bị mất mạng, F5 tải lại trang.
+     *
+     * @param sessionId ID của ca thi
+     * @param username Tên đăng nhập của học sinh
+     * @return Một Map dạng (Mã câu hỏi : Mã lựa chọn)
+     */
+    public Map<Object, Object> syncState(Long sessionId, String username) {
+        User student = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy học sinh"));
+        return redisService.getStudentAnswers(sessionId, student.getId());
     }
 }
