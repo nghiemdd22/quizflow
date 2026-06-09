@@ -48,6 +48,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 // Cho phép truy cập tự do vào các metric giám sát hệ thống của Actuator
                 .requestMatchers("/actuator/**").permitAll()
+                // Cho phép WebSocket Upgrade request
+                .requestMatchers("/ws/**").permitAll()
                 // Cho phép truy cập tự do vào Swagger UI và OpenAPI docs
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 // Tất cả các request còn lại bắt buộc phải xác thực (phải đăng nhập)
