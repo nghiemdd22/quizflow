@@ -2,28 +2,72 @@ import React, { useState } from 'react'
 import { COURSES_DATA } from '../data/mockData'
 import type { Course } from '../types'
 import { CourseModal } from '../components/CourseModal'
+import { apiFetch } from '../utils/api'
 import { Target, Star, Droplets, Library, Clock, GraduationCap, CheckCircle, Users, Search, BookOpen, User } from 'lucide-react'
 
 interface LandingPageProps {
+  isLoggedIn?: boolean
   onOpenSignup: () => void
   onCourseRegister: (course: Course) => void
+  onJoinExamSuccess: (data: any) => void
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourseRegister }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSignup, onCourseRegister, onJoinExamSuccess }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'web' | 'design' | 'data' | 'mobile'>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
-  const [progressPercent, setProgressPercent] = useState(65)
-  const [isStudying, setIsStudying] = useState(false)
+  const [showLoginToast, setShowLoginToast] = useState(false)
+  const [pinCode, setPinCode] = useState('')
 
-  // Demo progress simulation
-  React.useEffect(() => {
-    if (!isStudying) return
-    const interval = setInterval(() => {
-      setProgressPercent(prev => (prev >= 100 ? 0 : prev + 1))
-    }, 1000)
-    return () => clearInterval(interval)
-  }, [isStudying])
+  const handleRequireLogin = () => {
+    if (!isLoggedIn) {
+      setShowLoginToast(true)
+      setTimeout(() => setShowLoginToast(false), 3000)
+    }
+  }
+
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (!isLoggedIn) {
+      e.target.blur()
+      handleRequireLogin()
+    }
+  }
+
+  const handleJoinExam = async () => {
+    if (!isLoggedIn) {
+      handleRequireLogin()
+      return
+    }
+    if (pinCode.trim()) {
+      try {
+        const response = await apiFetch('/api/v1/student/sessions/join', {
+          method: 'POST',
+          body: JSON.stringify({ pinCode: pinCode.trim() })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          alert(errorData.error || 'Lỗi khi tham gia ca thi');
+          return;
+        }
+
+        const data = await response.json();
+        onJoinExamSuccess(data);
+      } catch (error) {
+        alert('Đã có lỗi xảy ra khi kết nối tới máy chủ');
+      }
+    } else {
+      alert("Vui lòng nhập mã PIN!")
+    }
+  }
+
+  const handleViewHistory = () => {
+    if (!isLoggedIn) {
+      handleRequireLogin()
+      return
+    }
+    alert("Đang chuyển đến trang Lịch sử thi...")
+  }
 
   const filteredCourses = COURSES_DATA.filter(course => {
     const matchesTab = activeTab === 'all' || course.category === activeTab
@@ -34,6 +78,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourse
 
   return (
     <>
+      {showLoginToast && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-bounce">
+          <div className="bg-rose-100 border-2 border-slate-900 px-6 py-3 rounded-xl shadow-[4px_4px_0px_#0f172a] flex items-center gap-3">
+            <span className="text-rose-600 font-extrabold text-sm">Please login to perform this action!</span>
+            <button onClick={() => setShowLoginToast(false)} className="text-slate-900 font-bold hover:text-rose-800">✕</button>
+          </div>
+        </div>
+      )}
+
       {/* HERO SECTION */}
       <section className="w-full max-w-7xl mx-auto px-4 py-12 md:py-20 grid md:grid-cols-12 gap-12 items-center">
         <div className="md:col-span-7 flex flex-col items-start text-left">
@@ -80,36 +133,42 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenSignup, onCourse
         <div className="md:col-span-5 relative flex justify-center">
           <div className="w-full max-w-md bg-white neo-card p-6 relative z-10 hover:rotate-1 transition-transform duration-300">
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center border-2 border-slate-900 text-2xl font-bold shadow-[2px_2px_0px_#0f172a]">
-                💻
+              <div className="w-12 h-12 rounded-xl bg-rose-100 flex items-center justify-center border-2 border-slate-900 text-rose-500 font-bold shadow-[2px_2px_0px_#0f172a]">
+                <Target size={24} strokeWidth={2.5} />
               </div>
               <div className="text-left">
-                <h3 className="font-extrabold text-base text-slate-900">Web Development</h3>
-                <p className="text-xs text-slate-500 font-bold">12 lessons • 4h 30m</p>
+                <h3 className="font-extrabold text-lg text-slate-900">Student Portal</h3>
+                <p className="text-xs text-slate-500 font-bold">Join quizzes & view results</p>
               </div>
             </div>
 
             <div className="mb-6">
-              <div className="flex justify-between text-xs font-bold text-slate-700 mb-2">
-                <span>Progress</span>
-                <span className="font-mono text-neo-green">{progressPercent}%</span>
-              </div>
-              <div className="w-full h-4 bg-slate-100 border-2 border-slate-900 rounded-full overflow-hidden p-0.5">
-                <div
-                  className="h-full bg-neo-green border-r border-slate-900 rounded-full transition-all duration-300"
-                  style={{ width: `${progressPercent}%` }}
-                ></div>
+              <label className="block text-xs font-bold text-slate-700 mb-2 text-left">Quick Join</label>
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  value={pinCode}
+                  onChange={(e) => setPinCode(e.target.value)}
+                  placeholder="Enter PIN code" 
+                  onFocus={handleInputFocus}
+                  className="w-full px-4 py-3 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-none font-bold"
+                />
+                <button
+                  onClick={handleJoinExam}
+                  className="px-6 py-3 text-sm bg-neo-green hover:bg-neo-green-hover text-white neo-btn shrink-0"
+                >
+                  Join
+                </button>
               </div>
             </div>
 
             <button
-              onClick={() => setIsStudying(!isStudying)}
-              className={`w-full py-3.5 text-sm neo-btn text-white ${
-                isStudying ? 'bg-neo-green-hover' : 'bg-neo-green'
-              }`}
+              onClick={handleViewHistory}
+              className="w-full py-3 text-sm bg-blue-50 hover:bg-blue-100 border-2 border-slate-900 text-slate-900 neo-btn flex items-center justify-center gap-2"
             >
-              {isStudying ? '⏸ Pause Simulation' : '▶ Continue Learning'}
+              <Clock size={16} /> Exam History
             </button>
+            <p className="text-[10px] text-slate-500 font-bold mt-3 text-center">View scores, time taken, and past results</p>
           </div>
 
           <div className="absolute -top-6 -right-4 w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-rose-500 z-20 animate-bounce"><Target size={20} strokeWidth={3} /></div>

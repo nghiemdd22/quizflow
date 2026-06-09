@@ -4,10 +4,12 @@ import { Footer } from './components/Footer'
 import { AuthModal } from './components/AuthModal'
 import { LandingPage } from './pages/LandingPage'
 import { TeacherDashboard } from './pages/TeacherDashboard'
-import type { Course } from './types'
+import { ExamRoom } from './pages/ExamRoom'
+import type { Course, ExamRoomResponse } from './types'
 
 function App() {
-  const [currentView, setCurrentView] = useState<'landing' | 'teacher-dashboard'>('landing')
+  const [currentView, setCurrentView] = useState<'landing' | 'teacher-dashboard' | 'exam-room'>('landing')
+  const [examRoomData, setExamRoomData] = useState<ExamRoomResponse | null>(null)
   const [isHeaderVisible, setIsHeaderVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
 
@@ -60,31 +62,40 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-neo-bg text-slate-900 font-sans selection:bg-neo-green selection:text-white pt-28 flex flex-col transition-colors duration-300">
-      <Navbar
-        isHeaderVisible={isHeaderVisible}
-        isLoggedIn={isLoggedIn}
-        userEmail={userEmail}
-        role={userRole}
-        onLogout={handleLogout}
-        onOpenLogin={() => { setAuthMode('login'); setIsAuthOpen(true) }}
-        onOpenSignup={() => { setAuthMode('signup'); setIsAuthOpen(true) }}
-        currentView={currentView}
-        setCurrentView={setCurrentView}
-      />
+    <div className={`min-h-screen bg-neo-bg text-slate-900 font-sans selection:bg-neo-green selection:text-white ${currentView === 'exam-room' ? 'pt-0' : 'pt-28'} flex flex-col transition-colors duration-300`}>
+      {currentView !== 'exam-room' && (
+        <Navbar
+          isHeaderVisible={isHeaderVisible}
+          isLoggedIn={isLoggedIn}
+          userEmail={userEmail}
+          role={userRole}
+          onLogout={handleLogout}
+          onOpenLogin={() => { setAuthMode('login'); setIsAuthOpen(true) }}
+          onOpenSignup={() => { setAuthMode('signup'); setIsAuthOpen(true) }}
+          currentView={currentView}
+          setCurrentView={setCurrentView}
+        />
+      )}
 
       <main className="flex-1 w-full flex flex-col">
         {currentView === 'landing' ? (
           <LandingPage
+            isLoggedIn={isLoggedIn}
             onOpenSignup={() => { setAuthMode('signup'); setIsAuthOpen(true) }}
             onCourseRegister={handleCourseRegister}
+            onJoinExamSuccess={(data) => {
+              setExamRoomData(data);
+              setCurrentView('exam-room');
+            }}
           />
-        ) : (
+        ) : currentView === 'teacher-dashboard' ? (
           <TeacherDashboard />
+        ) : (
+          examRoomData && <ExamRoom data={examRoomData} onLeave={() => setCurrentView('landing')} />
         )}
       </main>
 
-      <Footer />
+      {currentView !== 'exam-room' && <Footer />}
 
       <AuthModal
         isOpen={isAuthOpen}

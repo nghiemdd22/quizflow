@@ -15,3 +15,24 @@ export interface Course {
   iconColor: string
   description: string
 }
+
+export type SessionStatus = 'DRAFT' | 'UPCOMING' | 'ACTIVE' | 'CLOSED'
+
+export interface StudentQuestionDTO {
+  id: number
+  type: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'FILL_IN_BLANK' | 'SINGLE' | 'MULTIPLE' | 'FILL'
+  content: string
+  metadata: any
+}
+
+export interface ExamRoomResponse {
+  sessionId: number
+  examTitle: string
+  status: SessionStatus
+  startTime: string
+  endTime: string
+  serverTime: string
+  durationMinutes: number
+  submissionId: number
+  questions: StudentQuestionDTO[]
+}

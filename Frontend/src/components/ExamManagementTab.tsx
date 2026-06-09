@@ -58,10 +58,6 @@ export const ExamManagementTab: React.FC<{ subjects: Subject[], banks: QuestionB
   const [endTime, setEndTime] = useState('')
   const [durationMinutes, setDurationMinutes] = useState(45)
 
-  useEffect(() => {
-    loadExams()
-  }, [])
-
   /**
    * Gọi API lấy toàn bộ danh sách đề thi của giáo viên hiện tại
    */
@@ -94,6 +90,10 @@ export const ExamManagementTab: React.FC<{ subjects: Subject[], banks: QuestionB
       console.error('Lỗi tải câu hỏi')
     }
   }
+
+  useEffect(() => {
+    loadExams()
+  }, [])
 
   useEffect(() => {
     if (isAddQuestionsModalOpen && selectedBankId) {
@@ -165,8 +165,8 @@ export const ExamManagementTab: React.FC<{ subjects: Subject[], banks: QuestionB
         method: 'POST',
         body: JSON.stringify({
           title: sessionTitle,
-          startTime: new Date(startTime).toISOString(),
-          endTime: new Date(endTime).toISOString(),
+          startTime: startTime.length === 16 ? startTime + ":00" : startTime,
+          endTime: endTime.length === 16 ? endTime + ":00" : endTime,
           durationMinutes
         })
       })
@@ -263,7 +263,9 @@ export const ExamManagementTab: React.FC<{ subjects: Subject[], banks: QuestionB
                   <span className="text-white font-black text-2xl mt-8 -ml-4">{session.durationMinutes}p</span>
                 </div>
                 <h3 className="text-2xl font-black mb-1 pr-16">{session.title}</h3>
-                <p className="text-sm font-bold text-slate-600 mb-4">{new Date(session.startTime).toLocaleString()} - {new Date(session.endTime).toLocaleString()}</p>
+                <p className="text-sm font-bold text-slate-600 mb-4">
+                  {new Date(session.startTime).toLocaleString()} - {new Date(session.endTime).toLocaleString()}
+                </p>
                 <div className="mt-4 inline-block bg-white border-2 border-slate-900 rounded-lg px-4 py-2">
                   <span className="text-xs font-black text-slate-500 block mb-1">MÃ PIN PHÒNG THI:</span>
                   <span className="text-4xl font-black tracking-widest text-neo-blue">{session.pinCode}</span>

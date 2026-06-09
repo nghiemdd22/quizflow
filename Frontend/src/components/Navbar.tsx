@@ -9,8 +9,8 @@ interface NavbarProps {
   onLogout: () => void
   onOpenLogin: () => void
   onOpenSignup: () => void
-  currentView: 'landing' | 'teacher-dashboard'
-  setCurrentView: (view: 'landing' | 'teacher-dashboard') => void
+  currentView: 'landing' | 'teacher-dashboard' | 'exam-room'
+  setCurrentView: (view: 'landing' | 'teacher-dashboard' | 'exam-room') => void
 }
 
 export const Navbar: React.FC<NavbarProps> = ({

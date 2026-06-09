@@ -19,6 +19,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
 
   React.useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAuthMode(initialMode)
     }
   }, [isOpen, initialMode])
