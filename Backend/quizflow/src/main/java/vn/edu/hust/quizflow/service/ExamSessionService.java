@@ -307,6 +307,10 @@ public class ExamSessionService {
                 .answers(cleanAnswers)
                 .build();
 
+        // Xóa ngay lập tức key trên Redis để giải phóng RAM, vì toàn bộ dữ liệu 
+        // đã được nhồi vào Message (RabbitMQ đảm bảo tính bền vững của Message)
+        redisService.clearStudentAnswers(sessionId, student.getId());
+
         // Ném vào RabbitMQ để giải phóng luồng, Worker sẽ bắt lấy và chấm điểm
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.SUBMIT_EXAM_EXCHANGE,
@@ -351,7 +355,10 @@ public class ExamSessionService {
                     .answers(cleanAnswers)
                     .build();
 
-            // 6. Đẩy Message vào hàng đợi (RabbitMQ). Background Worker sẽ tự động hứng lấy và tiến hành chấm điểm.
+            // 6. Xóa ngay lập tức key trên Redis
+            redisService.clearStudentAnswers(sessionId, submission.getStudent().getId());
+
+            // 7. Đẩy Message vào hàng đợi (RabbitMQ). Background Worker sẽ tự động hứng lấy và tiến hành chấm điểm.
             rabbitTemplate.convertAndSend(
                     RabbitMQConfig.SUBMIT_EXAM_EXCHANGE,
                     RabbitMQConfig.SUBMIT_EXAM_ROUTING_KEY,
