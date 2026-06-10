@@ -58,4 +58,22 @@ public class StudentSessionController {
         // Chuyển việc lấy dữ liệu trạng thái từ Redis cho tầng Service xử lý và trả về cho Frontend
         return ResponseEntity.ok(examSessionService.syncState(sessionId, principal.getName()));
     }
+
+    /**
+     * API để học sinh nộp bài thi.
+     * API này hoạt động hoàn toàn bất đồng bộ (Async). Backend không đợi chấm điểm xong mà trả về HTTP 202 (Accepted) ngay.
+     * BẢO MẬT ZERO-TRUST: Không nhận tham số chứa mảng đáp án từ Frontend để chống gian lận sửa Request.
+     * 
+     * @param sessionId ID của phiên thi.
+     * @param principal Thông tin tài khoản của học sinh.
+     * @return HTTP 202 Accepted.
+     */
+    @PreAuthorize("hasRole('STUDENT')")
+    @PostMapping("/{sessionId}/submit")
+    public ResponseEntity<Void> submitExam(
+            @PathVariable Long sessionId,
+            Principal principal) {
+        examSessionService.submitExam(sessionId, principal.getName());
+        return ResponseEntity.accepted().build(); // HTTP 202
+    }
 }

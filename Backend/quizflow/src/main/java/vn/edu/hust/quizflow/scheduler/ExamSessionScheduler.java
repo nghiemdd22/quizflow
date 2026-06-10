@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.edu.hust.quizflow.entity.ExamSession;
 import vn.edu.hust.quizflow.entity.SessionStatus;
 import vn.edu.hust.quizflow.repository.ExamSessionRepository;
+import vn.edu.hust.quizflow.service.ExamSessionService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.List;
 public class ExamSessionScheduler {
 
     private final ExamSessionRepository examSessionRepository;
+    private final ExamSessionService examSessionService;
 
     /**
      * Tự động quét và đóng các ca thi đã hết giờ.
@@ -45,7 +47,8 @@ public class ExamSessionScheduler {
             session.setStatus(SessionStatus.CLOSED);
             log.info("Đã tự động đóng Ca thi có ID: {} và Mã PIN: {}", session.getId(), session.getPinCode());
             
-            // TODO: Quan trọng! Quét Redis lấy đáp án của tất cả học sinh chưa nộp bài trong phòng này và đẩy vào RabbitMQ để ép thu bài tự động.
+            // Quan trọng! Quét Redis lấy đáp án của tất cả học sinh chưa nộp bài trong phòng này và đẩy vào RabbitMQ để ép thu bài tự động.
+            examSessionService.forceSubmitAllPendingSubmissions(session.getId());
         }
 
         // Lưu đồng loạt toàn bộ trạng thái các ca thi đã đóng vào cơ sở dữ liệu (Batch Update)
