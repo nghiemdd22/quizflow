@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface ExamSessionRepository extends JpaRepository<ExamSession, Long> {
     Optional<ExamSession> findByPinCode(String pinCode);
     List<ExamSession> findByExamId(Long examId);
+    List<ExamSession> findAllByStatusAndEndTimeBefore(vn.edu.hust.quizflow.entity.SessionStatus status, java.time.LocalDateTime endTime);
 }
