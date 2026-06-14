@@ -25,8 +25,9 @@ public class AsyncTransactionLog {
     @JoinColumn(name = "submission_id", nullable = false)
     private ExamSubmission submission;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "event_type", nullable = false)
-    private String eventType;
+    private TransactionEventType eventType;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
