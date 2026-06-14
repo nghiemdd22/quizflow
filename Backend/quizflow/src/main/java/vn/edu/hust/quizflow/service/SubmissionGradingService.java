@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.hust.quizflow.dto.message.SubmitExamMessage;
 import vn.edu.hust.quizflow.entity.*;
-import vn.edu.hust.quizflow.repository.AsyncTransactionLogRepository;
 import vn.edu.hust.quizflow.repository.ExamQuestionRepository;
 import vn.edu.hust.quizflow.repository.ExamSubmissionRepository;
 import vn.edu.hust.quizflow.repository.StudentAnswerRepository;
@@ -36,7 +35,7 @@ public class SubmissionGradingService {
 
     private final ExamSubmissionRepository examSubmissionRepository;
     private final StudentAnswerRepository studentAnswerRepository;
-    private final AsyncTransactionLogRepository asyncTransactionLogRepository;
+    private final AsyncTransactionLogService asyncTransactionLogService;
     private final ExamQuestionRepository examQuestionRepository;
     private final ScoringStrategyFactory scoringStrategyFactory;
 
@@ -71,7 +70,7 @@ public class SubmissionGradingService {
                     .eventType(TransactionEventType.EXAM_GRADING)
                     .status(TransactionLogStatus.PENDING)
                     .build();
-            logEntry = asyncTransactionLogRepository.save(logEntry);
+            logEntry = asyncTransactionLogService.saveLog(logEntry);
 
             // 3. Tiến hành lấy danh sách câu hỏi của đề thi để đối chiếu chấm điểm
             List<ExamQuestion> examQuestions = examQuestionRepository.findByExamIdOrderByOrderIndexAsc(submission.getExamSession().getExam().getId());
@@ -124,7 +123,7 @@ public class SubmissionGradingService {
 
             // 7. Cập nhật Log giao dịch thành SUCCESS
             logEntry.setStatus(TransactionLogStatus.SUCCESS);
-            asyncTransactionLogRepository.save(logEntry);
+            asyncTransactionLogService.saveLog(logEntry);
 
             log.info("Đã chấm điểm xong. SubmissionId={}, TotalScore={}", submissionId, totalScore);
 
@@ -138,7 +137,15 @@ public class SubmissionGradingService {
                 Map<String, Object> payload = new HashMap<>();
                 payload.put("error_message", e.getMessage());
                 logEntry.setPayload(payload);
-                asyncTransactionLogRepository.save(logEntry);
+                
+                // QUAN TRỌNG: Tại sao lại gọi Service thay vì Repository ở đây?
+                // Vì hàm gradeSubmission này đang nằm trong @Transactional.
+                // Khi lệnh "throw new RuntimeException" ở bên dưới được thực thi,
+                // toàn bộ Transaction của hàm này sẽ bị Rollback (hủy bỏ).
+                // Do đó, ta PHẢI gọi sang AsyncTransactionLogService (nơi có REQUIRES_NEW)
+                // để nó mở một Transaction hoàn toàn độc lập, lưu cái Log FAILED này xuống DB an toàn,
+                // rồi mới quay lại đây chịu trận Rollback.
+                asyncTransactionLogService.saveLog(logEntry);
             }
             
             // Ném ngược lại Exception để RabbitMQ biết mà đẩy vào DLQ
