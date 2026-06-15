@@ -67,10 +67,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               </>
             ) : (
               <>
-                <a href="#" className="text-neo-blue font-black border-b-2 border-neo-blue">Bảng điều khiển</a>
-                <a href="#" className="hover:text-neo-green transition-colors text-slate-500">Học sinh & Lớp</a>
-                <a href="#" className="hover:text-neo-purple transition-colors text-slate-500">Thống kê chung</a>
-                <a href="#" className="hover:text-neo-coral transition-colors text-slate-500">Trợ giúp</a>
+                <a href="#" className="text-neo-blue font-black border-b-2 border-neo-blue">Dashboard</a>
+                <a href="#" className="hover:text-neo-green transition-colors text-slate-500">Students & Classes</a>
+                <a href="#" className="hover:text-neo-purple transition-colors text-slate-500">Analytics</a>
+                <a href="#" className="hover:text-neo-coral transition-colors text-slate-500">Help</a>
               </>
             )}
           </div>
@@ -90,20 +90,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {isDropdownOpen && (
                     <div className="absolute right-0 mt-3 w-48 bg-white border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] rounded-xl flex flex-col p-2 z-50">
                       <div className="px-3 py-2 border-b-2 border-slate-100 mb-2">
-                        <p className="text-xs font-bold text-slate-500">Tài khoản</p>
+                        <p className="text-xs font-bold text-slate-500">Account</p>
                         <p className="text-sm font-black truncate">{userEmail}</p>
                       </div>
                       <button
                         onClick={() => setIsDropdownOpen(false)}
                         className="text-left px-3 py-2 text-sm font-bold hover:bg-slate-100 rounded-xl transition-colors"
                       >
-                        Hồ sơ cá nhân
+                        Profile
                       </button>
                       <button
                         onClick={() => setIsDropdownOpen(false)}
                         className="text-left px-3 py-2 text-sm font-bold hover:bg-slate-100 rounded-xl transition-colors"
                       >
-                        Cài đặt
+                        Settings
                       </button>
                       <button
                         onClick={() => {
@@ -112,7 +112,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         }}
                         className="text-left px-3 py-2 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors mt-1"
                       >
-                        Đăng xuất
+                        Logout
                       </button>
                     </div>
                   )}
@@ -124,13 +124,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={onOpenLogin}
                   className="px-6 py-3 bg-white hover:bg-slate-50 text-slate-900 text-base font-bold neo-btn"
                 >
-                  Đăng nhập
+                  Login
                 </button>
                 <button
                   onClick={onOpenSignup}
                   className="px-6 py-3 bg-neo-green hover:bg-neo-green-hover text-white text-base font-bold neo-btn"
                 >
-                  Đăng ký
+                  Sign Up
                 </button>
               </>
             )}

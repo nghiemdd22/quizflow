@@ -65,7 +65,7 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
   const handleJoinExam = async () => {
     const fullPin = pin.join('')
     if (fullPin.length < 6) {
-      setError("Vui lòng nhập đủ mã PIN 6 ký tự!")
+      setError("Please enter a 6-character PIN!")
       return
     }
     
@@ -80,7 +80,7 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
 
       if (!response.ok) {
         const errorData = await response.json()
-        setError(errorData.error || 'Lỗi khi tham gia ca thi')
+        setError(errorData.error || 'Error joining the exam session')
         setIsLoading(false)
         return
       }
@@ -89,7 +89,7 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
       onJoinSuccess(data)
     } catch (err) {
       console.error('Join exam error:', err)
-      setError('Đã có lỗi xảy ra khi kết nối tới máy chủ')
+      setError('An error occurred connecting to the server')
       setIsLoading(false)
     }
   }
@@ -104,7 +104,7 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
         onClick={onBack}
         className="mb-4 flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors self-start z-10"
       >
-        <ArrowLeft size={16} /> Quay lại trang chủ
+        <ArrowLeft size={16} /> Back to Home
       </button>
 
       <div className="flex flex-col lg:flex-row gap-6 items-stretch z-10">
@@ -112,9 +112,9 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
         {/* Left Column: Instructions & Info */}
         <div className="flex-1 bg-neo-purple text-white neo-card p-5 lg:p-7 flex flex-col justify-between relative overflow-hidden">
           <div className="relative z-10">
-            <h1 className="text-2xl font-black tracking-tight mb-2">Sẵn sàng vào thi?</h1>
+            <h1 className="text-2xl font-black tracking-tight mb-2">Ready to Start?</h1>
             <p className="text-purple-100 font-medium mb-6 text-xs max-w-[90%]">
-              Đảm bảo kết nối mạng ổn định và chuẩn bị sẵn sàng tâm lý nhé.
+              Ensure a stable internet connection and mentally prepare yourself.
             </p>
 
             <div className="space-y-4">
@@ -123,8 +123,8 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
                   <ShieldCheck size={16} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm">Bảo mật Zero-Trust</h3>
-                  <p className="text-purple-100 text-xs mt-0.5">Hệ thống chống gian lận đa lớp.</p>
+                  <h3 className="font-bold text-sm">Strict Anti-Cheat</h3>
+                  <p className="text-purple-100 text-xs mt-0.5">Multi-layer anti-cheat system.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -132,8 +132,8 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
                   <Clock size={16} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm">Đồng bộ tự động</h3>
-                  <p className="text-purple-100 text-xs mt-0.5">Tự động lưu đáp án khi mất mạng.</p>
+                  <h3 className="font-bold text-sm">Auto-Sync</h3>
+                  <p className="text-purple-100 text-xs mt-0.5">Automatically saves answers if disconnected.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -141,8 +141,8 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
                   <Zap size={16} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm">Chấm điểm siêu tốc</h3>
-                  <p className="text-purple-100 text-xs mt-0.5">Biết điểm ngay nhờ RabbitMQ.</p>
+                  <h3 className="font-bold text-sm">Instant Results</h3>
+                  <p className="text-purple-100 text-xs mt-0.5">Get your score the moment you finish.</p>
                 </div>
               </div>
             </div>
@@ -150,12 +150,12 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
             {/* Tính năng phụ: Nội quy phòng thi */}
             <div className="mt-8 pt-6 border-t border-white/20">
               <div className="flex items-center gap-2 text-sm font-bold text-neo-yellow mb-2">
-                <Info size={16} /> Lưu ý quan trọng
+                <Info size={16} /> Important Notes
               </div>
               <ul className="text-xs text-purple-100 list-disc list-inside space-y-1">
-                <li>Tuyệt đối không sử dụng phím F5 khi đang thi.</li>
-                <li>Không chuyển sang tab khác quá 3 lần.</li>
-                <li>Kiểm tra kỹ mã PIN do giáo viên cung cấp.</li>
+                <li>Do NOT use F5 while taking the exam.</li>
+                <li>Do not switch tabs more than 3 times.</li>
+                <li>Double-check the PIN provided by your teacher.</li>
               </ul>
             </div>
           </div>
@@ -172,7 +172,7 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
           <button 
             onClick={() => setShowQR(!showQR)}
             className="absolute top-6 right-6 p-2 rounded-xl border-2 border-slate-900 bg-slate-50 hover:bg-neo-blue hover:text-white transition-colors shadow-[2px_2px_0px_#0f172a] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] group"
-            title="Quét mã QR"
+            title="Scan QR Code"
           >
             <QrCode size={20} className="text-slate-700 group-hover:text-white transition-colors" />
           </button>
@@ -181,8 +181,8 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
             <div className="w-12 h-12 rounded-xl bg-rose-100 flex items-center justify-center border-2 border-slate-900 text-rose-500 shadow-[3px_3px_0px_#0f172a] mb-4">
               <Target size={24} strokeWidth={2.5} />
             </div>
-            <h2 className="text-xl font-black text-slate-900 mb-1">Nhập mã PIN</h2>
-            <p className="text-xs font-bold text-slate-500">Mã PIN gồm 6 ký tự do giáo viên cung cấp</p>
+            <h2 className="text-xl font-black text-slate-900 mb-1">Enter PIN</h2>
+            <p className="text-xs font-bold text-slate-500">6-character PIN provided by your teacher</p>
           </div>
 
           {error && (
@@ -194,7 +194,7 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
           {showQR && (
             <div className="mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl flex items-center gap-3 text-sm font-bold text-blue-700">
               <QrCode size={24} className="text-blue-500" />
-              <span>Chức năng quét mã QR bằng Camera đang được phát triển...</span>
+              <span>QR code scanning via camera is under development...</span>
             </div>
           )}
 
@@ -222,18 +222,18 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
               {isLoading ? (
                 <div className="w-5 h-5 border-[3px] border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                <>Vào phòng ngay <ArrowLeft className="rotate-180 group-hover:translate-x-1 transition-transform" size={16}/></>
+                <>Join Now <ArrowLeft className="rotate-180 group-hover:translate-x-1 transition-transform" size={16}/></>
               )}
             </button>
             <p className="text-center text-[10px] font-bold text-slate-400 mt-[-5px]">
-              * Gợi ý: Bạn có thể nhấn <kbd className="px-1.5 py-0.5 border border-slate-300 rounded bg-slate-100 text-slate-500">Enter</kbd> để vào nhanh
+              * Tip: You can press <kbd className="px-1.5 py-0.5 border border-slate-300 rounded bg-slate-100 text-slate-500">Enter</kbd> to join quickly
             </p>
           </div>
           
           {/* Lịch sử tham gia gần đây (Trang trí) */}
           <div className="mt-6 pt-4 border-t-2 border-dashed border-slate-200">
             <div className="flex items-center gap-2 text-sm font-bold text-slate-500 mb-4">
-              <History size={16} /> Nhập gần đây
+              <History size={16} /> Recent PINs
             </div>
             <div className="flex gap-2">
               <button onClick={() => setPin(['P','H','Y','1','0','1'])} className="px-3 py-1.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-xs font-black text-slate-600 hover:border-neo-blue hover:text-neo-blue transition-colors">
