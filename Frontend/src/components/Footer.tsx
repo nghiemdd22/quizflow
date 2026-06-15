@@ -7,11 +7,11 @@ export const Footer: React.FC = () => {
       <div className="w-full max-w-7xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8">
         {/* Col 1: Brand Info */}
         <div className="sm:col-span-2 lg:col-span-2 flex flex-col items-start gap-4">
-          <a href="#" className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-neo-coral flex items-center justify-center border-2 border-slate-900 shadow-[1px_1px_0px_#0f172a]">
-              <BookOpen className="text-white w-4 h-4" strokeWidth={3} />
+          <a href="#" className="flex items-center gap-3 transition-opacity hover:opacity-80">
+            <div className="w-8 h-8 rounded-lg bg-[#ffc4b8] flex items-center justify-center">
+              <BookOpen className="text-[#1a3b5c] w-4 h-4" strokeWidth={2} />
             </div>
-            <span className="text-xl font-black">Quizflow</span>
+            <span className="text-xl font-bold text-[#1a3b5c] tracking-tight">LearnHub</span>
           </a>
           <p className="text-xs text-slate-500 leading-relaxed font-medium max-w-sm">
             Empowering millions of learners worldwide with quality education accessible to everyone.

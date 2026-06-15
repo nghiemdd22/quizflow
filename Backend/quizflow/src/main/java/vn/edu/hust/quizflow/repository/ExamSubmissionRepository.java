@@ -8,5 +8,7 @@ import java.util.Optional;
 
 public interface ExamSubmissionRepository extends JpaRepository<ExamSubmission, Long> {
     Optional<ExamSubmission> findByExamSessionIdAndStudentId(Long sessionId, Long studentId);
-    List<ExamSubmission> findByExamSessionIdAndStatus(Long sessionId, vn.edu.hust.quizflow.entity.SubmissionStatus status);
+
+    List<ExamSubmission> findByExamSessionIdAndStatus(Long sessionId,
+            vn.edu.hust.quizflow.entity.SubmissionStatus status);
 }

@@ -44,7 +44,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
           method: 'POST',
           body: JSON.stringify({ pinCode: pinCode.trim() })
         });
-        
+
         if (!response.ok) {
           const errorData = await response.json();
           alert(errorData.error || 'Lỗi khi tham gia ca thi');
@@ -71,8 +71,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
 
   const filteredCourses = COURSES_DATA.filter(course => {
     const matchesTab = activeTab === 'all' || course.category === activeTab
-    const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          course.author.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      course.author.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesTab && matchesSearch
   })
 
@@ -145,11 +145,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
             <div className="mb-6">
               <label className="block text-xs font-bold text-slate-700 mb-2 text-left">Quick Join</label>
               <div className="flex gap-2">
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={pinCode}
                   onChange={(e) => setPinCode(e.target.value)}
-                  placeholder="Enter PIN code" 
+                  placeholder="Enter PIN code"
                   onFocus={handleInputFocus}
                   className="w-full px-4 py-3 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-none font-bold"
                 />
@@ -197,11 +197,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 text-xs font-bold rounded-lg transition-all border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_#0f172a] cursor-pointer ${
-                    activeTab === tab
+                  className={`px-4 py-2 text-xs font-bold rounded-lg transition-all border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_#0f172a] cursor-pointer ${activeTab === tab
                       ? 'bg-neo-blue text-white'
                       : 'bg-white text-slate-800 hover:bg-slate-50'
-                  }`}
+                    }`}
                 >
                   {tab === 'all' && 'All'}
                   {tab === 'web' && 'Web Dev'}

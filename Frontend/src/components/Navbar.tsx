@@ -41,12 +41,19 @@ export const Navbar: React.FC<NavbarProps> = ({
     <div className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${isHeaderVisible ? 'translate-y-0' : '-translate-y-[calc(100%+20px)]'}`}>
       <div className="w-full max-w-7xl mx-auto px-4 pt-6">
         <nav className="bg-white neo-card neo-header-hover px-6 py-4 flex items-center justify-between">
-          {/* Logo Quizflow */}
-          <a href="#" onClick={(e) => { e.preventDefault(); setCurrentView('landing'); }} className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-full bg-neo-coral flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] group-hover:translate-x-[-1px] group-hover:translate-y-[-1px] group-hover:shadow-[3px_3px_0px_#0f172a] transition-all">
-              <BookOpen className="text-white w-5 h-5" strokeWidth={3} />
+          {/* Logo LearnHub */}
+          <a href="#" onClick={(e) => { 
+            e.preventDefault(); 
+            if (role === 'TEACHER') {
+              setCurrentView('teacher-dashboard');
+            } else {
+              setCurrentView('landing'); 
+            }
+          }} className="flex items-center gap-3 group transition-opacity hover:opacity-80">
+            <div className="w-10 h-10 rounded-[10px] bg-[#ffc4b8] flex items-center justify-center">
+              <BookOpen className="text-[#1a3b5c] w-5 h-5" strokeWidth={2} />
             </div>
-            <span className="text-2xl font-extrabold tracking-tight">Quizflow</span>
+            <span className="text-2xl font-bold text-[#1a3b5c] tracking-tight">LearnHub</span>
           </a>
 
           {/* Navigation Links (Desktop) */}
@@ -72,22 +79,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-4">
             {isLoggedIn ? (
               <div className="flex items-center gap-3">
-                {role === 'TEACHER' && currentView === 'landing' && (
-                  <button
-                    onClick={() => setCurrentView('teacher-dashboard')}
-                    className="px-4 py-2 text-xs neo-btn bg-blue-100 hover:bg-blue-200 text-blue-800"
-                  >
-                    Teacher Dashboard
-                  </button>
-                )}
-                {role === 'TEACHER' && currentView === 'teacher-dashboard' && (
-                  <button
-                    onClick={() => setCurrentView('landing')}
-                    className="px-4 py-2 text-xs neo-btn bg-slate-100 hover:bg-slate-200 text-slate-800"
-                  >
-                    Home
-                  </button>
-                )}
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -95,26 +86,26 @@ export const Navbar: React.FC<NavbarProps> = ({
                   >
                     <User className="w-5 h-5 text-slate-900" strokeWidth={3} />
                   </button>
-                  
+
                   {isDropdownOpen && (
                     <div className="absolute right-0 mt-3 w-48 bg-white border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] rounded-xl flex flex-col p-2 z-50">
                       <div className="px-3 py-2 border-b-2 border-slate-100 mb-2">
                         <p className="text-xs font-bold text-slate-500">Tài khoản</p>
                         <p className="text-sm font-black truncate">{userEmail}</p>
                       </div>
-                      <button 
+                      <button
                         onClick={() => setIsDropdownOpen(false)}
                         className="text-left px-3 py-2 text-sm font-bold hover:bg-slate-100 rounded-lg transition-colors"
                       >
                         Hồ sơ cá nhân
                       </button>
-                      <button 
+                      <button
                         onClick={() => setIsDropdownOpen(false)}
                         className="text-left px-3 py-2 text-sm font-bold hover:bg-slate-100 rounded-lg transition-colors"
                       >
                         Cài đặt
                       </button>
-                      <button 
+                      <button
                         onClick={() => {
                           setIsDropdownOpen(false)
                           onLogout()

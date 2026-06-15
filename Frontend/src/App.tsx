@@ -17,7 +17,7 @@ function App() {
   // Auth States
   const [isAuthOpen, setIsAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
-  
+
   const { isLoggedIn, userEmail, userRole, setAuth, clearAuth } = useAuthStore()
 
   useEffect(() => {
@@ -66,7 +66,7 @@ function App() {
     clearAuth()
     setCurrentView('landing')
     try {
-      await fetch('/api/v1/auth/logout', { 
+      await fetch('/api/v1/auth/logout', {
         method: 'POST'
       })
     } catch (e) {
@@ -79,8 +79,22 @@ function App() {
     alert(`Đăng ký học thử khóa "${course.title}" thành công!`)
   }
 
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen bg-neo-bg flex flex-col items-center justify-center gap-6">
+        <div className="flex items-center gap-4 animate-bounce">
+          <div className="w-16 h-16 rounded-[14px] bg-[#ffc4b8] flex items-center justify-center">
+            <BookOpen className="text-[#1a3b5c] w-8 h-8" strokeWidth={2} />
+          </div>
+          <span className="text-5xl font-bold text-[#1a3b5c] tracking-tight">LearnHub</span>
+        </div>
+        <div className="text-sm font-bold text-slate-500 tracking-widest uppercase animate-pulse">Đang kết nối...</div>
+      </div>
+    )
+  }
+
   return (
-    <div className={`min-h-screen bg-neo-bg text-slate-900 font-sans selection:bg-neo-green selection:text-white ${currentView === 'exam-room' ? 'pt-0' : 'pt-28'} flex flex-col transition-colors duration-300`}>
+    <div className={`min-h-screen bg-neo-bg text-slate-900 font-sans selection:bg-neo-purple selection:text-white ${currentView === 'exam-room' ? 'pt-0' : 'pt-28'} flex flex-col transition-colors duration-300`}>
       {currentView !== 'exam-room' && (
         <Navbar
           isHeaderVisible={isHeaderVisible}
@@ -122,6 +136,23 @@ function App() {
         initialMode={authMode}
       />
     </div>
+  )
+}
+
+export default App
+examRoomData && <ExamRoom data={examRoomData} onLeave={() => setCurrentView('landing')} />
+        )}
+      </main >
+
+  { currentView !== 'exam-room' && <Footer />}
+
+<AuthModal
+  isOpen={isAuthOpen}
+  onClose={() => setIsAuthOpen(false)}
+  onLoginSuccess={handleLoginSuccess}
+  initialMode={authMode}
+/>
+    </div >
   )
 }
 

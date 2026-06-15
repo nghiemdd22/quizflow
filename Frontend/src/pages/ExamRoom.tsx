@@ -76,7 +76,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
     // Thời gian kết thúc và hiện tại do Server cấp
     const serverEndTime = new Date(data.endTime).getTime()
     const serverTimeMs = new Date(data.serverTime).getTime()
-    
+
     // Tính toán số mili-giây còn lại thực tế ngay lúc nhận được dữ liệu
     const initialRemainingMs = serverEndTime - serverTimeMs
 
@@ -86,7 +86,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
     const interval = setInterval(() => {
       // Số mili-giây đã trôi qua kể từ lúc tải trang
       const timeElapsed = performance.now() - startPerformance
-      
+
       // Số mili-giây còn lại
       const remainingMs = initialRemainingMs - timeElapsed
 
@@ -152,14 +152,14 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
     if (!metadata) return []
     let meta = metadata
     if (typeof meta === 'string') {
-      try { meta = JSON.parse(meta) } catch (e) {}
+      try { meta = JSON.parse(meta) } catch (e) { }
     }
-    
+
     let opts = meta.options || meta.Options || meta.choices || meta.Choices || meta.answers
     if (typeof opts === 'string') {
-      try { opts = JSON.parse(opts) } catch (e) {}
+      try { opts = JSON.parse(opts) } catch (e) { }
     }
-    
+
     if (Array.isArray(opts)) {
       return opts.map((o: any, idx: number) => {
         if (typeof o === 'string') return { id: String(idx), content: o }
@@ -172,7 +172,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
         return { id: String(idx), content: String(o) }
       })
     }
-    
+
     if (typeof opts === 'object' && opts !== null) {
       return Object.keys(opts).map(k => {
         const val = opts[k]
@@ -182,7 +182,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
         }
       })
     }
-    
+
     return []
   }
 
@@ -246,8 +246,8 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
                 <div className="space-y-4">
                   <p className="text-xs font-bold text-amber-600 mb-2">Chọn nhiều đáp án</p>
                   {currentOptions.map((opt: any) => {
-                    const ansArray = Array.isArray(answers[currentQ.id]) 
-                      ? answers[currentQ.id] 
+                    const ansArray = Array.isArray(answers[currentQ.id])
+                      ? answers[currentQ.id]
                       : (answers[currentQ.id] !== undefined && answers[currentQ.id] !== null ? [answers[currentQ.id]] : []);
                     return (
                       <label key={opt.id} className={`block p-4 rounded-xl border-2 border-slate-900 cursor-pointer transition-all ${ansArray.includes(opt.id) ? 'bg-[#fef3c7] shadow-[3px_3px_0px_#0f172a] -translate-y-[2px] -translate-x-[2px]' : 'bg-white shadow-[1px_1px_0px_#0f172a] hover:bg-slate-50'}`}>
@@ -325,10 +325,10 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
                   key={q.id}
                   onClick={() => setCurrentQIndex(idx)}
                   className={`aspect-square rounded-lg border-2 border-slate-900 font-black text-sm flex items-center justify-center transition-all ${isCurrent
-                      ? 'bg-slate-900 text-white shadow-none translate-x-[2px] translate-y-[2px]'
-                      : isAnswered
-                        ? 'bg-[#d1fae5] text-emerald-800 shadow-[2px_2px_0px_#0f172a] hover:bg-[#a7f3d0]'
-                        : 'bg-white text-slate-600 shadow-[2px_2px_0px_#0f172a] hover:bg-slate-50'
+                    ? 'bg-slate-900 text-white shadow-none translate-x-[2px] translate-y-[2px]'
+                    : isAnswered
+                      ? 'bg-[#d1fae5] text-emerald-800 shadow-[2px_2px_0px_#0f172a] hover:bg-[#a7f3d0]'
+                      : 'bg-white text-slate-600 shadow-[2px_2px_0px_#0f172a] hover:bg-slate-50'
                     }`}
                 >
                   {idx + 1}

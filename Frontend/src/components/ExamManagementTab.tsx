@@ -184,7 +184,7 @@ export const ExamManagementTab: React.FC<{ subjects: Subject[], banks: QuestionB
   }
 
   const toggleQuestionSelection = (id: number) => {
-    setSelectedQuestionIds(prev => 
+    setSelectedQuestionIds(prev =>
       prev.includes(id) ? prev.filter(qId => qId !== id) : [...prev, id]
     )
   }
@@ -316,12 +316,12 @@ export const ExamManagementTab: React.FC<{ subjects: Subject[], banks: QuestionB
                 {banks.map(bank => <option key={bank.id} value={bank.id}>{bank.title}</option>)}
               </select>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto border-2 border-slate-900 rounded-lg bg-white p-4 space-y-2">
               {bankQuestions.map(q => (
                 <label key={q.id} className="flex items-start gap-3 p-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={selectedQuestionIds.includes(q.id)}
                     onChange={() => toggleQuestionSelection(q.id)}
                     className="mt-1 w-4 h-4 accent-neo-blue"
