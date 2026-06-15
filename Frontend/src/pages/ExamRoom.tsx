@@ -213,7 +213,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
         {/* Question Area */}
         <div className="flex-1 bg-white neo-card flex flex-col">
           <div className="p-6 md:p-10 flex-1">
-            <div className="inline-block px-3 py-1 bg-blue-100 text-blue-800 border-2 border-slate-900 rounded-lg text-xs font-black shadow-[2px_2px_0px_#0f172a] mb-6">
+            <div className="inline-block px-3 py-1 bg-blue-100 text-blue-800 border-2 border-slate-900 rounded-xl text-xs font-black shadow-[2px_2px_0px_#0f172a] mb-6">
               Câu {currentQIndex + 1} / {data.questions.length}
             </div>
 
@@ -324,7 +324,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
                 <button
                   key={q.id}
                   onClick={() => setCurrentQIndex(idx)}
-                  className={`aspect-square rounded-lg border-2 border-slate-900 font-black text-sm flex items-center justify-center transition-all ${isCurrent
+                  className={`aspect-square rounded-xl border-2 border-slate-900 font-black text-sm flex items-center justify-center transition-all ${isCurrent
                     ? 'bg-slate-900 text-white shadow-none translate-x-[2px] translate-y-[2px]'
                     : isAnswered
                       ? 'bg-[#d1fae5] text-emerald-800 shadow-[2px_2px_0px_#0f172a] hover:bg-[#a7f3d0]'

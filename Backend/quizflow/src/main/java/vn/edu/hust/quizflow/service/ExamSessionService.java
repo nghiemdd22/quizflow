@@ -13,6 +13,7 @@ import vn.edu.hust.quizflow.entity.SubmissionStatus;
 import vn.edu.hust.quizflow.entity.User;
 import vn.edu.hust.quizflow.entity.ExamSubmission;
 import vn.edu.hust.quizflow.entity.ExamQuestion;
+import vn.edu.hust.quizflow.dto.ExamHistoryResponse;
 import vn.edu.hust.quizflow.dto.ExamRoomResponse;
 import vn.edu.hust.quizflow.dto.StudentQuestionDTO;
 import vn.edu.hust.quizflow.repository.ExamRepository;
@@ -364,5 +365,33 @@ public class ExamSessionService {
                     RabbitMQConfig.SUBMIT_EXAM_ROUTING_KEY,
                     message);
         }
+    }
+
+    /**
+     * Lấy lịch sử bài thi của học sinh.
+     *
+     * @param username Tên đăng nhập của học sinh
+     * @return Danh sách lịch sử bài thi
+     */
+    public List<ExamHistoryResponse> getStudentHistory(String username) {
+        User student = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy học sinh"));
+
+        List<ExamSubmission> submissions = examSubmissionRepository.findByStudentIdOrderByStartedAtDesc(student.getId());
+
+        return submissions.stream().map(submission -> {
+            ExamSession session = submission.getExamSession();
+            Exam exam = session.getExam();
+            
+            return ExamHistoryResponse.builder()
+                    .id(submission.getId())
+                    .examTitle(exam.getTitle())
+                    .subjectName(exam.getSubject().getName())
+                    .score(submission.getTotalScore())
+                    .startedAt(submission.getStartedAt())
+                    .submittedAt(submission.getSubmittedAt())
+                    .status(submission.getStatus())
+                    .build();
+        }).collect(Collectors.toList());
     }
 }

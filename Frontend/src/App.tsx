@@ -1,18 +1,22 @@
 import { useState, useEffect } from 'react'
+import { BookOpen } from 'lucide-react'
 import { Navbar } from './components/Navbar'
 import { Footer } from './components/Footer'
 import { AuthModal } from './components/AuthModal'
 import { LandingPage } from './pages/LandingPage'
 import { TeacherDashboard } from './pages/TeacherDashboard'
 import { ExamRoom } from './pages/ExamRoom'
+import { JoinExamPage } from './pages/JoinExamPage'
+import { ExamHistoryPage } from './pages/ExamHistoryPage'
 import type { Course, ExamRoomResponse } from './types'
 import { useAuthStore } from './store/authStore'
 
 function App() {
-  const [currentView, setCurrentView] = useState<'landing' | 'teacher-dashboard' | 'exam-room'>('landing')
+  const [currentView, setCurrentView] = useState<'landing' | 'teacher-dashboard' | 'exam-room' | 'join-exam' | 'exam-history'>('landing')
   const [examRoomData, setExamRoomData] = useState<ExamRoomResponse | null>(null)
   const [isHeaderVisible, setIsHeaderVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
+  const [isInitializing, setIsInitializing] = useState(true)
 
   // Auth States
   const [isAuthOpen, setIsAuthOpen] = useState(false)
@@ -28,18 +32,21 @@ function App() {
           // Sử dụng đường dẫn tương đối để đi qua Vite Proxy, tự động tránh lỗi CORS
           const res = await fetch('/api/v1/auth/refresh', {
             method: 'POST',
-            // Không cần include credentials nếu dùng chung domain/proxy, nhưng để chắc chắn cứ giữ cũng được. Proxy sẽ chuyển tiếp cookie.
             credentials: 'same-origin',
             headers: { 'Content-Type': 'application/json' }
           })
           if (res.ok) {
             const data = await res.json()
             setAuth(data.token, data.username, data.role, data.id)
+            if (data.role === 'TEACHER') {
+              setCurrentView('teacher-dashboard')
+            }
           }
         } catch (e) {
           // Bỏ qua lỗi (chưa đăng nhập hoặc cookie hết hạn)
         }
       }
+      setIsInitializing(false)
     }
     initAuth()
   }, [])
@@ -60,6 +67,11 @@ function App() {
 
   const handleLoginSuccess = (token: string, username: string, role: string, id: number) => {
     setAuth(token, username, role, id)
+    if (role === 'TEACHER') {
+      setCurrentView('teacher-dashboard')
+    } else {
+      setCurrentView('landing')
+    }
   }
 
   const handleLogout = async () => {
@@ -115,13 +127,21 @@ function App() {
             isLoggedIn={isLoggedIn}
             onOpenSignup={() => { setAuthMode('signup'); setIsAuthOpen(true) }}
             onCourseRegister={handleCourseRegister}
-            onJoinExamSuccess={(data) => {
-              setExamRoomData(data);
-              setCurrentView('exam-room');
-            }}
+            onNavigateToJoin={() => setCurrentView('join-exam')}
+            onNavigateToHistory={() => setCurrentView('exam-history')}
           />
         ) : currentView === 'teacher-dashboard' ? (
           <TeacherDashboard />
+        ) : currentView === 'join-exam' ? (
+          <JoinExamPage 
+            onBack={() => setCurrentView('landing')} 
+            onJoinSuccess={(data) => {
+              setExamRoomData(data)
+              setCurrentView('exam-room')
+            }} 
+          />
+        ) : currentView === 'exam-history' ? (
+          <ExamHistoryPage onBack={() => setCurrentView('landing')} />
         ) : (
           examRoomData && <ExamRoom data={examRoomData} onLeave={() => setCurrentView('landing')} />
         )}
@@ -136,23 +156,6 @@ function App() {
         initialMode={authMode}
       />
     </div>
-  )
-}
-
-export default App
-examRoomData && <ExamRoom data={examRoomData} onLeave={() => setCurrentView('landing')} />
-        )}
-      </main >
-
-  { currentView !== 'exam-room' && <Footer />}
-
-<AuthModal
-  isOpen={isAuthOpen}
-  onClose={() => setIsAuthOpen(false)}
-  onLoginSuccess={handleLoginSuccess}
-  initialMode={authMode}
-/>
-    </div >
   )
 }
 

@@ -8,7 +8,7 @@ export const Footer: React.FC = () => {
         {/* Col 1: Brand Info */}
         <div className="sm:col-span-2 lg:col-span-2 flex flex-col items-start gap-4">
           <a href="#" className="flex items-center gap-3 transition-opacity hover:opacity-80">
-            <div className="w-8 h-8 rounded-lg bg-[#ffc4b8] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#ffc4b8] flex items-center justify-center">
               <BookOpen className="text-[#1a3b5c] w-4 h-4" strokeWidth={2} />
             </div>
             <span className="text-xl font-bold text-[#1a3b5c] tracking-tight">LearnHub</span>

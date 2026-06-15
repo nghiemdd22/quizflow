@@ -266,7 +266,7 @@ export const ExamManagementTab: React.FC<{ subjects: Subject[], banks: QuestionB
                 <p className="text-sm font-bold text-slate-600 mb-4">
                   {new Date(session.startTime).toLocaleString()} - {new Date(session.endTime).toLocaleString()}
                 </p>
-                <div className="mt-4 inline-block bg-white border-2 border-slate-900 rounded-lg px-4 py-2">
+                <div className="mt-4 inline-block bg-white border-2 border-slate-900 rounded-xl px-4 py-2">
                   <span className="text-xs font-black text-slate-500 block mb-1">MÃ PIN PHÒNG THI:</span>
                   <span className="text-4xl font-black tracking-widest text-neo-blue">{session.pinCode}</span>
                 </div>
@@ -290,13 +290,13 @@ export const ExamManagementTab: React.FC<{ subjects: Subject[], banks: QuestionB
             <form onSubmit={handleCreateExam} className="flex flex-col gap-4">
               <div>
                 <label className="block text-xs font-black text-slate-800 mb-1">MÔN HỌC</label>
-                <select value={newExamSubject} onChange={e => setNewExamSubject(Number(e.target.value))} className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] font-bold">
+                <select value={newExamSubject} onChange={e => setNewExamSubject(Number(e.target.value))} className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] font-bold">
                   {subjects.map(sub => <option key={sub.id} value={sub.id}>{sub.name}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-xs font-black text-slate-800 mb-1">TIÊU ĐỀ</label>
-                <input required value={newExamTitle} onChange={e => setNewExamTitle(e.target.value)} className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] font-bold" />
+                <input required value={newExamTitle} onChange={e => setNewExamTitle(e.target.value)} className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] font-bold" />
               </div>
               <button type="submit" className="w-full mt-2 py-3 bg-neo-green hover:bg-neo-green-hover text-white neo-btn">Tạo mới</button>
             </form>
@@ -312,12 +312,12 @@ export const ExamManagementTab: React.FC<{ subjects: Subject[], banks: QuestionB
             <h3 className="text-xl font-black mb-4">Thêm câu hỏi vào đề thi</h3>
             <div className="mb-4">
               <label className="block text-xs font-black text-slate-800 mb-1">CHỌN NGÂN HÀNG NGUỒN</label>
-              <select value={selectedBankId} onChange={e => setSelectedBankId(Number(e.target.value))} className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] font-bold">
+              <select value={selectedBankId} onChange={e => setSelectedBankId(Number(e.target.value))} className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] font-bold">
                 {banks.map(bank => <option key={bank.id} value={bank.id}>{bank.title}</option>)}
               </select>
             </div>
 
-            <div className="flex-1 overflow-y-auto border-2 border-slate-900 rounded-lg bg-white p-4 space-y-2">
+            <div className="flex-1 overflow-y-auto border-2 border-slate-900 rounded-xl bg-white p-4 space-y-2">
               {bankQuestions.map(q => (
                 <label key={q.id} className="flex items-start gap-3 p-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0">
                   <input
@@ -351,21 +351,21 @@ export const ExamManagementTab: React.FC<{ subjects: Subject[], banks: QuestionB
             <form onSubmit={handleCreateSession} className="flex flex-col gap-4">
               <div>
                 <label className="block text-xs font-black text-slate-800 mb-1">TÊN CA THI</label>
-                <input required value={sessionTitle} onChange={e => setSessionTitle(e.target.value)} placeholder="Ví dụ: Thi cuối kỳ K66" className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] font-bold" />
+                <input required value={sessionTitle} onChange={e => setSessionTitle(e.target.value)} placeholder="Ví dụ: Thi cuối kỳ K66" className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] font-bold" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-black text-slate-800 mb-1">BẮT ĐẦU</label>
-                  <input required type="datetime-local" value={startTime} onChange={e => setStartTime(e.target.value)} className="w-full px-2 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] font-bold" />
+                  <input required type="datetime-local" value={startTime} onChange={e => setStartTime(e.target.value)} className="w-full px-2 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] font-bold" />
                 </div>
                 <div>
                   <label className="block text-xs font-black text-slate-800 mb-1">KẾT THÚC</label>
-                  <input required type="datetime-local" value={endTime} onChange={e => setEndTime(e.target.value)} className="w-full px-2 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] font-bold" />
+                  <input required type="datetime-local" value={endTime} onChange={e => setEndTime(e.target.value)} className="w-full px-2 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] font-bold" />
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-black text-slate-800 mb-1">THỜI GIAN LÀM BÀI (PHÚT)</label>
-                <input required type="number" min={1} value={durationMinutes} onChange={e => setDurationMinutes(Number(e.target.value))} className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] font-bold" />
+                <input required type="number" min={1} value={durationMinutes} onChange={e => setDurationMinutes(Number(e.target.value))} className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] font-bold" />
               </div>
               <button type="submit" className="w-full mt-2 py-3 bg-neo-purple hover:bg-purple-600 text-white neo-btn">Khởi tạo Ca thi (Sinh PIN)</button>
             </form>

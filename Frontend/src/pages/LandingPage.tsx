@@ -2,22 +2,21 @@ import React, { useState } from 'react'
 import { COURSES_DATA } from '../data/mockData'
 import type { Course } from '../types'
 import { CourseModal } from '../components/CourseModal'
-import { apiFetch } from '../utils/api'
 import { Target, Star, Droplets, Library, Clock, GraduationCap, CheckCircle, Users, Search, BookOpen, User } from 'lucide-react'
 
 interface LandingPageProps {
   isLoggedIn?: boolean
   onOpenSignup: () => void
   onCourseRegister: (course: Course) => void
-  onJoinExamSuccess: (data: any) => void
+  onNavigateToJoin: () => void
+  onNavigateToHistory: () => void
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSignup, onCourseRegister, onJoinExamSuccess }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSignup, onCourseRegister, onNavigateToJoin, onNavigateToHistory }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'web' | 'design' | 'data' | 'mobile'>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
   const [showLoginToast, setShowLoginToast] = useState(false)
-  const [pinCode, setPinCode] = useState('')
 
   const handleRequireLogin = () => {
     if (!isLoggedIn) {
@@ -26,47 +25,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
     }
   }
 
-  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    if (!isLoggedIn) {
-      e.target.blur()
-      handleRequireLogin()
-    }
-  }
-
-  const handleJoinExam = async () => {
+  const handleNavigateToJoin = () => {
     if (!isLoggedIn) {
       handleRequireLogin()
       return
     }
-    if (pinCode.trim()) {
-      try {
-        const response = await apiFetch('/api/v1/student/sessions/join', {
-          method: 'POST',
-          body: JSON.stringify({ pinCode: pinCode.trim() })
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          alert(errorData.error || 'Lỗi khi tham gia ca thi');
-          return;
-        }
-
-        const data = await response.json();
-        onJoinExamSuccess(data);
-      } catch (error) {
-        alert('Đã có lỗi xảy ra khi kết nối tới máy chủ');
-      }
-    } else {
-      alert("Vui lòng nhập mã PIN!")
-    }
+    onNavigateToJoin()
   }
 
-  const handleViewHistory = () => {
+  const handleNavigateToHistory = () => {
     if (!isLoggedIn) {
       handleRequireLogin()
       return
     }
-    alert("Đang chuyển đến trang Lịch sử thi...")
+    onNavigateToHistory()
   }
 
   const filteredCourses = COURSES_DATA.filter(course => {
@@ -137,38 +109,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
                 <Target size={24} strokeWidth={2.5} />
               </div>
               <div className="text-left">
-                <h3 className="font-extrabold text-lg text-slate-900">Student Portal</h3>
-                <p className="text-xs text-slate-500 font-bold">Join quizzes & view results</p>
+                <h3 className="font-extrabold text-lg text-slate-900">Cổng Thi Trực Tuyến</h3>
+                <p className="text-xs text-slate-500 font-bold">Tham gia ca thi & tra cứu điểm</p>
               </div>
             </div>
 
-            <div className="mb-6">
-              <label className="block text-xs font-bold text-slate-700 mb-2 text-left">Quick Join</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={pinCode}
-                  onChange={(e) => setPinCode(e.target.value)}
-                  placeholder="Enter PIN code"
-                  onFocus={handleInputFocus}
-                  className="w-full px-4 py-3 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-none font-bold"
-                />
-                <button
-                  onClick={handleJoinExam}
-                  className="px-6 py-3 text-sm bg-neo-green hover:bg-neo-green-hover text-white neo-btn shrink-0"
-                >
-                  Join
-                </button>
-              </div>
+            <div className="space-y-4">
+              <button
+                onClick={handleNavigateToJoin}
+                className="w-full py-4 text-base bg-neo-green hover:bg-neo-green-hover text-white neo-btn flex items-center justify-center gap-2"
+              >
+                Tham gia phòng thi ➔
+              </button>
+              
+              <button
+                onClick={handleNavigateToHistory}
+                className="w-full py-4 text-base bg-blue-50 hover:bg-blue-100 border-2 border-slate-900 text-slate-900 neo-btn flex items-center justify-center gap-2"
+              >
+                <Clock size={18} /> Xem lịch sử làm bài
+              </button>
             </div>
-
-            <button
-              onClick={handleViewHistory}
-              className="w-full py-3 text-sm bg-blue-50 hover:bg-blue-100 border-2 border-slate-900 text-slate-900 neo-btn flex items-center justify-center gap-2"
-            >
-              <Clock size={16} /> Exam History
-            </button>
-            <p className="text-[10px] text-slate-500 font-bold mt-3 text-center">View scores, time taken, and past results</p>
           </div>
 
           <div className="absolute -top-6 -right-4 w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-rose-500 z-20 animate-bounce"><Target size={20} strokeWidth={3} /></div>
@@ -197,7 +157,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 text-xs font-bold rounded-lg transition-all border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_#0f172a] cursor-pointer ${activeTab === tab
+                  className={`px-4 py-2 text-xs font-bold rounded-xl transition-all border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_#0f172a] cursor-pointer ${activeTab === tab
                       ? 'bg-neo-blue text-white'
                       : 'bg-white text-slate-800 hover:bg-slate-50'
                     }`}
@@ -217,7 +177,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
                 placeholder="Search courses..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:ring-0 focus:border-neo-green font-bold bg-[#fdfdfd]"
+                className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:ring-0 focus:border-neo-green font-bold bg-[#fdfdfd]"
               />
               {searchQuery && (
                 <button
@@ -273,7 +233,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
               ))}
             </div>
           ) : (
-            <div className="max-w-md mx-auto py-12 px-6 border-4 border-dashed border-slate-300 rounded-2xl flex flex-col items-center">
+            <div className="max-w-md mx-auto py-12 px-6 border-4 border-dashed border-slate-300 rounded-3xl flex flex-col items-center">
               <Search size={48} className="text-slate-400" />
               <h3 className="font-bold text-lg mt-4 text-slate-700">No courses found</h3>
               <p className="text-xs text-slate-500 mt-2">Try adjusting your filters or search keywords.</p>
@@ -302,7 +262,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Card 1 */}
-          <div className="bg-white p-6 rounded-2xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
+          <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
             <div className="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-5"><Clock size={24} strokeWidth={2.5} /></div>
             <h3 className="font-extrabold text-lg text-slate-900 mb-2">Learn at Your Pace</h3>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
@@ -310,7 +270,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
             </p>
           </div>
           {/* Card 2 */}
-          <div className="bg-white p-6 rounded-2xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
+          <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
             <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-5"><GraduationCap size={24} strokeWidth={2.5} /></div>
             <h3 className="font-extrabold text-lg text-slate-900 mb-2">Expert Instructors</h3>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
@@ -318,7 +278,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
             </p>
           </div>
           {/* Card 3 */}
-          <div className="bg-white p-6 rounded-2xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
+          <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
             <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-5"><CheckCircle size={24} strokeWidth={2.5} /></div>
             <h3 className="font-extrabold text-lg text-slate-900 mb-2">Certificates</h3>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
@@ -326,7 +286,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
             </p>
           </div>
           {/* Card 4 */}
-          <div className="bg-white p-6 rounded-2xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
+          <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
             <div className="w-12 h-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-5"><Users size={24} strokeWidth={2.5} /></div>
             <h3 className="font-extrabold text-lg text-slate-900 mb-2">Community Support</h3>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">

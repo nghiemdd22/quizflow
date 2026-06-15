@@ -236,13 +236,13 @@ export const TeacherDashboard: React.FC = () => {
           <div className="flex gap-4 mt-4">
             <button
               onClick={() => setActiveTab('BANKS')}
-              className={`px-4 py-2 font-black border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] rounded-lg transition-transform ${activeTab === 'BANKS' ? 'bg-neo-blue text-white' : 'bg-white hover:bg-slate-100'}`}
+              className={`px-4 py-2 font-black border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] rounded-xl transition-transform ${activeTab === 'BANKS' ? 'bg-neo-blue text-white' : 'bg-white hover:bg-slate-100'}`}
             >
               Ngân hàng câu hỏi
             </button>
             <button
               onClick={() => setActiveTab('EXAMS')}
-              className={`px-4 py-2 font-black border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] rounded-lg transition-transform ${activeTab === 'EXAMS' ? 'bg-neo-blue text-white' : 'bg-white hover:bg-slate-100'}`}
+              className={`px-4 py-2 font-black border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] rounded-xl transition-transform ${activeTab === 'EXAMS' ? 'bg-neo-blue text-white' : 'bg-white hover:bg-slate-100'}`}
             >
               Đề thi & Ca thi
             </button>
@@ -389,7 +389,7 @@ export const TeacherDashboard: React.FC = () => {
                 <select
                   value={newBankSubject}
                   onChange={e => setNewBankSubject(Number(e.target.value))}
-                  className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] font-bold"
+                  className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] font-bold"
                 >
                   <option value={0}>-- Chọn môn học --</option>
                   {subjects.map(sub => (
@@ -403,7 +403,7 @@ export const TeacherDashboard: React.FC = () => {
                   required
                   value={newBankName}
                   onChange={e => setNewBankName(e.target.value)}
-                  className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] font-bold"
+                  className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] font-bold"
                 />
               </div>
               <div>
@@ -411,7 +411,7 @@ export const TeacherDashboard: React.FC = () => {
                 <textarea
                   value={newBankDesc}
                   onChange={e => setNewBankDesc(e.target.value)}
-                  className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] font-bold h-24"
+                  className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] font-bold h-24"
                 />
               </div>
               <button type="submit" className="w-full mt-2 py-3 bg-neo-green hover:bg-neo-green-hover text-white neo-btn">Tạo mới</button>
@@ -442,7 +442,7 @@ export const TeacherDashboard: React.FC = () => {
                   required
                   value={newQContent}
                   onChange={e => setNewQContent(e.target.value)}
-                  className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] font-bold h-24"
+                  className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] font-bold h-24"
                 />
               </div>
               <div className="grid grid-cols-1 gap-4">
@@ -451,7 +451,7 @@ export const TeacherDashboard: React.FC = () => {
                   <select
                     value={newQType}
                     onChange={e => setNewQType(e.target.value)}
-                    className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] font-bold"
+                    className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] font-bold"
                   >
                     <option value="SINGLE">Trắc nghiệm 1 đáp án</option>
                     <option value="MULTIPLE">Trắc nghiệm nhiều đáp án</option>

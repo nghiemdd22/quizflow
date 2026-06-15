@@ -11,4 +11,6 @@ public interface ExamSubmissionRepository extends JpaRepository<ExamSubmission, 
 
     List<ExamSubmission> findByExamSessionIdAndStatus(Long sessionId,
             vn.edu.hust.quizflow.entity.SubmissionStatus status);
+
+    List<ExamSubmission> findByStudentIdOrderByStartedAtDesc(Long studentId);
 }

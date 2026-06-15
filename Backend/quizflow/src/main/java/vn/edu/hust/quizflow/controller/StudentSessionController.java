@@ -6,10 +6,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.hust.quizflow.dto.ExamRoomResponse;
+import vn.edu.hust.quizflow.dto.ExamHistoryResponse;
 import vn.edu.hust.quizflow.dto.JoinSessionRequest;
 import vn.edu.hust.quizflow.service.ExamSessionService;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -75,5 +77,17 @@ public class StudentSessionController {
             Principal principal) {
         examSessionService.submitExam(sessionId, principal.getName());
         return ResponseEntity.accepted().build(); // HTTP 202
+    }
+
+    /**
+     * API để học sinh xem lại toàn bộ lịch sử các bài thi đã tham gia.
+     * 
+     * @param principal Thông tin tài khoản của học sinh.
+     * @return Danh sách lịch sử bài thi.
+     */
+    @PreAuthorize("hasRole('STUDENT')")
+    @GetMapping("/history")
+    public ResponseEntity<List<ExamHistoryResponse>> getHistory(Principal principal) {
+        return ResponseEntity.ok(examSessionService.getStudentHistory(principal.getName()));
     }
 }

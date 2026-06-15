@@ -109,7 +109,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
               placeholder="name@company.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:border-neo-green font-bold bg-white"
+              className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:border-neo-green font-bold bg-white"
             />
           </div>
 
@@ -123,7 +123,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
                   placeholder="Nguyễn Văn A"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:border-neo-green font-bold bg-white"
+                  className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:border-neo-green font-bold bg-white"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -135,7 +135,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
                     placeholder="0987654321"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:border-neo-green font-bold bg-white"
+                    className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:border-neo-green font-bold bg-white"
                   />
                 </div>
                 <div>
@@ -146,7 +146,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
                     placeholder="012345678910"
                     value={identityCard}
                     onChange={(e) => setIdentityCard(e.target.value)}
-                    className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:border-neo-green font-bold bg-white"
+                    className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:border-neo-green font-bold bg-white"
                   />
                 </div>
               </div>
@@ -162,12 +162,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:border-neo-green font-bold bg-white"
+              className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:border-neo-green font-bold bg-white"
             />
           </div>
 
           {authMode === 'signup' && (
-            <div className="bg-slate-50 border-2 border-slate-900 p-3 rounded-lg shadow-[2px_2px_0px_#0f172a] mt-2">
+            <div className="bg-slate-50 border-2 border-slate-900 p-3 rounded-xl shadow-[2px_2px_0px_#0f172a] mt-2">
               <label className="flex items-center gap-2 cursor-pointer mb-2">
                 <input
                   type="checkbox"
@@ -186,7 +186,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
                     placeholder="Nhập mã do trường cung cấp"
                     value={inviteCode}
                     onChange={(e) => setInviteCode(e.target.value)}
-                    className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:border-neo-green font-bold bg-white"
+                    className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] focus:outline-none focus:border-neo-green font-bold bg-white"
                   />
                 </div>
               )}
