@@ -4,6 +4,7 @@ import SockJS from 'sockjs-client'
 import { apiFetch } from '../utils/api'
 import type { ExamRoomResponse } from '../types'
 import { Clock, AlertCircle, CheckCircle, ChevronLeft, ChevronRight, LogOut, FileText } from 'lucide-react'
+import { useAuthStore } from '../store/authStore'
 
 interface ExamRoomProps {
   data: ExamRoomResponse
@@ -20,7 +21,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
 
   // Setup WebSocket Connection & Sync
   useEffect(() => {
-    const token = localStorage.getItem('token') || ''
+    const token = useAuthStore.getState().accessToken || ''
 
     const client = new Client({
       webSocketFactory: () => new SockJS('http://localhost:8080/ws/exam'),

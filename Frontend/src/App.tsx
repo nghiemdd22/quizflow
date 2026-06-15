@@ -6,6 +6,7 @@ import { LandingPage } from './pages/LandingPage'
 import { TeacherDashboard } from './pages/TeacherDashboard'
 import { ExamRoom } from './pages/ExamRoom'
 import type { Course, ExamRoomResponse } from './types'
+import { useAuthStore } from './store/authStore'
 
 function App() {
   const [currentView, setCurrentView] = useState<'landing' | 'teacher-dashboard' | 'exam-room'>('landing')
@@ -16,9 +17,32 @@ function App() {
   // Auth States
   const [isAuthOpen, setIsAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
-  const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('token'))
-  const [userEmail, setUserEmail] = useState(() => localStorage.getItem('username') || '')
-  const [userRole, setUserRole] = useState<string | null>(() => localStorage.getItem('role'))
+  
+  const { isLoggedIn, userEmail, userRole, setAuth, clearAuth } = useAuthStore()
+
+  useEffect(() => {
+    // Thử khôi phục phiên đăng nhập từ HttpOnly Cookie nếu chưa có Access Token trong RAM
+    const initAuth = async () => {
+      if (!isLoggedIn) {
+        try {
+          // Sử dụng đường dẫn tương đối để đi qua Vite Proxy, tự động tránh lỗi CORS
+          const res = await fetch('/api/v1/auth/refresh', {
+            method: 'POST',
+            // Không cần include credentials nếu dùng chung domain/proxy, nhưng để chắc chắn cứ giữ cũng được. Proxy sẽ chuyển tiếp cookie.
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' }
+          })
+          if (res.ok) {
+            const data = await res.json()
+            setAuth(data.token, data.username, data.role, data.id)
+          }
+        } catch (e) {
+          // Bỏ qua lỗi (chưa đăng nhập hoặc cookie hết hạn)
+        }
+      }
+    }
+    initAuth()
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,29 +59,23 @@ function App() {
   }, [lastScrollY])
 
   const handleLoginSuccess = (token: string, username: string, role: string, id: number) => {
-    setIsLoggedIn(true)
-    setUserEmail(username)
-    setUserRole(role)
-    localStorage.setItem('token', token)
-    localStorage.setItem('role', role)
-    localStorage.setItem('username', username)
-    localStorage.setItem('userId', id.toString())
+    setAuth(token, username, role, id)
   }
 
-  const handleLogout = () => {
-    setIsLoggedIn(false)
-    setUserEmail('')
-    setUserRole(null)
+  const handleLogout = async () => {
+    clearAuth()
     setCurrentView('landing')
-    localStorage.removeItem('token')
-    localStorage.removeItem('role')
-    localStorage.removeItem('username')
-    localStorage.removeItem('userId')
+    try {
+      await fetch('/api/v1/auth/logout', { 
+        method: 'POST'
+      })
+    } catch (e) {
+      console.error('Logout failed:', e)
+    }
   }
 
   const handleCourseRegister = (course: Course) => {
-    setIsLoggedIn(true)
-    setUserEmail('trial@quizflow.com')
+    setAuth('dummy-token', 'trial@quizflow.com', 'STUDENT', 999)
     alert(`Đăng ký học thử khóa "${course.title}" thành công!`)
   }
 

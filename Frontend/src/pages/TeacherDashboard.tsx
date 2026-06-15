@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { apiFetch, apiFetchMultipart } from '../utils/api'
 import { ExamManagementTab } from '../components/ExamManagementTab'
+import { useAuthStore } from '../store/authStore'
 
 interface Subject {
   id: number
@@ -43,7 +44,7 @@ export const TeacherDashboard: React.FC = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const userId = Number(localStorage.getItem('userId'))
+  const userId = useAuthStore(state => state.userId)
 
   const loadBanks = React.useCallback(async () => {
     try {

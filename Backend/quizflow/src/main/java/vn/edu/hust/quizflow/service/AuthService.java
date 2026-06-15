@@ -23,15 +23,18 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
+    private final vn.edu.hust.quizflow.repository.RefreshTokenRepository refreshTokenRepository;
 
     public AuthService(UserRepository userRepository, 
                        PasswordEncoder passwordEncoder,
                        AuthenticationManager authenticationManager, 
-                       JwtUtils jwtUtils) {
+                       JwtUtils jwtUtils,
+                       vn.edu.hust.quizflow.repository.RefreshTokenRepository refreshTokenRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     /**
@@ -93,6 +96,16 @@ public class AuthService {
         // Sinh mã token JWT dựa trên username và role
         String token = jwtUtils.generateToken(user.getUsername(), user.getRole().name());
 
+        // Tạo Refresh Token lưu vào DB
+        String refreshTokenString = java.util.UUID.randomUUID().toString();
+        vn.edu.hust.quizflow.entity.RefreshToken refreshToken = vn.edu.hust.quizflow.entity.RefreshToken.builder()
+                .user(user)
+                .tokenHash(refreshTokenString)
+                .expiresAt(java.time.LocalDateTime.now().plusDays(7))
+                .isRevoked(false)
+                .build();
+        refreshTokenRepository.save(refreshToken);
+
         // Đóng gói kết quả trả về
         return AuthResponse.builder()
                 .id(user.getId())
@@ -100,6 +113,42 @@ public class AuthService {
                 .username(user.getUsername())
                 .fullName(user.getFullName())
                 .role(user.getRole())
+                .refreshToken(refreshTokenString)
+                .build();
+    }
+
+    /**
+     * Làm mới Access Token sử dụng Refresh Token.
+     */
+    @Transactional
+    public AuthResponse refresh(String refreshTokenString) {
+        vn.edu.hust.quizflow.entity.RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(refreshTokenString)
+                .orElseThrow(() -> new IllegalArgumentException("Refresh Token không hợp lệ!"));
+
+        if (refreshToken.isRevoked()) {
+            throw new IllegalArgumentException("Refresh Token đã bị thu hồi!");
+        }
+
+        if (refreshToken.getExpiresAt().isBefore(java.time.LocalDateTime.now())) {
+            throw new IllegalArgumentException("Refresh Token đã hết hạn!");
+        }
+
+        User user = refreshToken.getUser();
+        String newToken = jwtUtils.generateToken(user.getUsername(), user.getRole().name());
+
+        // Rotate Refresh Token (cấp cái mới)
+        String newRefreshTokenString = java.util.UUID.randomUUID().toString();
+        refreshToken.setTokenHash(newRefreshTokenString);
+        refreshToken.setExpiresAt(java.time.LocalDateTime.now().plusDays(7));
+        refreshTokenRepository.save(refreshToken);
+
+        return AuthResponse.builder()
+                .id(user.getId())
+                .token(newToken)
+                .username(user.getUsername())
+                .fullName(user.getFullName())
+                .role(user.getRole())
+                .refreshToken(newRefreshTokenString)
                 .build();
     }
 }
