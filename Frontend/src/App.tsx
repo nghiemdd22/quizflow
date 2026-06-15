@@ -5,15 +5,17 @@ import { Footer } from './components/Footer'
 import { AuthModal } from './components/AuthModal'
 import { LandingPage } from './pages/LandingPage'
 import { TeacherDashboard } from './pages/TeacherDashboard'
-import { ExamRoom } from './pages/ExamRoom'
 import { JoinExamPage } from './pages/JoinExamPage'
+import { ExamRoom } from './pages/ExamRoom'
 import { ExamHistoryPage } from './pages/ExamHistoryPage'
+import { ExamReviewPage } from './pages/ExamReviewPage'
 import type { Course, ExamRoomResponse } from './types'
 import { useAuthStore } from './store/authStore'
 
 function App() {
-  const [currentView, setCurrentView] = useState<'landing' | 'teacher-dashboard' | 'exam-room' | 'join-exam' | 'exam-history'>('landing')
+  const [currentView, setCurrentView] = useState<'landing' | 'teacher-dashboard' | 'join-exam' | 'exam-room' | 'exam-history' | 'exam-review'>('landing')
   const [examRoomData, setExamRoomData] = useState<ExamRoomResponse | null>(null)
+  const [reviewSubmissionId, setReviewSubmissionId] = useState<number | null>(null)
   const [isHeaderVisible, setIsHeaderVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [isInitializing, setIsInitializing] = useState(true)
@@ -133,15 +135,26 @@ function App() {
         ) : currentView === 'teacher-dashboard' ? (
           <TeacherDashboard />
         ) : currentView === 'join-exam' ? (
-          <JoinExamPage 
-            onBack={() => setCurrentView('landing')} 
+          <JoinExamPage
+            onBack={() => setCurrentView('landing')}
             onJoinSuccess={(data) => {
               setExamRoomData(data)
               setCurrentView('exam-room')
-            }} 
+            }}
           />
         ) : currentView === 'exam-history' ? (
-          <ExamHistoryPage onBack={() => setCurrentView('landing')} />
+          <ExamHistoryPage 
+            onBack={() => setCurrentView('landing')} 
+            onReviewExam={(id) => {
+              setReviewSubmissionId(id);
+              setCurrentView('exam-review');
+            }}
+          />
+        ) : currentView === 'exam-review' && reviewSubmissionId != null ? (
+          <ExamReviewPage 
+            submissionId={reviewSubmissionId} 
+            onBack={() => setCurrentView('exam-history')} 
+          />
         ) : (
           examRoomData && <ExamRoom data={examRoomData} onLeave={() => setCurrentView('landing')} />
         )}

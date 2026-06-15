@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { ArrowLeft, Clock, Search, Calendar, ChevronRight, Activity, Target, CheckCircle2, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Clock, Search, Calendar, ChevronRight, Activity, Target, CheckCircle2, AlertCircle, ChevronLeft } from 'lucide-react'
 import { apiFetch } from '../utils/api'
 
 interface ExamHistory {
@@ -14,20 +14,23 @@ interface ExamHistory {
 
 interface ExamHistoryPageProps {
   onBack: () => void
+  onReviewExam: (submissionId: number) => void
 }
 
-export const ExamHistoryPage: React.FC<ExamHistoryPageProps> = ({ onBack }) => {
+export const ExamHistoryPage: React.FC<ExamHistoryPageProps> = ({ onBack, onReviewExam }) => {
   const [history, setHistory] = useState<ExamHistory[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
   const [filter, setFilter] = useState<'ALL' | 'COMPLETED' | 'IN_PROGRESS'>('ALL')
   const [searchQuery, setSearchQuery] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 8
 
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const response = await apiFetch('/api/v1/student/history')
+        const response = await apiFetch('/api/v1/student/sessions/history')
         if (!response.ok) {
           throw new Error('Failed to load exam history')
         }
@@ -85,63 +88,75 @@ export const ExamHistoryPage: React.FC<ExamHistoryPageProps> = ({ onBack }) => {
 
   const stats = useMemo(() => {
     const completed = history.filter(e => e.status === 'COMPLETED')
-    const avgScore = completed.length > 0 
+    const avg = completed.length > 0 
       ? completed.reduce((acc, curr) => acc + (curr.score || 0), 0) / completed.length 
       : 0
     
     return {
       total: history.length,
       completed: completed.length,
-      avgScore: avgScore.toFixed(1)
+      avgScore: avg.toFixed(1)
     }
   }, [history])
 
+  // Reset page when filter or search changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filter, searchQuery])
+
+  const paginatedHistory = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+    return filteredHistory.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+  }, [filteredHistory, currentPage])
+
+  const totalPages = Math.ceil(filteredHistory.length / ITEMS_PER_PAGE)
+
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 py-8">
+    <div className="w-full max-w-5xl mx-auto px-4 py-6">
       <button 
         onClick={onBack}
-        className="mb-8 flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors"
+        className="w-fit mb-8 flex items-center gap-2 text-sm font-bold text-slate-900 bg-white px-4 py-2 rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all"
       >
-        <ArrowLeft size={16} /> Back to Home
+        <ArrowLeft size={16} strokeWidth={3} /> Back to Home
       </button>
 
-      <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#dbeafe] border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] text-blue-800 text-xs font-black mb-4">
+      <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Exam History</h1>
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#dbeafe] border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] text-blue-800 text-xs font-black">
             <Activity size={14} /> Academic Profile
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">Exam History</h1>
         </div>
       </div>
 
       {/* Statistics Cards */}
       {!isLoading && !error && history.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-neo-blue text-white neo-card p-6 flex items-center gap-6">
-            <div className="w-16 h-16 rounded-3xl bg-white/20 flex items-center justify-center shrink-0">
-              <Target size={32} />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="bg-neo-blue text-white neo-card p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+              <Target size={24} />
             </div>
             <div>
-              <p className="text-blue-100 font-bold mb-1">Total Exams</p>
-              <h3 className="text-4xl font-black">{stats.total}</h3>
+              <p className="text-blue-100 font-bold text-sm mb-1">Total Exams</p>
+              <h3 className="text-3xl font-black">{stats.total}</h3>
             </div>
           </div>
-          <div className="bg-neo-green text-white neo-card p-6 flex items-center gap-6">
-            <div className="w-16 h-16 rounded-3xl bg-white/20 flex items-center justify-center shrink-0">
-              <CheckCircle2 size={32} />
+          <div className="bg-neo-green text-white neo-card p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+              <CheckCircle2 size={24} />
             </div>
             <div>
-              <p className="text-green-100 font-bold mb-1">Completed</p>
-              <h3 className="text-4xl font-black">{stats.completed}</h3>
+              <p className="text-green-100 font-bold text-sm mb-1">Completed</p>
+              <h3 className="text-3xl font-black">{stats.completed}</h3>
             </div>
           </div>
-          <div className="bg-neo-purple text-white neo-card p-6 flex items-center gap-6">
-            <div className="w-16 h-16 rounded-3xl bg-white/20 flex items-center justify-center shrink-0">
-              <Activity size={32} />
+          <div className="bg-neo-purple text-white neo-card p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+              <Activity size={24} />
             </div>
             <div>
-              <p className="text-purple-100 font-bold mb-1">Average Score</p>
-              <h3 className="text-4xl font-black">{stats.avgScore}</h3>
+              <p className="text-purple-100 font-bold text-sm mb-1">Average Score</p>
+              <h3 className="text-3xl font-black">{stats.avgScore}</h3>
             </div>
           </div>
         </div>
@@ -149,36 +164,36 @@ export const ExamHistoryPage: React.FC<ExamHistoryPageProps> = ({ onBack }) => {
 
       {/* Filters & Search */}
       {!isLoading && !error && history.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-center gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
           <div className="flex bg-white neo-card p-1">
             <button 
               onClick={() => setFilter('ALL')}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-colors ${filter === 'ALL' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${filter === 'ALL' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
             >
               All
             </button>
             <button 
               onClick={() => setFilter('COMPLETED')}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-colors ${filter === 'COMPLETED' ? 'bg-neo-green text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${filter === 'COMPLETED' ? 'bg-neo-green text-white' : 'text-slate-600 hover:bg-slate-100'}`}
             >
               Completed
             </button>
             <button 
               onClick={() => setFilter('IN_PROGRESS')}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-colors ${filter === 'IN_PROGRESS' ? 'bg-neo-yellow text-slate-900' : 'text-slate-600 hover:bg-slate-100'}`}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${filter === 'IN_PROGRESS' ? 'bg-neo-yellow text-slate-900' : 'text-slate-600 hover:bg-slate-100'}`}
             >
               In Progress
             </button>
           </div>
           
           <div className="flex-1 relative w-full sm:w-auto">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               type="text" 
               placeholder="Search by subject or exam title..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-white neo-card text-sm font-bold placeholder:text-slate-400 focus:outline-none focus:border-neo-blue transition-colors"
+              className="w-full pl-10 pr-4 py-2 bg-white neo-card text-sm font-bold placeholder:text-slate-400 focus:outline-none focus:border-neo-blue transition-colors"
             />
           </div>
         </div>
@@ -209,47 +224,74 @@ export const ExamHistoryPage: React.FC<ExamHistoryPageProps> = ({ onBack }) => {
           <p className="text-sm text-slate-500 font-medium">Try changing your search keywords or filters.</p>
         </div>
       ) : (
-        <div className="grid gap-6">
-          {filteredHistory.map((exam) => (
-            <div key={exam.id} className="bg-white neo-card neo-card-hover p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 group">
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {paginatedHistory.map((exam) => (
+              <div key={exam.id} className="bg-white neo-card neo-card-hover p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 group">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-xs font-black uppercase px-3 py-1.5 bg-slate-100 border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a]">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-[10px] font-black uppercase px-2 py-1 bg-slate-100 border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a]">
                     {exam.subjectName}
                   </span>
                   {getStatusBadge(exam.status)}
                 </div>
-                <h3 className="text-2xl font-extrabold text-slate-900 mb-4 group-hover:text-neo-blue transition-colors">
+                <h3 className="text-lg md:text-xl font-extrabold text-slate-900 mb-2 group-hover:text-neo-blue transition-colors line-clamp-2">
                   {exam.examTitle}
                 </h3>
-                <div className="flex flex-wrap items-center gap-6 text-sm font-bold text-slate-500 bg-slate-50 px-4 py-3 rounded-xl border-2 border-slate-100 w-fit">
-                  <div className="flex items-center gap-2">
-                    <Calendar size={16} className="text-slate-400" />
-                    Started: <span className="text-slate-700">{formatDate(exam.startedAt)}</span>
+                <div className="flex flex-col gap-1.5 text-[11px] font-bold text-slate-500 bg-slate-50 px-3 py-2 rounded-xl border-2 border-slate-100 w-fit">
+                  <div className="flex items-center gap-1.5">
+                    <Calendar size={13} className="text-slate-400 shrink-0" />
+                    <span>Started: <span className="text-slate-700">{formatDate(exam.startedAt)}</span></span>
                   </div>
-                  <div className="w-1.5 h-1.5 rounded-full bg-slate-300 hidden sm:block"></div>
-                  <div className="flex items-center gap-2">
-                    <Clock size={16} className="text-slate-400" />
-                    Submitted: <span className="text-slate-700">{formatDate(exam.submittedAt)}</span>
+                  <div className="flex items-center gap-1.5">
+                    <Clock size={13} className="text-slate-400 shrink-0" />
+                    <span>Submitted: <span className="text-slate-700">{formatDate(exam.submittedAt)}</span></span>
                   </div>
                 </div>
               </div>
               
-              <div className="flex items-center gap-6 md:border-l-2 md:border-slate-100 md:pl-8">
-                <div className="text-center min-w-[80px]">
-                  <p className="text-xs font-black text-slate-400 mb-1 tracking-widest">SCORE</p>
-                  <div className="text-4xl font-black text-neo-purple flex items-baseline justify-center gap-1">
+              <div className="flex items-center gap-4 md:border-l-2 md:border-slate-100 md:pl-6">
+                <div className="text-center min-w-[70px]">
+                  <p className="text-[10px] font-black text-slate-400 mb-0.5 tracking-widest">SCORE</p>
+                  <div className="text-3xl font-black text-neo-purple flex items-baseline justify-center gap-1">
                     {exam.score != null ? exam.score : '-'}
-                    <span className="text-sm font-bold text-slate-400">/ 10</span>
+                    <span className="text-xs font-bold text-slate-400">/ 10</span>
                   </div>
                 </div>
-                <button className="w-14 h-14 rounded-3xl bg-white hover:bg-neo-yellow border-2 border-slate-900 flex items-center justify-center shadow-[4px_4px_0px_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all">
-                  <ChevronRight size={24} strokeWidth={3} className="text-slate-900" />
+                <button 
+                  onClick={() => onReviewExam(exam.id)}
+                  className="w-10 h-10 rounded-2xl bg-white hover:bg-neo-yellow border-2 border-slate-900 flex items-center justify-center shadow-[4px_4px_0px_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all shrink-0"
+                >
+                  <ChevronRight size={20} strokeWidth={3} className="text-slate-900" />
                 </button>
               </div>
             </div>
           ))}
-        </div>
+          </div>
+          
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="mt-8 flex justify-center items-center gap-4">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="w-10 h-10 rounded-xl bg-white border-2 border-slate-900 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 shadow-[2px_2px_0px_#0f172a] transition-all"
+              >
+                <ChevronLeft size={20} strokeWidth={3} />
+              </button>
+              <span className="font-bold text-sm text-slate-700">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="w-10 h-10 rounded-xl bg-white border-2 border-slate-900 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 shadow-[2px_2px_0px_#0f172a] transition-all"
+              >
+                <ChevronRight size={20} strokeWidth={3} />
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

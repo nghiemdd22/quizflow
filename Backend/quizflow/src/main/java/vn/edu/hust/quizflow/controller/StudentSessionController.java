@@ -90,4 +90,12 @@ public class StudentSessionController {
     public ResponseEntity<List<ExamHistoryResponse>> getHistory(Principal principal) {
         return ResponseEntity.ok(examSessionService.getStudentHistory(principal.getName()));
     }
+
+    @PreAuthorize("hasRole('STUDENT')")
+    @GetMapping("/history/{submissionId}")
+    public ResponseEntity<vn.edu.hust.quizflow.dto.ExamReviewResponse> getExamReview(
+            @PathVariable Long submissionId,
+            Principal principal) {
+        return ResponseEntity.ok(examSessionService.getExamReview(submissionId, principal.getName()));
+    }
 }

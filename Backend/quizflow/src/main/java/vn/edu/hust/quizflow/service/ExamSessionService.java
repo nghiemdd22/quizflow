@@ -21,6 +21,7 @@ import vn.edu.hust.quizflow.repository.ExamSessionRepository;
 import vn.edu.hust.quizflow.repository.UserRepository;
 import vn.edu.hust.quizflow.repository.ExamSubmissionRepository;
 import vn.edu.hust.quizflow.repository.ExamQuestionRepository;
+import vn.edu.hust.quizflow.repository.StudentAnswerRepository;
 import vn.edu.hust.quizflow.service.RedisService;
 
 import java.security.SecureRandom;
@@ -47,6 +48,7 @@ public class ExamSessionService {
     private final UserRepository userRepository;
     private final ExamSubmissionRepository examSubmissionRepository;
     private final ExamQuestionRepository examQuestionRepository;
+    private final StudentAnswerRepository studentAnswerRepository;
     private final RedisService redisService;
     private final RabbitTemplate rabbitTemplate;
 
@@ -402,5 +404,45 @@ public class ExamSessionService {
                     .status(submission.getStatus())
                     .build();
         }).collect(Collectors.toList());
+    }
+
+    /**
+     * Lấy chi tiết bài thi đã nộp của học sinh (để xem lại).
+     */
+    public vn.edu.hust.quizflow.dto.ExamReviewResponse getExamReview(Long submissionId, String username) {
+        User student = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy học sinh"));
+
+        ExamSubmission submission = examSubmissionRepository.findById(submissionId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài thi"));
+
+        if (!submission.getStudent().getId().equals(student.getId())) {
+            throw new IllegalArgumentException("Bạn không có quyền xem bài thi này");
+        }
+
+        List<vn.edu.hust.quizflow.entity.StudentAnswer> answers = studentAnswerRepository.findBySubmissionId(submissionId);
+
+        List<vn.edu.hust.quizflow.dto.QuestionReviewDto> questionDtos = answers.stream().map(ans -> {
+            return vn.edu.hust.quizflow.dto.QuestionReviewDto.builder()
+                    .questionId(ans.getQuestion().getId())
+                    .type(ans.getQuestion().getType())
+                    .content(ans.getQuestion().getContent())
+                    .metadata(ans.getQuestion().getMetadata())
+                    .studentAnswer(ans.getAnswerContent())
+                    .isCorrect(ans.getIsCorrect())
+                    .scoreAchieved(ans.getScoreAchieved())
+                    .build();
+        }).collect(Collectors.toList());
+
+        return vn.edu.hust.quizflow.dto.ExamReviewResponse.builder()
+                .submissionId(submission.getId())
+                .examTitle(submission.getExamSession().getExam().getTitle())
+                .subjectName(submission.getExamSession().getExam().getSubject().getName())
+                .score(submission.getTotalScore())
+                .startedAt(submission.getStartedAt())
+                .submittedAt(submission.getSubmittedAt())
+                .status(submission.getStatus())
+                .questions(questionDtos)
+                .build();
     }
 }

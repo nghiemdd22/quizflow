@@ -16,6 +16,8 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
   const [answers, setAnswers] = useState<Record<number, any>>({})
   const [timeLeft, setTimeLeft] = useState<number>(0)
   const [isConnected, setIsConnected] = useState(false)
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [showTimeOutModal, setShowTimeOutModal] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'IDLE' | 'WAITING' | 'SCORED' | 'FAILED'>('IDLE')
   const [finalScore, setFinalScore] = useState<number | null>(null)
   const [failedMessage, setFailedMessage] = useState<string>('')
@@ -36,8 +38,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
       heartbeatOutgoing: 4000,
       onConnect: () => {
         setIsConnected(true)
-        
-        // Subscribe to results queue
+
         client.subscribe('/user/queue/exam-results', (message) => {
           try {
             const payload = JSON.parse(message.body)
@@ -45,7 +46,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
               setFinalScore(payload.score)
               setSubmitStatus('SCORED')
             } else if (payload.status === 'FAILED') {
-              setFailedMessage(payload.message || 'Có lỗi xảy ra trong quá trình chấm điểm.')
+              setFailedMessage(payload.message || 'An error occurred during grading.')
               setSubmitStatus('FAILED')
             }
           } catch (e) {
@@ -86,39 +87,35 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
     }
   }, [data.sessionId])
 
-  const handleAutoSubmit = async () => {
-    alert("Đã hết thời gian làm bài! Hệ thống tự động nộp bài.")
-    setSubmitStatus('WAITING')
+  const doSubmitApi = async () => {
     try {
       const response = await apiFetch(`/api/v1/student/sessions/${data.sessionId}/submit`, { method: 'POST' })
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         setSubmitStatus('FAILED')
-        setFailedMessage(errorData.error || errorData.message || 'Lỗi hệ thống khi nộp bài.')
+        setFailedMessage(errorData.error || errorData.message || 'System error during submission.')
       }
     } catch (err) {
       setSubmitStatus('FAILED')
-      setFailedMessage('Lỗi hệ thống khi kết nối tới máy chủ nộp bài.')
+      setFailedMessage('System error while connecting to submission server.')
     }
+  }
+
+  const handleAutoSubmit = () => {
+    setSubmitStatus('WAITING')
+    doSubmitApi()
+    setShowTimeOutModal(true)
   }
 
   // Calculate Countdown Timer (Anti-cheat with performance.now())
   useEffect(() => {
-    // Thời gian kết thúc và hiện tại do Server cấp
     const serverEndTime = new Date(data.endTime).getTime()
     const serverTimeMs = new Date(data.serverTime).getTime()
-
-    // Tính toán số mili-giây còn lại thực tế ngay lúc nhận được dữ liệu
     const initialRemainingMs = serverEndTime - serverTimeMs
-
-    // Đánh dấu thời điểm bắt đầu đếm bằng performance.now() (Miễn nhiễm với đổi giờ Windows)
     const startPerformance = performance.now()
 
     const interval = setInterval(() => {
-      // Số mili-giây đã trôi qua kể từ lúc tải trang
       const timeElapsed = performance.now() - startPerformance
-
-      // Số mili-giây còn lại
       const remainingMs = initialRemainingMs - timeElapsed
 
       if (remainingMs <= 0) {
@@ -162,21 +159,14 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
     handleAnswerSelect(questionId, newAns)
   }
 
-  const handleSubmitExam = async () => {
-    if (window.confirm("Bạn có chắc chắn muốn nộp bài? Hành động này không thể hoàn tác.")) {
-      setSubmitStatus('WAITING')
-      try {
-        const response = await apiFetch(`/api/v1/student/sessions/${data.sessionId}/submit`, { method: 'POST' })
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}))
-          setSubmitStatus('FAILED')
-          setFailedMessage(errorData.error || errorData.message || 'Lỗi khi nộp bài.')
-        }
-      } catch (err) {
-        setSubmitStatus('FAILED')
-        setFailedMessage('Không thể kết nối đến máy chủ để nộp bài.')
-      }
-    }
+  const handleSubmitExam = () => {
+    setShowConfirmModal(true)
+  }
+
+  const confirmSubmitExam = () => {
+    setShowConfirmModal(false)
+    setSubmitStatus('WAITING')
+    doSubmitApi()
   }
 
   const formatTime = (seconds: number) => {
@@ -229,32 +219,30 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
 
   const currentOptions = getSafeOptions(currentQ?.metadata)
 
-  if (submitStatus === 'WAITING') {
+  if (submitStatus === 'WAITING' && !showTimeOutModal) {
     return (
       <div className="w-full min-h-screen bg-[#f1f5f9] flex flex-col items-center justify-center p-4 relative overflow-hidden">
-        {/* Nền trang trí floating */}
         <div className="absolute top-10 left-10 w-32 h-32 bg-neo-yellow/20 rounded-full blur-2xl pointer-events-none"></div>
         <div className="absolute bottom-10 right-10 w-48 h-48 bg-neo-blue/10 rounded-full blur-3xl pointer-events-none"></div>
         
         <div className="w-full max-w-xl bg-white neo-card p-8 md:p-12 flex flex-col items-center text-center relative z-10 shadow-[8px_8px_0px_#0f172a]">
           <div className="w-20 h-20 mb-8 border-4 border-slate-200 border-t-neo-blue rounded-full animate-spin"></div>
           <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-6 animate-pulse tracking-tight uppercase">
-            Hệ thống đang chấm điểm...
+            Grading in progress...
           </h1>
           
           <div className="w-full h-4 bg-slate-100 rounded-full border-2 border-slate-900 overflow-hidden mb-4">
             <div className="h-full bg-neo-yellow w-full origin-left animate-progress-indeterminate"></div>
           </div>
-          <p className="text-sm font-bold text-slate-500">Xin vui lòng chờ trong giây lát. Hệ thống đang sử dụng RabbitMQ để xử lý bài thi của bạn.</p>
+          <p className="text-sm font-bold text-slate-500">Please wait a moment. The system is processing your exam.</p>
         </div>
       </div>
     )
   }
 
-  if (submitStatus === 'SCORED') {
+  if (submitStatus === 'SCORED' && !showTimeOutModal) {
     return (
       <div className="w-full min-h-screen bg-[#f1f5f9] flex flex-col items-center justify-center p-4 relative overflow-hidden">
-        {/* Nền trang trí floating */}
         <div className="absolute top-10 right-10 w-32 h-32 bg-neo-green/20 rounded-full blur-2xl pointer-events-none"></div>
         <div className="absolute bottom-10 left-10 w-48 h-48 bg-neo-yellow/20 rounded-full blur-3xl pointer-events-none"></div>
         
@@ -263,28 +251,28 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
             <CheckCircle size={48} strokeWidth={3} />
           </div>
           <h1 className="text-2xl font-black text-slate-600 mb-2 uppercase tracking-widest">
-            BẠN ĐƯỢC
+            YOU SCORED
           </h1>
           <div className="text-8xl font-black text-neo-green mb-8 tracking-tighter">
-            {finalScore !== null ? finalScore : '-'} <span className="text-3xl text-emerald-600">điểm</span>
+            {finalScore !== null ? finalScore : '-'} <span className="text-3xl text-emerald-600">points</span>
           </div>
           
           <p className="text-sm font-bold text-slate-500 mb-8 max-w-sm">
-            Bài làm của bạn đã được chấm tự động thông qua hệ thống phân tán.
+            Your exam has been graded automatically.
           </p>
           
           <button 
             onClick={onLeave}
             className="px-8 py-4 bg-neo-green hover:bg-emerald-600 text-white rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all font-black text-lg w-full"
           >
-            QUAY VỀ DASHBOARD
+            RETURN TO DASHBOARD
           </button>
         </div>
       </div>
     )
   }
 
-  if (submitStatus === 'FAILED') {
+  if (submitStatus === 'FAILED' && !showTimeOutModal) {
     return (
       <div className="w-full min-h-screen bg-[#f1f5f9] flex flex-col items-center justify-center p-4 relative overflow-hidden">
         <div className="w-full max-w-xl bg-white rounded-3xl border-4 border-rose-500 p-8 md:p-12 flex flex-col items-center text-center relative z-10 shadow-[8px_8px_0px_#f43f5e]">
@@ -292,7 +280,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
             <AlertCircle size={48} strokeWidth={3} />
           </div>
           <h1 className="text-3xl font-black text-slate-900 mb-4">
-            CÓ LỖI XẢY RA
+            AN ERROR OCCURRED
           </h1>
           <p className="text-base font-bold text-slate-600 mb-8">
             {failedMessage}
@@ -302,7 +290,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
             onClick={onLeave}
             className="px-8 py-4 bg-rose-500 hover:bg-rose-600 text-white rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all font-black text-lg w-full"
           >
-            QUAY VỀ DASHBOARD
+            RETURN TO DASHBOARD
           </button>
         </div>
       </div>
@@ -310,7 +298,58 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
   }
 
   return (
-    <div className="w-full min-h-screen bg-[#f1f5f9] flex flex-col md:flex-row p-4 gap-4">
+    <div className="w-full min-h-screen bg-[#f1f5f9] flex flex-col md:flex-row p-4 gap-4 relative">
+      
+      {/* Time Out Modal */}
+      {showTimeOutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white neo-card p-6 md:p-8 flex flex-col items-center text-center animate-bounce-short shadow-[8px_8px_0px_#0f172a]">
+            <div className="w-20 h-20 mb-6 rounded-full bg-rose-100 flex items-center justify-center border-4 border-slate-900 text-rose-500 shadow-[4px_4px_0px_#0f172a]">
+              <Clock size={40} strokeWidth={3} />
+            </div>
+            <h2 className="text-2xl font-black text-slate-900 mb-2 uppercase">Time's up!</h2>
+            <p className="text-slate-600 font-bold mb-8">
+              Your time has expired! The system has automatically submitted your exam.
+            </p>
+            <button 
+              onClick={() => setShowTimeOutModal(false)}
+              className="w-full py-3 bg-neo-blue hover:bg-blue-600 text-white font-black border-2 border-slate-900 rounded-xl shadow-[4px_4px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all"
+            >
+              GOT IT
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white neo-card p-6 md:p-8 flex flex-col items-center text-center animate-bounce-short shadow-[8px_8px_0px_#0f172a]">
+            <div className="w-20 h-20 mb-6 rounded-full bg-amber-100 flex items-center justify-center border-4 border-slate-900 text-amber-500 shadow-[4px_4px_0px_#0f172a]">
+              <AlertCircle size={40} strokeWidth={3} />
+            </div>
+            <h2 className="text-2xl font-black text-slate-900 mb-2 uppercase">Confirm Submission</h2>
+            <p className="text-slate-600 font-bold mb-8">
+              Are you sure you want to submit? This action cannot be undone and you cannot change your answers.
+            </p>
+            <div className="flex w-full gap-4">
+              <button 
+                onClick={() => setShowConfirmModal(false)}
+                className="flex-1 py-3 bg-white hover:bg-slate-100 text-slate-900 font-black border-2 border-slate-900 rounded-xl shadow-[4px_4px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all"
+              >
+                GO BACK
+              </button>
+              <button 
+                onClick={confirmSubmitExam}
+                className="flex-1 py-3 bg-neo-green hover:bg-emerald-500 text-white font-black border-2 border-slate-900 rounded-xl shadow-[4px_4px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all"
+              >
+                SUBMIT
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* LEFT: MAIN EXAM AREA */}
       <div className="flex-1 flex flex-col gap-4">
         {/* Header Bar */}
@@ -318,11 +357,11 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
           <div>
             <h1 className="font-extrabold text-xl text-slate-900">{data.examTitle}</h1>
             <div className="flex items-center gap-3 mt-1 text-xs font-bold text-slate-500">
-              <span className="flex items-center gap-1"><FileText size={14} /> {data.questions.length} Câu hỏi</span>
+              <span className="flex items-center gap-1"><FileText size={14} /> {data.questions.length} Questions</span>
               {isConnected ? (
-                <span className="flex items-center gap-1 text-emerald-600"><div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> Đã kết nối máy chủ</span>
+                <span className="flex items-center gap-1 text-emerald-600"><div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> Connected to server</span>
               ) : (
-                <span className="flex items-center gap-1 text-rose-600"><AlertCircle size={14} /> Mất kết nối (Đang thử lại...)</span>
+                <span className="flex items-center gap-1 text-rose-600"><AlertCircle size={14} /> Disconnected (Retrying...)</span>
               )}
             </div>
           </div>
@@ -335,7 +374,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
         <div className="flex-1 bg-white neo-card flex flex-col">
           <div className="p-6 md:p-10 flex-1">
             <div className="inline-block px-3 py-1 bg-blue-100 text-blue-800 border-2 border-slate-900 rounded-xl text-xs font-black shadow-[2px_2px_0px_#0f172a] mb-6">
-              Câu {currentQIndex + 1} / {data.questions.length}
+              Question {currentQIndex + 1} / {data.questions.length}
             </div>
 
             <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 mb-8 leading-snug">
@@ -365,7 +404,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
 
               {(currentQ?.type === 'MULTIPLE_CHOICE' || currentQ?.type === 'MULTIPLE') && (
                 <div className="space-y-4">
-                  <p className="text-xs font-bold text-amber-600 mb-2">Chọn nhiều đáp án</p>
+                  <p className="text-xs font-bold text-amber-600 mb-2">Select multiple answers</p>
                   {currentOptions.map((opt: any) => {
                     const ansArray = Array.isArray(answers[currentQ.id])
                       ? answers[currentQ.id]
@@ -393,7 +432,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
                     rows={4}
                     value={answers[currentQ.id] || ''}
                     onChange={(e) => handleAnswerSelect(currentQ.id, e.target.value)}
-                    placeholder="Nhập câu trả lời của bạn..."
+                    placeholder="Enter your answer here..."
                     className="w-full p-4 border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] font-bold text-slate-800 focus:outline-none focus:ring-0 focus:translate-y-[2px] focus:translate-x-[2px] focus:shadow-none transition-all"
                   ></textarea>
                 </div>
@@ -408,14 +447,14 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
               disabled={currentQIndex === 0}
               className="px-6 py-3 bg-white border-2 border-slate-900 rounded-xl font-black shadow-[2px_2px_0px_#0f172a] disabled:opacity-50 disabled:shadow-none disabled:translate-x-[2px] disabled:translate-y-[2px] hover:bg-slate-100 flex items-center gap-2 transition-all"
             >
-              <ChevronLeft size={18} strokeWidth={3} /> Trước
+              <ChevronLeft size={18} strokeWidth={3} /> Previous
             </button>
             <button
               onClick={() => setCurrentQIndex(prev => Math.min(data.questions.length - 1, prev + 1))}
               disabled={currentQIndex === data.questions.length - 1}
               className="px-6 py-3 bg-neo-blue text-white border-2 border-slate-900 rounded-xl font-black shadow-[2px_2px_0px_#0f172a] disabled:opacity-50 disabled:shadow-none disabled:translate-x-[2px] disabled:translate-y-[2px] hover:bg-blue-600 flex items-center gap-2 transition-all"
             >
-              Sau <ChevronRight size={18} strokeWidth={3} />
+              Next <ChevronRight size={18} strokeWidth={3} />
             </button>
           </div>
         </div>
@@ -426,7 +465,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
         {/* Timer Card */}
         <div className="bg-white neo-card p-6 flex flex-col items-center justify-center">
           <Clock size={32} className="text-neo-coral mb-2" strokeWidth={2.5} />
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Thời gian còn lại</p>
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Time Remaining</p>
           <div className={`text-4xl font-black tracking-tight ${timeLeft < 300 ? 'text-rose-600 animate-pulse' : 'text-slate-900'}`}>
             {formatTime(timeLeft)}
           </div>
@@ -434,7 +473,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
 
         {/* Question Grid Map */}
         <div className="bg-white neo-card p-6 flex-1 flex flex-col">
-          <h3 className="font-extrabold text-slate-900 mb-4 border-b-2 border-slate-100 pb-2">Danh sách câu hỏi</h3>
+          <h3 className="font-extrabold text-slate-900 mb-4 border-b-2 border-slate-100 pb-2">Question List</h3>
 
           <div className="grid grid-cols-5 gap-2 overflow-y-auto max-h-[300px] md:max-h-none content-start">
             {data.questions.map((q: any, idx: number) => {
@@ -464,7 +503,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
               className="w-full py-4 bg-neo-green hover:bg-neo-green-hover text-white neo-btn flex items-center justify-center gap-2 text-lg"
             >
               <CheckCircle size={22} strokeWidth={3} />
-              Nộp Bài Thi
+              Submit Exam
             </button>
           </div>
         </div>
