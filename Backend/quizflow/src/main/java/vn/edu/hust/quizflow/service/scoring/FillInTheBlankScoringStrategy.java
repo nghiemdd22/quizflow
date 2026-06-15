@@ -36,8 +36,8 @@ public class FillInTheBlankScoringStrategy implements ScoringStrategy {
 
         // Lấy danh sách TẤT CẢ CÁC ĐÁP ÁN ĐÚNG CÓ THỂ CHẤP NHẬN ĐƯỢC từ Database.
         // VD: Đáp án có thể là ["Hà Nội", "ha noi", "thủ đô hà nội"]
-        List<String> correctAnswers = (List<String>) questionMetadata.get("correctAnswers");
-        if (correctAnswers == null || correctAnswers.isEmpty()) {
+        List<?> correctAnswersRaw = (List<?>) questionMetadata.get("correctAnswers");
+        if (correctAnswersRaw == null || correctAnswersRaw.isEmpty()) {
             return BigDecimal.ZERO;
         }
 
@@ -48,7 +48,8 @@ public class FillInTheBlankScoringStrategy implements ScoringStrategy {
 
         // Duyệt qua danh sách đáp án đúng. 
         // Chỉ cần đáp án của học sinh khớp với BẤT KỲ một phương án nào trong danh sách thì cho điểm tối đa ngay lập tức.
-        for (String correctAnswer : correctAnswers) {
+        for (Object correctObj : correctAnswersRaw) {
+            String correctAnswer = String.valueOf(correctObj);
             if (correctAnswer.trim().toLowerCase().equals(submittedAnswer)) {
                 return maxScore;
             }

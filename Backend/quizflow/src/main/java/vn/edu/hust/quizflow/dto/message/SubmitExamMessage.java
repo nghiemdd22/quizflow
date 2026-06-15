@@ -23,6 +23,11 @@ public class SubmitExamMessage {
     private Long studentId;
     
     /**
+     * Username của học sinh (để phục vụ Push Notification qua WebSocket).
+     */
+    private String username;
+    
+    /**
      * ID của ca thi mà học sinh đang tham gia.
      */
     private Long examSessionId;

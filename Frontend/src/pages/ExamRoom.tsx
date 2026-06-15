@@ -16,6 +16,9 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
   const [answers, setAnswers] = useState<Record<number, any>>({})
   const [timeLeft, setTimeLeft] = useState<number>(0)
   const [isConnected, setIsConnected] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<'IDLE' | 'WAITING' | 'SCORED' | 'FAILED'>('IDLE')
+  const [finalScore, setFinalScore] = useState<number | null>(null)
+  const [failedMessage, setFailedMessage] = useState<string>('')
 
   const stompClientRef = useRef<Client | null>(null)
 
@@ -33,6 +36,23 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
       heartbeatOutgoing: 4000,
       onConnect: () => {
         setIsConnected(true)
+        
+        // Subscribe to results queue
+        client.subscribe('/user/queue/exam-results', (message) => {
+          try {
+            const payload = JSON.parse(message.body)
+            if (payload.status === 'SCORED') {
+              setFinalScore(payload.score)
+              setSubmitStatus('SCORED')
+            } else if (payload.status === 'FAILED') {
+              setFailedMessage(payload.message || 'Có lỗi xảy ra trong quá trình chấm điểm.')
+              setSubmitStatus('FAILED')
+            }
+          } catch (e) {
+            console.error("Error parsing exam result", e)
+          }
+        })
+
         // Auto Sync when connected
         apiFetch(`/api/v1/student/sessions/${data.sessionId}/sync`)
           .then(res => res.json())
@@ -66,9 +86,20 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
     }
   }, [data.sessionId])
 
-  const handleAutoSubmit = () => {
+  const handleAutoSubmit = async () => {
     alert("Đã hết thời gian làm bài! Hệ thống tự động nộp bài.")
-    onLeave()
+    setSubmitStatus('WAITING')
+    try {
+      const response = await apiFetch(`/api/v1/student/sessions/${data.sessionId}/submit`, { method: 'POST' })
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        setSubmitStatus('FAILED')
+        setFailedMessage(errorData.error || errorData.message || 'Lỗi hệ thống khi nộp bài.')
+      }
+    } catch (err) {
+      setSubmitStatus('FAILED')
+      setFailedMessage('Lỗi hệ thống khi kết nối tới máy chủ nộp bài.')
+    }
   }
 
   // Calculate Countdown Timer (Anti-cheat with performance.now())
@@ -131,10 +162,20 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
     handleAnswerSelect(questionId, newAns)
   }
 
-  const handleSubmitExam = () => {
+  const handleSubmitExam = async () => {
     if (window.confirm("Bạn có chắc chắn muốn nộp bài? Hành động này không thể hoàn tác.")) {
-      alert("Nộp bài thành công! (Tính năng xử lý bất đồng bộ nộp bài sẽ ở Phase 4)")
-      onLeave()
+      setSubmitStatus('WAITING')
+      try {
+        const response = await apiFetch(`/api/v1/student/sessions/${data.sessionId}/submit`, { method: 'POST' })
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          setSubmitStatus('FAILED')
+          setFailedMessage(errorData.error || errorData.message || 'Lỗi khi nộp bài.')
+        }
+      } catch (err) {
+        setSubmitStatus('FAILED')
+        setFailedMessage('Không thể kết nối đến máy chủ để nộp bài.')
+      }
     }
   }
 
@@ -187,6 +228,86 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
   }
 
   const currentOptions = getSafeOptions(currentQ?.metadata)
+
+  if (submitStatus === 'WAITING') {
+    return (
+      <div className="w-full min-h-screen bg-[#f1f5f9] flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        {/* Nền trang trí floating */}
+        <div className="absolute top-10 left-10 w-32 h-32 bg-neo-yellow/20 rounded-full blur-2xl pointer-events-none"></div>
+        <div className="absolute bottom-10 right-10 w-48 h-48 bg-neo-blue/10 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <div className="w-full max-w-xl bg-white neo-card p-8 md:p-12 flex flex-col items-center text-center relative z-10 shadow-[8px_8px_0px_#0f172a]">
+          <div className="w-20 h-20 mb-8 border-4 border-slate-200 border-t-neo-blue rounded-full animate-spin"></div>
+          <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-6 animate-pulse tracking-tight uppercase">
+            Hệ thống đang chấm điểm...
+          </h1>
+          
+          <div className="w-full h-4 bg-slate-100 rounded-full border-2 border-slate-900 overflow-hidden mb-4">
+            <div className="h-full bg-neo-yellow w-full origin-left animate-progress-indeterminate"></div>
+          </div>
+          <p className="text-sm font-bold text-slate-500">Xin vui lòng chờ trong giây lát. Hệ thống đang sử dụng RabbitMQ để xử lý bài thi của bạn.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (submitStatus === 'SCORED') {
+    return (
+      <div className="w-full min-h-screen bg-[#f1f5f9] flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        {/* Nền trang trí floating */}
+        <div className="absolute top-10 right-10 w-32 h-32 bg-neo-green/20 rounded-full blur-2xl pointer-events-none"></div>
+        <div className="absolute bottom-10 left-10 w-48 h-48 bg-neo-yellow/20 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <div className="w-full max-w-xl bg-white rounded-3xl border-4 border-neo-green p-8 md:p-12 flex flex-col items-center text-center relative z-10 shadow-[8px_8px_0px_#10b981] animate-bounce-short">
+          <div className="w-24 h-24 mb-6 rounded-full bg-emerald-100 flex items-center justify-center border-4 border-neo-green text-neo-green">
+            <CheckCircle size={48} strokeWidth={3} />
+          </div>
+          <h1 className="text-2xl font-black text-slate-600 mb-2 uppercase tracking-widest">
+            BẠN ĐƯỢC
+          </h1>
+          <div className="text-8xl font-black text-neo-green mb-8 tracking-tighter">
+            {finalScore !== null ? finalScore : '-'} <span className="text-3xl text-emerald-600">điểm</span>
+          </div>
+          
+          <p className="text-sm font-bold text-slate-500 mb-8 max-w-sm">
+            Bài làm của bạn đã được chấm tự động thông qua hệ thống phân tán.
+          </p>
+          
+          <button 
+            onClick={onLeave}
+            className="px-8 py-4 bg-neo-green hover:bg-emerald-600 text-white rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all font-black text-lg w-full"
+          >
+            QUAY VỀ DASHBOARD
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (submitStatus === 'FAILED') {
+    return (
+      <div className="w-full min-h-screen bg-[#f1f5f9] flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        <div className="w-full max-w-xl bg-white rounded-3xl border-4 border-rose-500 p-8 md:p-12 flex flex-col items-center text-center relative z-10 shadow-[8px_8px_0px_#f43f5e]">
+          <div className="w-24 h-24 mb-6 rounded-full bg-rose-100 flex items-center justify-center border-4 border-rose-500 text-rose-500">
+            <AlertCircle size={48} strokeWidth={3} />
+          </div>
+          <h1 className="text-3xl font-black text-slate-900 mb-4">
+            CÓ LỖI XẢY RA
+          </h1>
+          <p className="text-base font-bold text-slate-600 mb-8">
+            {failedMessage}
+          </p>
+          
+          <button 
+            onClick={onLeave}
+            className="px-8 py-4 bg-rose-500 hover:bg-rose-600 text-white rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all font-black text-lg w-full"
+          >
+            QUAY VỀ DASHBOARD
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="w-full min-h-screen bg-[#f1f5f9] flex flex-col md:flex-row p-4 gap-4">

@@ -38,14 +38,14 @@ public class SingleChoiceScoringStrategy implements ScoringStrategy {
 
         // Lấy danh sách đáp án đúng từ DB. Dù là SINGLE nhưng cấu trúc DB vẫn lưu dưới
         // dạng List để dùng chung.
-        List<String> correctAnswers = (List<String>) questionMetadata.get("correctAnswers");
+        List<?> correctAnswers = (List<?>) questionMetadata.get("correctAnswers");
         if (correctAnswers == null || correctAnswers.isEmpty()) {
             return BigDecimal.ZERO;
         }
 
         // Vì là trắc nghiệm 1 lựa chọn, nên đáp án đúng duy nhất chắc chắn nằm ở phần
         // tử đầu tiên (index 0)
-        String correctAnswer = correctAnswers.get(0);
+        String correctAnswer = String.valueOf(correctAnswers.get(0));
 
         // Chuyển đáp án học sinh gửi lên thành kiểu String (VD: "A", "B", "1716584213")
         String submittedAnswer = String.valueOf(studentAnswer);

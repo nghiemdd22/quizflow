@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import vn.edu.hust.quizflow.entity.QuestionType;
 
 import java.math.BigDecimal;
+import java.util.stream.Collectors;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -41,22 +42,20 @@ public class MultipleChoiceScoringStrategy implements ScoringStrategy {
         }
 
         // Kéo danh sách đáp án chuẩn từ Database (VD: ["A", "B", "C"])
-        List<String> correctAnswersList = (List<String>) questionMetadata.get("correctAnswers");
-        if (correctAnswersList == null || correctAnswersList.isEmpty()) {
+        List<?> correctAnswersRaw = (List<?>) questionMetadata.get("correctAnswers");
+        if (correctAnswersRaw == null || correctAnswersRaw.isEmpty()) {
             return BigDecimal.ZERO;
         }
 
-        List<String> submittedAnswersList = (List<String>) studentAnswer;
+        List<?> submittedAnswersRaw = (List<?>) studentAnswer;
 
-        // BƯỚC TỐI ƯU QUAN TRỌNG: Chuyển đổi List (Mảng) sang Set (Tập hợp)
-        // Tại sao lại dùng Set?
-        // Vì List có phân biệt thứ tự, còn Set thì không.
-        // Giả sử đáp án đúng là ["A", "B"]. Nếu học sinh tích chọn ["B", "A"] gửi lên,
-        // hai cái List này so sánh bằng nhau (equals) sẽ trả về FALSE.
-        // Nhưng nếu vứt vào Set, thì hai Set ["A", "B"] và ["B", "A"] sẽ được coi là
-        // BẰNG NHAU (TRUE).
-        Set<String> correctAnswersSet = new HashSet<>(correctAnswersList);
-        Set<String> submittedAnswersSet = new HashSet<>(submittedAnswersList);
+        // BƯỚC TỐI ƯU QUAN TRỌNG: Chuyển đổi List (Mảng) sang Set (Tập hợp) String
+        Set<String> correctAnswersSet = correctAnswersRaw.stream()
+                .map(String::valueOf)
+                .collect(Collectors.toSet());
+        Set<String> submittedAnswersSet = submittedAnswersRaw.stream()
+                .map(String::valueOf)
+                .collect(Collectors.toSet());
 
         // So sánh 2 tập hợp. Nếu khớp nhau 100% về số lượng và phần tử thì mới cho điểm
         // tuyệt đối.

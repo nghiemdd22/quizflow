@@ -38,9 +38,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         // Kích hoạt một in-memory message broker (trạm trung chuyển tin nhắn lưu ngay trong bộ nhớ RAM).
-        // Các tin nhắn gửi từ Server xuống Client sẽ mang tiền tố là "/topic" (ví dụ: "/topic/room/1").
-        // Frontend sẽ "subscribe" (đăng ký theo dõi) vào các đường dẫn bắt đầu bằng "/topic" này để nhận tin nhắn.
-        config.enableSimpleBroker("/topic");
+        // Các tin nhắn gửi từ Server xuống Client sẽ mang tiền tố là "/topic" (ví dụ: "/topic/room/1") hoặc "/queue".
+        // Frontend sẽ "subscribe" (đăng ký theo dõi) vào các đường dẫn bắt đầu bằng "/topic" hoặc "/user/queue" này để nhận tin nhắn.
+        config.enableSimpleBroker("/topic", "/queue");
         
         // Đặt tiền tố cho các tin nhắn từ Client gửi ngược lên Server.
         // Những tin nhắn có tiền tố "/app" sẽ được tự động chuyển tới các phương thức được gắn @MessageMapping trong Controller để xử lý.

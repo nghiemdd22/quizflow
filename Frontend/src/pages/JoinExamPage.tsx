@@ -13,7 +13,7 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showQR, setShowQR] = useState(false)
-  
+
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
   useEffect(() => {
@@ -49,14 +49,14 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault()
     const pastedData = e.clipboardData.getData('text').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6)
-    
+
     if (pastedData) {
       const newPin = [...pin]
       for (let i = 0; i < pastedData.length; i++) {
         newPin[i] = pastedData[i]
       }
       setPin(newPin)
-      
+
       const nextFocusIndex = Math.min(pastedData.length, 5)
       inputRefs.current[nextFocusIndex]?.focus()
     }
@@ -68,10 +68,10 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
       setError("Please enter a 6-character PIN!")
       return
     }
-    
+
     setIsLoading(true)
     setError(null)
-    
+
     try {
       const response = await apiFetch('/api/v1/student/sessions/join', {
         method: 'POST',
@@ -100,7 +100,7 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
       <div className="absolute top-10 left-10 w-32 h-32 bg-neo-yellow/20 rounded-full blur-2xl pointer-events-none"></div>
       <div className="absolute bottom-10 right-10 w-48 h-48 bg-neo-purple/10 rounded-full blur-3xl pointer-events-none"></div>
 
-      <button 
+      <button
         onClick={onBack}
         className="mb-4 flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors self-start z-10"
       >
@@ -108,7 +108,7 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
       </button>
 
       <div className="flex flex-col lg:flex-row gap-6 items-stretch z-10">
-        
+
         {/* Left Column: Instructions & Info */}
         <div className="flex-1 bg-neo-purple text-white neo-card p-5 lg:p-7 flex flex-col justify-between relative overflow-hidden">
           <div className="relative z-10">
@@ -159,7 +159,7 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
               </ul>
             </div>
           </div>
-          
+
           <div className="absolute -bottom-10 -right-10 opacity-10">
             <MonitorPlay size={160} />
           </div>
@@ -167,9 +167,9 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
 
         {/* Right Column: PIN Input Form */}
         <div className="flex-[1.2] bg-white neo-card p-5 lg:p-8 flex flex-col justify-center relative">
-          
+
           {/* Nút Scan QR trang trí */}
-          <button 
+          <button
             onClick={() => setShowQR(!showQR)}
             className="absolute top-6 right-6 p-2 rounded-xl border-2 border-slate-900 bg-slate-50 hover:bg-neo-blue hover:text-white transition-colors shadow-[2px_2px_0px_#0f172a] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] group"
             title="Scan QR Code"
@@ -222,24 +222,24 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
               {isLoading ? (
                 <div className="w-5 h-5 border-[3px] border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                <>Join Now <ArrowLeft className="rotate-180 group-hover:translate-x-1 transition-transform" size={16}/></>
+                <>Join Now <ArrowLeft className="rotate-180 group-hover:translate-x-1 transition-transform" size={16} /></>
               )}
             </button>
             <p className="text-center text-[10px] font-bold text-slate-400 mt-[-5px]">
               * Tip: You can press <kbd className="px-1.5 py-0.5 border border-slate-300 rounded bg-slate-100 text-slate-500">Enter</kbd> to join quickly
             </p>
           </div>
-          
+
           {/* Lịch sử tham gia gần đây (Trang trí) */}
           <div className="mt-6 pt-4 border-t-2 border-dashed border-slate-200">
             <div className="flex items-center gap-2 text-sm font-bold text-slate-500 mb-4">
               <History size={16} /> Recent PINs
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setPin(['P','H','Y','1','0','1'])} className="px-3 py-1.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-xs font-black text-slate-600 hover:border-neo-blue hover:text-neo-blue transition-colors">
+              <button onClick={() => setPin(['P', 'H', 'Y', '1', '0', '1'])} className="px-3 py-1.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-xs font-black text-slate-600 hover:border-neo-blue hover:text-neo-blue transition-colors">
                 PHY101
               </button>
-              <button onClick={() => setPin(['M','A','T','H','9','9'])} className="px-3 py-1.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-xs font-black text-slate-600 hover:border-neo-blue hover:text-neo-blue transition-colors">
+              <button onClick={() => setPin(['M', 'A', 'T', 'H', '9', '9'])} className="px-3 py-1.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-xs font-black text-slate-600 hover:border-neo-blue hover:text-neo-blue transition-colors">
                 MATH99
               </button>
             </div>

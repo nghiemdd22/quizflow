@@ -12,6 +12,8 @@ import vn.edu.hust.quizflow.repository.ExamSubmissionRepository;
 import vn.edu.hust.quizflow.repository.StudentAnswerRepository;
 import vn.edu.hust.quizflow.service.scoring.ScoringStrategy;
 import vn.edu.hust.quizflow.service.scoring.ScoringStrategyFactory;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -38,6 +40,7 @@ public class SubmissionGradingService {
     private final AsyncTransactionLogService asyncTransactionLogService;
     private final ExamQuestionRepository examQuestionRepository;
     private final ScoringStrategyFactory scoringStrategyFactory;
+    private final SimpMessagingTemplate messagingTemplate;
 
     /**
      * Hàm thực thi logic chấm điểm chính.
@@ -125,6 +128,14 @@ public class SubmissionGradingService {
             logEntry.setStatus(TransactionLogStatus.SUCCESS);
             asyncTransactionLogService.saveLog(logEntry);
 
+            // 8. Đẩy thông báo có điểm qua WebSocket cho Frontend
+            if (message.getUsername() != null) {
+                Map<String, Object> wsPayload = new HashMap<>();
+                wsPayload.put("status", "SCORED");
+                wsPayload.put("score", totalScore);
+                messagingTemplate.convertAndSendToUser(message.getUsername(), "/queue/exam-results", wsPayload);
+            }
+
             log.info("Đã chấm điểm xong. SubmissionId={}, TotalScore={}", submissionId, totalScore);
 
         } catch (Exception e) {
@@ -148,8 +159,16 @@ public class SubmissionGradingService {
                 asyncTransactionLogService.saveLog(logEntry);
             }
             
-            // Ném ngược lại Exception để RabbitMQ biết mà đẩy vào DLQ
-            throw new RuntimeException("Lỗi trong quá trình chấm điểm", e);
+            // Thông báo cho Frontend biết đã xảy ra lỗi để thoát trạng thái "Đang chấm điểm"
+            if (message.getUsername() != null) {
+                Map<String, Object> wsPayload = new HashMap<>();
+                wsPayload.put("status", "FAILED");
+                wsPayload.put("message", "Có lỗi xảy ra trong quá trình chấm điểm. Đừng lo lắng, bài làm của bạn đã được ghi nhận. Vui lòng kiểm tra lại ở mục Lịch sử sau ít phút.");
+                messagingTemplate.convertAndSendToUser(message.getUsername(), "/queue/exam-results", wsPayload);
+            }
+
+            // Ném ngược lại Exception chuyên biệt để RabbitMQ biết mà đẩy vào DLQ thay vì lặp vô tận
+            throw new AmqpRejectAndDontRequeueException("Lỗi trong quá trình chấm điểm, đẩy vào DLQ", e);
         }
     }
 }

@@ -179,8 +179,15 @@ public class ExamSessionService {
         // giờ làm bài.
         // - Nếu có rồi (nghĩa là rớt mạng F5 vô lại): Dùng lại hồ sơ cũ, thời gian bắt
         // đầu vẫn giữ nguyên.
+        // Tuy nhiên, nếu trạng thái đã là GRADING hoặc COMPLETED thì không cho phép vào lại thi nữa.
         ExamSubmission submission = examSubmissionRepository
                 .findByExamSessionIdAndStudentId(session.getId(), student.getId())
+                .map(sub -> {
+                    if (sub.getStatus() != SubmissionStatus.IN_PROGRESS) {
+                        throw new IllegalArgumentException("Bạn đã nộp bài rồi, không thể vào lại phòng thi.");
+                    }
+                    return sub;
+                })
                 .orElseGet(() -> {
                     ExamSubmission newSubmission = ExamSubmission.builder()
                             .examSession(session)
@@ -304,6 +311,7 @@ public class ExamSessionService {
         // Đóng gói Message Payload
         SubmitExamMessage message = SubmitExamMessage.builder()
                 .studentId(student.getId())
+                .username(student.getUsername())
                 .examSessionId(sessionId)
                 .answers(cleanAnswers)
                 .build();
@@ -352,6 +360,7 @@ public class ExamSessionService {
             // 5. Đóng gói bộ đáp án hoàn chỉnh thành Message
             SubmitExamMessage message = SubmitExamMessage.builder()
                     .studentId(submission.getStudent().getId())
+                    .username(submission.getStudent().getUsername())
                     .examSessionId(sessionId)
                     .answers(cleanAnswers)
                     .build();
