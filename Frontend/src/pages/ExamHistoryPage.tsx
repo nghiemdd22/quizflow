@@ -21,7 +21,7 @@ export const ExamHistoryPage: React.FC<ExamHistoryPageProps> = ({ onBack, onRevi
   const [history, setHistory] = useState<ExamHistory[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
+
   const [filter, setFilter] = useState<'ALL' | 'COMPLETED' | 'IN_PROGRESS'>('ALL')
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
@@ -61,13 +61,13 @@ export const ExamHistoryPage: React.FC<ExamHistoryPageProps> = ({ onBack, onRevi
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'IN_PROGRESS':
-        return <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-700 border-2 border-amber-300 rounded-xl text-xs font-black"><AlertCircle size={14}/> IN PROGRESS</span>
+        return <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-700 border-2 border-amber-300 rounded-xl text-xs font-black"><AlertCircle size={14} /> IN PROGRESS</span>
       case 'GRADING':
-        return <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-sky-100 text-sky-700 border-2 border-sky-300 rounded-xl text-xs font-black"><Activity size={14}/> GRADING</span>
+        return <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-sky-100 text-sky-700 border-2 border-sky-300 rounded-xl text-xs font-black"><Activity size={14} /> GRADING</span>
       case 'COMPLETED':
-        return <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-700 border-2 border-emerald-300 rounded-xl text-xs font-black"><CheckCircle2 size={14}/> COMPLETED</span>
+        return <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-700 border-2 border-emerald-300 rounded-xl text-xs font-black"><CheckCircle2 size={14} /> COMPLETED</span>
       case 'ABANDONED':
-        return <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-100 text-rose-700 border-2 border-rose-300 rounded-xl text-xs font-black"><Target size={14}/> ABANDONED</span>
+        return <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-100 text-rose-700 border-2 border-rose-300 rounded-xl text-xs font-black"><Target size={14} /> ABANDONED</span>
       default:
         return <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-700 border-2 border-slate-300 rounded-xl text-xs font-black">{status}</span>
     }
@@ -75,23 +75,23 @@ export const ExamHistoryPage: React.FC<ExamHistoryPageProps> = ({ onBack, onRevi
 
   const filteredHistory = useMemo(() => {
     return history.filter(exam => {
-      const matchesSearch = exam.examTitle.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            exam.subjectName.toLowerCase().includes(searchQuery.toLowerCase())
-      
+      const matchesSearch = exam.examTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        exam.subjectName.toLowerCase().includes(searchQuery.toLowerCase())
+
       if (filter === 'ALL') return matchesSearch
       if (filter === 'COMPLETED') return matchesSearch && exam.status === 'COMPLETED'
       if (filter === 'IN_PROGRESS') return matchesSearch && (exam.status === 'IN_PROGRESS' || exam.status === 'GRADING')
-      
+
       return matchesSearch
     })
   }, [history, filter, searchQuery])
 
   const stats = useMemo(() => {
     const completed = history.filter(e => e.status === 'COMPLETED')
-    const avg = completed.length > 0 
-      ? completed.reduce((acc, curr) => acc + (curr.score || 0), 0) / completed.length 
+    const avg = completed.length > 0
+      ? completed.reduce((acc, curr) => acc + (curr.score || 0), 0) / completed.length
       : 0
-    
+
     return {
       total: history.length,
       completed: completed.length,
@@ -113,7 +113,7 @@ export const ExamHistoryPage: React.FC<ExamHistoryPageProps> = ({ onBack, onRevi
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 py-6">
-      <button 
+      <button
         onClick={onBack}
         className="w-fit mb-8 flex items-center gap-2 text-sm font-bold text-slate-900 bg-white px-4 py-2 rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all"
       >
@@ -166,31 +166,31 @@ export const ExamHistoryPage: React.FC<ExamHistoryPageProps> = ({ onBack, onRevi
       {!isLoading && !error && history.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
           <div className="flex bg-white neo-card p-1">
-            <button 
+            <button
               onClick={() => setFilter('ALL')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${filter === 'ALL' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
             >
               All
             </button>
-            <button 
+            <button
               onClick={() => setFilter('COMPLETED')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${filter === 'COMPLETED' ? 'bg-neo-green text-white' : 'text-slate-600 hover:bg-slate-100'}`}
             >
               Completed
             </button>
-            <button 
+            <button
               onClick={() => setFilter('IN_PROGRESS')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${filter === 'IN_PROGRESS' ? 'bg-neo-yellow text-slate-900' : 'text-slate-600 hover:bg-slate-100'}`}
             >
               In Progress
             </button>
           </div>
-          
+
           <div className="flex-1 relative w-full sm:w-auto">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search by subject or exam title..." 
+            <input
+              type="text"
+              placeholder="Search by subject or exam title..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-white neo-card text-sm font-bold placeholder:text-slate-400 focus:outline-none focus:border-neo-blue transition-colors"
@@ -227,7 +227,7 @@ export const ExamHistoryPage: React.FC<ExamHistoryPageProps> = ({ onBack, onRevi
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {paginatedHistory.map((exam) => (
-              <div 
+              <div
                 key={exam.id}
                 onClick={() => onReviewExam(exam.id)}
                 className="flex items-center gap-4 p-4 rounded-xl border-2 border-slate-200 bg-slate-50 hover:border-slate-900 hover:shadow-[4px_4px_0px_#0f172a] hover:-translate-y-1 transition-all cursor-pointer group"
@@ -235,7 +235,7 @@ export const ExamHistoryPage: React.FC<ExamHistoryPageProps> = ({ onBack, onRevi
                 <div className="w-12 h-12 bg-white rounded-lg border-2 border-slate-900 flex items-center justify-center text-slate-900 shrink-0">
                   <Activity size={24} strokeWidth={2.5} />
                 </div>
-                
+
                 <div className="flex-1 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-0.5">
@@ -255,7 +255,7 @@ export const ExamHistoryPage: React.FC<ExamHistoryPageProps> = ({ onBack, onRevi
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-4 md:border-l-2 md:border-slate-200 md:pl-4">
                     <div className="text-center min-w-[60px]">
                       <p className="text-[10px] font-black text-slate-400 mb-0.5 tracking-widest">SCORE</p>
@@ -272,7 +272,7 @@ export const ExamHistoryPage: React.FC<ExamHistoryPageProps> = ({ onBack, onRevi
               </div>
             ))}
           </div>
-          
+
           {/* Pagination Controls */}
           {totalPages > 1 && (
             <div className="mt-8 flex justify-center items-center gap-4">

@@ -109,7 +109,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
               >
                 Join Exam Room ➔
               </button>
-              
+
               <button
                 onClick={handleNavigateToHistory}
                 className="w-full py-4 text-base bg-blue-50 hover:bg-blue-100 border-2 border-slate-900 text-slate-900 neo-btn flex items-center justify-center gap-2"

@@ -102,7 +102,7 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
 
       <button
         onClick={onBack}
-        className="w-fit mb-4 flex items-center gap-2 text-sm font-bold text-slate-900 bg-white px-4 py-2 rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all self-start z-10"
+        className="w-fit mb-6 flex items-center gap-2 text-sm font-bold text-slate-900 bg-white px-4 py-2 rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all self-start z-10"
       >
         <ArrowLeft size={16} strokeWidth={3} /> Back to Home
       </button>
