@@ -303,7 +303,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
       {/* Time Out Modal */}
       {showTimeOutModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white neo-card p-6 md:p-8 flex flex-col items-center text-center animate-bounce-short shadow-[8px_8px_0px_#0f172a]">
+          <div className="w-full max-w-md bg-white neo-card p-6 md:p-8 flex flex-col items-center text-center animate-pop-in shadow-[8px_8px_0px_#0f172a]">
             <div className="w-20 h-20 mb-6 rounded-full bg-rose-100 flex items-center justify-center border-4 border-slate-900 text-rose-500 shadow-[4px_4px_0px_#0f172a]">
               <Clock size={40} strokeWidth={3} />
             </div>
@@ -324,7 +324,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
       {/* Confirm Modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white neo-card p-6 md:p-8 flex flex-col items-center text-center animate-bounce-short shadow-[8px_8px_0px_#0f172a]">
+          <div className="w-full max-w-md bg-white neo-card p-6 md:p-8 flex flex-col items-center text-center animate-pop-in shadow-[8px_8px_0px_#0f172a]">
             <div className="w-20 h-20 mb-6 rounded-full bg-amber-100 flex items-center justify-center border-4 border-slate-900 text-amber-500 shadow-[4px_4px_0px_#0f172a]">
               <AlertCircle size={40} strokeWidth={3} />
             </div>
@@ -372,7 +372,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
 
         {/* Question Area */}
         <div className="flex-1 bg-white neo-card flex flex-col">
-          <div className="p-6 md:p-10 flex-1">
+          <div key={currentQ.id} className="p-6 md:p-10 flex-1 animate-page-enter">
             <div className="inline-block px-3 py-1 bg-blue-100 text-blue-800 border-2 border-slate-900 rounded-xl text-xs font-black shadow-[2px_2px_0px_#0f172a] mb-6">
               Question {currentQIndex + 1} / {data.questions.length}
             </div>
@@ -445,14 +445,14 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
             <button
               onClick={() => setCurrentQIndex(prev => Math.max(0, prev - 1))}
               disabled={currentQIndex === 0}
-              className="px-6 py-3 bg-white border-2 border-slate-900 rounded-xl font-black shadow-[2px_2px_0px_#0f172a] disabled:opacity-50 disabled:shadow-none disabled:translate-x-[2px] disabled:translate-y-[2px] hover:bg-slate-100 flex items-center gap-2 transition-all"
+              className="px-6 py-3 bg-white border-2 border-slate-900 rounded-xl font-black shadow-[2px_2px_0px_#0f172a] disabled:opacity-50 disabled:shadow-none disabled:translate-x-[2px] disabled:translate-y-[2px] hover:bg-slate-100 active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center gap-2 transition-all"
             >
               <ChevronLeft size={18} strokeWidth={3} /> Previous
             </button>
             <button
               onClick={() => setCurrentQIndex(prev => Math.min(data.questions.length - 1, prev + 1))}
               disabled={currentQIndex === data.questions.length - 1}
-              className="px-6 py-3 bg-neo-blue text-white border-2 border-slate-900 rounded-xl font-black shadow-[2px_2px_0px_#0f172a] disabled:opacity-50 disabled:shadow-none disabled:translate-x-[2px] disabled:translate-y-[2px] hover:bg-blue-600 flex items-center gap-2 transition-all"
+              className="px-6 py-3 bg-neo-blue text-white border-2 border-slate-900 rounded-xl font-black shadow-[2px_2px_0px_#0f172a] disabled:opacity-50 disabled:shadow-none disabled:translate-x-[2px] disabled:translate-y-[2px] hover:bg-blue-600 active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center gap-2 transition-all"
             >
               Next <ChevronRight size={18} strokeWidth={3} />
             </button>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Target, Clock, ShieldCheck, Zap, BarChart, Users, Server, MonitorPlay, Activity, FileCheck, Star } from 'lucide-react'
+import { Target, Clock, ShieldCheck, Zap, BarChart, Users, Server, MonitorPlay, Activity, FileCheck, Star, BookOpen } from 'lucide-react'
 import type { Course } from '../types'
 
 interface LandingPageProps {
@@ -39,7 +39,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
   return (
     <>
       {showLoginToast && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-bounce">
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-pop-in">
           <div className="bg-rose-100 border-2 border-slate-900 px-6 py-3 rounded-3xl shadow-[4px_4px_0px_#0f172a] flex items-center gap-3">
             <span className="text-rose-600 font-extrabold text-sm">Please log in to perform this action!</span>
             <button onClick={() => setShowLoginToast(false)} className="text-slate-900 font-bold hover:text-rose-800">✕</button>
@@ -66,15 +66,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
           </p>
 
           <div className="flex flex-wrap gap-4 mb-12">
-            {isLoggedIn ? (
-              <a href="#why-choose-us" className="px-6 py-4 bg-neo-yellow hover:bg-yellow-400 text-slate-900 neo-btn text-base gap-2 inline-flex items-center">
-                Why Choose Us <span>↓</span>
-              </a>
-            ) : (
-              <button onClick={onOpenSignup} className="px-6 py-4 bg-neo-green hover:bg-neo-green-hover text-white neo-btn text-base gap-2">
-                Start for Free <span>➔</span>
-              </button>
-            )}
+            <a href="#why-choose-us" className="px-6 py-4 bg-neo-yellow hover:bg-yellow-400 text-slate-900 neo-btn text-base gap-2 inline-flex items-center">
+              Why Choose Us <span>↓</span>
+            </a>
             <a href="#features" className="px-6 py-4 bg-blue-50 hover:bg-blue-100 text-slate-900 neo-btn text-base border-blue-200">
               Explore Features
             </a>

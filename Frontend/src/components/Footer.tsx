@@ -11,7 +11,7 @@ export const Footer: React.FC = () => {
             <div className="w-8 h-8 rounded-xl bg-[#ffc4b8] flex items-center justify-center">
               <BookOpen className="text-[#1a3b5c] w-4 h-4" strokeWidth={2} />
             </div>
-            <span className="text-xl font-bold text-[#1a3b5c] tracking-tight">LearnHub</span>
+            <span className="text-xl font-bold text-[#1a3b5c] tracking-tight">QuizFlow</span>
           </a>
           <p className="text-xs text-slate-500 leading-relaxed font-medium max-w-sm">
             Empowering millions of learners worldwide with quality education accessible to everyone.

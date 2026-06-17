@@ -85,7 +85,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
       onClick={onClose}
     >
       <div 
-        className="bg-neo-bg neo-card p-6 md:p-8 max-w-md w-full relative"
+        className="bg-neo-bg neo-card p-6 md:p-8 max-w-md w-full relative animate-pop-in"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -96,7 +96,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
         </button>
 
         <h3 className="text-2xl font-black text-slate-900 mb-6 text-left">
-          {authMode === 'login' ? 'Đăng Nhập LearnHub' : 'Đăng Ký Tài Khoản'}
+          {authMode === 'login' ? 'Đăng Nhập QuizFlow' : 'Đăng Ký Tài Khoản'}
         </h3>
 
         <form onSubmit={handleAuthSubmit} className="flex flex-col gap-4 text-left">
@@ -201,7 +201,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
           </button>
 
           <p className="text-xs text-slate-500 font-bold text-center mt-3">
-            {authMode === 'login' ? 'Chưa có tài khoản LearnHub?' : 'Đã có tài khoản?'}{' '}
+            {authMode === 'login' ? 'Chưa có tài khoản QuizFlow?' : 'Đã có tài khoản?'}
             <button
               type="button"
               onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}

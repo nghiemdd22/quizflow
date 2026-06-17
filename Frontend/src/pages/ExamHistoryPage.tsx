@@ -132,31 +132,31 @@ export const ExamHistoryPage: React.FC<ExamHistoryPageProps> = ({ onBack, onRevi
       {/* Statistics Cards */}
       {!isLoading && !error && history.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-neo-blue text-white neo-card p-4 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+          <div className="bg-white neo-card p-4 flex items-center gap-4 group hover:-translate-y-1 hover:shadow-[6px_6px_0px_#0f172a] transition-all cursor-default">
+            <div className="w-12 h-12 rounded-2xl bg-sky-100 text-sky-600 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] flex items-center justify-center shrink-0 group-hover:bg-neo-blue group-hover:text-white transition-colors">
               <Target size={24} />
             </div>
             <div>
-              <p className="text-blue-100 font-bold text-sm mb-1">Total Exams</p>
-              <h3 className="text-3xl font-black">{stats.total}</h3>
+              <p className="text-slate-500 font-bold text-sm mb-1 uppercase tracking-wider group-hover:text-neo-blue transition-colors">Total Exams</p>
+              <h3 className="text-3xl font-black text-slate-900 group-hover:text-neo-blue transition-colors">{stats.total}</h3>
             </div>
           </div>
-          <div className="bg-neo-green text-white neo-card p-4 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+          <div className="bg-white neo-card p-4 flex items-center gap-4 group hover:-translate-y-1 hover:shadow-[6px_6px_0px_#0f172a] transition-all cursor-default">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] flex items-center justify-center shrink-0 group-hover:bg-neo-blue group-hover:text-white transition-colors">
               <CheckCircle2 size={24} />
             </div>
             <div>
-              <p className="text-green-100 font-bold text-sm mb-1">Completed</p>
-              <h3 className="text-3xl font-black">{stats.completed}</h3>
+              <p className="text-slate-500 font-bold text-sm mb-1 uppercase tracking-wider group-hover:text-neo-blue transition-colors">Completed</p>
+              <h3 className="text-3xl font-black text-slate-900 group-hover:text-neo-blue transition-colors">{stats.completed}</h3>
             </div>
           </div>
-          <div className="bg-neo-purple text-white neo-card p-4 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+          <div className="bg-white neo-card p-4 flex items-center gap-4 group hover:-translate-y-1 hover:shadow-[6px_6px_0px_#0f172a] transition-all cursor-default">
+            <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] flex items-center justify-center shrink-0 group-hover:bg-neo-blue group-hover:text-white transition-colors">
               <Activity size={24} />
             </div>
             <div>
-              <p className="text-purple-100 font-bold text-sm mb-1">Average Score</p>
-              <h3 className="text-3xl font-black">{stats.avgScore}</h3>
+              <p className="text-slate-500 font-bold text-sm mb-1 uppercase tracking-wider group-hover:text-neo-blue transition-colors">Average Score</p>
+              <h3 className="text-3xl font-black text-slate-900 group-hover:text-neo-blue transition-colors">{stats.avgScore}</h3>
             </div>
           </div>
         </div>
@@ -227,46 +227,50 @@ export const ExamHistoryPage: React.FC<ExamHistoryPageProps> = ({ onBack, onRevi
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {paginatedHistory.map((exam) => (
-              <div key={exam.id} className="bg-white neo-card neo-card-hover p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 group">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-[10px] font-black uppercase px-2 py-1 bg-slate-100 border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a]">
-                    {exam.subjectName}
-                  </span>
-                  {getStatusBadge(exam.status)}
+              <div 
+                key={exam.id}
+                onClick={() => onReviewExam(exam.id)}
+                className="flex items-center gap-4 p-4 rounded-xl border-2 border-slate-200 bg-slate-50 hover:border-slate-900 hover:shadow-[4px_4px_0px_#0f172a] hover:-translate-y-1 transition-all cursor-pointer group"
+              >
+                <div className="w-12 h-12 bg-white rounded-lg border-2 border-slate-900 flex items-center justify-center text-slate-900 shrink-0">
+                  <Activity size={24} strokeWidth={2.5} />
                 </div>
-                <h3 className="text-lg md:text-xl font-extrabold text-slate-900 mb-2 group-hover:text-neo-blue transition-colors line-clamp-2">
-                  {exam.examTitle}
-                </h3>
-                <div className="flex flex-col gap-1.5 text-[11px] font-bold text-slate-500 bg-slate-50 px-3 py-2 rounded-xl border-2 border-slate-100 w-fit">
-                  <div className="flex items-center gap-1.5">
-                    <Calendar size={13} className="text-slate-400 shrink-0" />
-                    <span>Started: <span className="text-slate-700">{formatDate(exam.startedAt)}</span></span>
+                
+                <div className="flex-1 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-0.5">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{exam.subjectName}</p>
+                      {getStatusBadge(exam.status)}
+                    </div>
+                    <h3 className="text-base md:text-lg font-bold text-slate-900 group-hover:text-neo-blue transition-colors line-clamp-1 mb-1">
+                      {exam.examTitle}
+                    </h3>
+                    <div className="flex items-center gap-3 text-[11px] font-bold text-slate-500">
+                      <span>Started: <span className="text-slate-700">{formatDate(exam.startedAt)}</span></span>
+                      {exam.submittedAt && (
+                        <>
+                          <span className="hidden sm:inline">•</span>
+                          <span className="hidden sm:inline">Submitted: <span className="text-slate-700">{formatDate(exam.submittedAt)}</span></span>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <Clock size={13} className="text-slate-400 shrink-0" />
-                    <span>Submitted: <span className="text-slate-700">{formatDate(exam.submittedAt)}</span></span>
+                  
+                  <div className="flex items-center gap-4 md:border-l-2 md:border-slate-200 md:pl-4">
+                    <div className="text-center min-w-[60px]">
+                      <p className="text-[10px] font-black text-slate-400 mb-0.5 tracking-widest">SCORE</p>
+                      <div className="text-2xl font-black text-slate-900 flex items-baseline justify-center gap-1 group-hover:text-neo-purple transition-colors">
+                        {exam.score != null ? exam.score : '-'}
+                        <span className="text-xs font-bold text-slate-400">/ 10</span>
+                      </div>
+                    </div>
+                    <div className="w-8 h-8 rounded-lg bg-white border-2 border-slate-200 group-hover:border-slate-900 group-hover:bg-neo-yellow flex items-center justify-center transition-all shrink-0">
+                      <ChevronRight size={16} strokeWidth={3} className="text-slate-400 group-hover:text-slate-900" />
+                    </div>
                   </div>
                 </div>
               </div>
-              
-              <div className="flex items-center gap-4 md:border-l-2 md:border-slate-100 md:pl-6">
-                <div className="text-center min-w-[70px]">
-                  <p className="text-[10px] font-black text-slate-400 mb-0.5 tracking-widest">SCORE</p>
-                  <div className="text-3xl font-black text-neo-purple flex items-baseline justify-center gap-1">
-                    {exam.score != null ? exam.score : '-'}
-                    <span className="text-xs font-bold text-slate-400">/ 10</span>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => onReviewExam(exam.id)}
-                  className="w-10 h-10 rounded-2xl bg-white hover:bg-neo-yellow border-2 border-slate-900 flex items-center justify-center shadow-[4px_4px_0px_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all shrink-0"
-                >
-                  <ChevronRight size={20} strokeWidth={3} className="text-slate-900" />
-                </button>
-              </div>
-            </div>
-          ))}
+            ))}
           </div>
           
           {/* Pagination Controls */}

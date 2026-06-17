@@ -9,11 +9,12 @@ import { JoinExamPage } from './pages/JoinExamPage'
 import { ExamRoom } from './pages/ExamRoom'
 import { ExamHistoryPage } from './pages/ExamHistoryPage'
 import { ExamReviewPage } from './pages/ExamReviewPage'
+import { AboutPage } from './pages/AboutPage'
 import type { Course, ExamRoomResponse } from './types'
 import { useAuthStore } from './store/authStore'
 
 function App() {
-  const [currentView, setCurrentView] = useState<'landing' | 'teacher-dashboard' | 'join-exam' | 'exam-room' | 'exam-history' | 'exam-review'>('landing')
+  const [currentView, setCurrentView] = useState<'landing' | 'teacher-dashboard' | 'join-exam' | 'exam-room' | 'exam-history' | 'exam-review' | 'about'>('landing')
   const [examRoomData, setExamRoomData] = useState<ExamRoomResponse | null>(null)
   const [reviewSubmissionId, setReviewSubmissionId] = useState<number | null>(null)
   const [isHeaderVisible, setIsHeaderVisible] = useState(true)
@@ -100,7 +101,7 @@ function App() {
           <div className="w-16 h-16 rounded-[14px] bg-[#ffc4b8] flex items-center justify-center">
             <BookOpen className="text-[#1a3b5c] w-8 h-8" strokeWidth={2} />
           </div>
-          <span className="text-5xl font-bold text-[#1a3b5c] tracking-tight">LearnHub</span>
+          <span className="text-5xl font-bold text-[#1a3b5c] tracking-tight">QuizFlow</span>
         </div>
         <div className="text-sm font-bold text-slate-500 tracking-widest uppercase animate-pulse">Đang kết nối...</div>
       </div>
@@ -124,40 +125,44 @@ function App() {
       )}
 
       <main className="flex-1 w-full flex flex-col">
-        {currentView === 'landing' ? (
-          <LandingPage
-            isLoggedIn={isLoggedIn}
-            onOpenSignup={() => { setAuthMode('signup'); setIsAuthOpen(true) }}
-            onCourseRegister={handleCourseRegister}
-            onNavigateToJoin={() => setCurrentView('join-exam')}
-            onNavigateToHistory={() => setCurrentView('exam-history')}
-          />
-        ) : currentView === 'teacher-dashboard' ? (
-          <TeacherDashboard />
-        ) : currentView === 'join-exam' ? (
-          <JoinExamPage
-            onBack={() => setCurrentView('landing')}
-            onJoinSuccess={(data) => {
-              setExamRoomData(data)
-              setCurrentView('exam-room')
-            }}
-          />
-        ) : currentView === 'exam-history' ? (
-          <ExamHistoryPage 
-            onBack={() => setCurrentView('landing')} 
-            onReviewExam={(id) => {
-              setReviewSubmissionId(id);
-              setCurrentView('exam-review');
-            }}
-          />
-        ) : currentView === 'exam-review' && reviewSubmissionId != null ? (
-          <ExamReviewPage 
-            submissionId={reviewSubmissionId} 
-            onBack={() => setCurrentView('exam-history')} 
-          />
-        ) : (
-          examRoomData && <ExamRoom data={examRoomData} onLeave={() => setCurrentView('landing')} />
-        )}
+        <div key={currentView} className="animate-page-enter flex-1 flex flex-col">
+          {currentView === 'landing' ? (
+            <LandingPage
+              isLoggedIn={isLoggedIn}
+              onOpenSignup={() => { setAuthMode('signup'); setIsAuthOpen(true) }}
+              onCourseRegister={handleCourseRegister}
+              onNavigateToJoin={() => setCurrentView('join-exam')}
+              onNavigateToHistory={() => setCurrentView('exam-history')}
+            />
+          ) : currentView === 'teacher-dashboard' ? (
+            <TeacherDashboard />
+          ) : currentView === 'join-exam' ? (
+            <JoinExamPage
+              onBack={() => setCurrentView('landing')}
+              onJoinSuccess={(data) => {
+                setExamRoomData(data)
+                setCurrentView('exam-room')
+              }}
+            />
+          ) : currentView === 'exam-history' ? (
+            <ExamHistoryPage 
+              onBack={() => setCurrentView('landing')} 
+              onReviewExam={(id) => {
+                setReviewSubmissionId(id);
+                setCurrentView('exam-review');
+              }}
+            />
+          ) : currentView === 'exam-review' && reviewSubmissionId != null ? (
+            <ExamReviewPage 
+              submissionId={reviewSubmissionId} 
+              onBack={() => setCurrentView('exam-history')} 
+            />
+          ) : currentView === 'about' ? (
+            <AboutPage />
+          ) : (
+            examRoomData && <ExamRoom data={examRoomData} onLeave={() => setCurrentView('landing')} />
+          )}
+        </div>
       </main>
 
       {currentView !== 'exam-room' && <Footer />}
