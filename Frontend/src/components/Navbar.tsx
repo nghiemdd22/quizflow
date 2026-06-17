@@ -58,19 +58,26 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Navigation Links (Desktop) */}
           <div className="hidden md:flex items-center gap-10 font-bold text-base">
-            {currentView === 'landing' ? (
-              <>
-                <a href="#courses" className="hover:text-neo-green transition-colors">Courses</a>
-                <a href="#why-choose" className="hover:text-neo-blue transition-colors">Teachers</a>
-                <a href="#cta" className="hover:text-neo-purple transition-colors">Pricing</a>
-                <a href="#footer" className="hover:text-neo-coral transition-colors">About</a>
-              </>
-            ) : (
+            {role === 'TEACHER' ? (
               <>
                 <a href="#" className="text-neo-blue font-black border-b-2 border-neo-blue">Dashboard</a>
                 <a href="#" className="hover:text-neo-green transition-colors text-slate-500">Students & Classes</a>
                 <a href="#" className="hover:text-neo-purple transition-colors text-slate-500">Analytics</a>
                 <a href="#" className="hover:text-neo-coral transition-colors text-slate-500">Help</a>
+              </>
+            ) : role === 'STUDENT' ? (
+              <>
+                <button onClick={() => setCurrentView('landing')} className={`transition-all cursor-pointer ${currentView === 'landing' ? 'text-slate-900 font-black' : 'hover:font-black'}`}>Home</button>
+                <button onClick={() => setCurrentView('join-exam')} className={`transition-all cursor-pointer ${currentView === 'join-exam' ? 'text-slate-900 font-black' : 'hover:font-black'}`}>Join Exam</button>
+                <button onClick={() => setCurrentView('exam-history')} className={`transition-all cursor-pointer ${currentView === 'exam-history' || currentView === 'exam-review' ? 'text-slate-900 font-black' : 'hover:font-black'}`}>History</button>
+                <button onClick={() => { setCurrentView('landing'); setTimeout(() => document.getElementById('why-choose-us')?.scrollIntoView({ behavior: 'smooth' }), 100); }} className="transition-all cursor-pointer hover:font-black">About</button>
+              </>
+            ) : (
+              <>
+                <a href="#courses" className="hover:text-neo-green transition-colors">Courses</a>
+                <a href="#why-choose" className="hover:text-neo-blue transition-colors">Teachers</a>
+                <a href="#cta" className="hover:text-neo-purple transition-colors">Pricing</a>
+                <a href="#why-choose-us" className="hover:text-neo-coral transition-colors">About</a>
               </>
             )}
           </div>
