@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Target, Clock, ShieldCheck, Zap, BarChart, Users, Server, MonitorPlay, Activity, FileCheck, Star, BookOpen } from 'lucide-react'
+import { Target, Clock, ShieldCheck, Zap, BarChart, Users, Server, MonitorPlay, Activity, FileCheck, Star } from 'lucide-react'
 import type { Course } from '../types'
 
 interface LandingPageProps {
@@ -48,7 +48,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
       )}
 
       {/* HERO SECTION */}
-      <section className="w-full max-w-7xl mx-auto px-4 py-12 md:py-20 grid md:grid-cols-12 gap-12 items-center">
+      <section className="w-full max-w-7xl mx-auto px-4 pt-12 pb-4 md:pt-20 md:pb-10 grid md:grid-cols-12 gap-12 items-center">
         <div className="md:col-span-7 flex flex-col items-start text-left">
           <div className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-[#d1fae5] border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] text-emerald-800 text-xs font-extrabold mb-8">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
@@ -65,7 +65,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
             Advanced online exam system. Comprehensive anti-cheat protection and instant grading.
           </p>
 
-          <div className="flex flex-wrap gap-4 mb-12">
+          <div className="flex flex-wrap gap-4 mb-8">
             <a href="#why-choose-us" className="px-6 py-4 bg-neo-yellow hover:bg-yellow-400 text-slate-900 neo-btn text-base gap-2 inline-flex items-center">
               Why Choose Us <span>↓</span>
             </a>
@@ -74,7 +74,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
             </a>
           </div>
 
-          <div className="flex gap-10 md:gap-14 border-t-2 border-dashed border-slate-300 pt-8 w-full max-w-md">
+          <div className="flex gap-10 md:gap-14 w-full max-w-md">
             <div>
               <div className="text-3xl font-extrabold">100K+</div>
               <div className="text-xs text-slate-500 font-bold mt-1">Exams Taken</div>

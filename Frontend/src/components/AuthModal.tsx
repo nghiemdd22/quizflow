@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 interface AuthModalProps {
   isOpen: boolean
   onClose: () => void
-  onLoginSuccess: (token: string, username: string, role: string, id: number) => void
+  onLoginSuccess: (token: string, username: string, fullName: string, role: string, id: number) => void
   initialMode?: 'login' | 'signup'
 }
 
@@ -40,7 +40,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
         const data = await res.json()
         if (res.ok) {
           // Pass full data back
-          onLoginSuccess(data.token, data.username, data.role, data.id)
+          onLoginSuccess(data.token, data.username, data.fullName || data.username, data.role, data.id)
           setEmail('')
           setPassword('')
           onClose()

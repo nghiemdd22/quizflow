@@ -33,7 +33,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
       
       if (refreshRes.ok) {
         const data = await refreshRes.json()
-        useAuthStore.getState().setAuth(data.token, data.username, data.role, data.id)
+        useAuthStore.getState().setAuth(data.token, data.username, data.fullName || data.username, data.role, data.id)
         
         // Gắn token mới và gọi lại request ban đầu
         headers.set('Authorization', `Bearer ${data.token}`)
@@ -79,7 +79,7 @@ export async function apiFetchMultipart(endpoint: string, options: RequestInit =
       
       if (refreshRes.ok) {
         const data = await refreshRes.json()
-        useAuthStore.getState().setAuth(data.token, data.username, data.role, data.id)
+        useAuthStore.getState().setAuth(data.token, data.username, data.fullName || data.username, data.role, data.id)
         
         headers.set('Authorization', `Bearer ${data.token}`)
         response = await fetch(endpoint, fetchOptions)

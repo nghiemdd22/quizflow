@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { BookOpen, User } from 'lucide-react'
 
+import { useAuthStore } from '../store/authStore'
+
 interface NavbarProps {
   isHeaderVisible: boolean
   isLoggedIn: boolean
@@ -9,8 +11,8 @@ interface NavbarProps {
   onLogout: () => void
   onOpenLogin: () => void
   onOpenSignup: () => void
-  currentView: 'landing' | 'teacher-dashboard' | 'exam-room' | 'join-exam' | 'exam-history' | 'exam-review' | 'about'
-  setCurrentView: (view: 'landing' | 'teacher-dashboard' | 'exam-room' | 'join-exam' | 'exam-history' | 'exam-review' | 'about') => void
+  currentView: 'landing' | 'teacher-dashboard' | 'exam-room' | 'join-exam' | 'exam-history' | 'exam-review' | 'about' | 'profile' | 'settings'
+  setCurrentView: (view: 'landing' | 'teacher-dashboard' | 'exam-room' | 'join-exam' | 'exam-history' | 'exam-review' | 'about' | 'profile' | 'settings') => void
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -26,6 +28,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const { userFullName } = useAuthStore()
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -96,16 +99,23 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <div className="absolute right-0 mt-3 w-48 bg-white border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] rounded-xl flex flex-col p-2 z-50 animate-pop-in origin-top-right">
                       <div className="px-3 py-2 border-b-2 border-slate-100 mb-2">
                         <p className="text-xs font-bold text-slate-500">Account</p>
-                        <p className="text-sm font-black truncate">{userEmail}</p>
+                        <p className="text-sm font-black truncate text-slate-900">{userFullName || userEmail}</p>
+                        <p className="text-xs font-bold truncate text-slate-500 mt-0.5">{userEmail}</p>
                       </div>
                       <button
-                        onClick={() => setIsDropdownOpen(false)}
+                        onClick={() => {
+                          setIsDropdownOpen(false)
+                          setCurrentView('profile')
+                        }}
                         className="text-left px-3 py-2 text-sm font-bold hover:bg-slate-100 rounded-xl transition-colors"
                       >
                         Profile
                       </button>
                       <button
-                        onClick={() => setIsDropdownOpen(false)}
+                        onClick={() => {
+                          setIsDropdownOpen(false)
+                          setCurrentView('settings')
+                        }}
                         className="text-left px-3 py-2 text-sm font-bold hover:bg-slate-100 rounded-xl transition-colors"
                       >
                         Settings

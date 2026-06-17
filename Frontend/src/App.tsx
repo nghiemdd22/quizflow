@@ -10,11 +10,13 @@ import { ExamRoom } from './pages/ExamRoom'
 import { ExamHistoryPage } from './pages/ExamHistoryPage'
 import { ExamReviewPage } from './pages/ExamReviewPage'
 import { AboutPage } from './pages/AboutPage'
+import { ProfilePage } from './pages/ProfilePage'
+import { SettingsPage } from './pages/SettingsPage'
 import type { Course, ExamRoomResponse } from './types'
 import { useAuthStore } from './store/authStore'
 
 function App() {
-  const [currentView, setCurrentView] = useState<'landing' | 'teacher-dashboard' | 'join-exam' | 'exam-room' | 'exam-history' | 'exam-review' | 'about'>('landing')
+  const [currentView, setCurrentView] = useState<'landing' | 'teacher-dashboard' | 'join-exam' | 'exam-room' | 'exam-history' | 'exam-review' | 'about' | 'profile' | 'settings'>('landing')
   const [examRoomData, setExamRoomData] = useState<ExamRoomResponse | null>(null)
   const [reviewSubmissionId, setReviewSubmissionId] = useState<number | null>(null)
   const [isHeaderVisible, setIsHeaderVisible] = useState(true)
@@ -40,7 +42,7 @@ function App() {
           })
           if (res.ok) {
             const data = await res.json()
-            setAuth(data.token, data.username, data.role, data.id)
+            setAuth(data.token, data.username, data.fullName || data.username, data.role, data.id)
             if (data.role === 'TEACHER') {
               setCurrentView('teacher-dashboard')
             }
@@ -68,8 +70,8 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [lastScrollY])
 
-  const handleLoginSuccess = (token: string, username: string, role: string, id: number) => {
-    setAuth(token, username, role, id)
+  const handleLoginSuccess = (token: string, username: string, fullName: string, role: string, id: number) => {
+    setAuth(token, username, fullName || username, role, id)
     if (role === 'TEACHER') {
       setCurrentView('teacher-dashboard')
     } else {
@@ -90,7 +92,7 @@ function App() {
   }
 
   const handleCourseRegister = (course: Course) => {
-    setAuth('dummy-token', 'trial@quizflow.com', 'STUDENT', 999)
+    setAuth('dummy-token', 'trial@quizflow.com', 'Trial User', 'STUDENT', 999)
     alert(`Đăng ký học thử khóa "${course.title}" thành công!`)
   }
 
@@ -159,6 +161,10 @@ function App() {
             />
           ) : currentView === 'about' ? (
             <AboutPage />
+          ) : currentView === 'profile' ? (
+            <ProfilePage onBack={() => setCurrentView('landing')} />
+          ) : currentView === 'settings' ? (
+            <SettingsPage onBack={() => setCurrentView('landing')} />
           ) : (
             examRoomData && <ExamRoom data={examRoomData} onLeave={() => setCurrentView('landing')} />
           )}

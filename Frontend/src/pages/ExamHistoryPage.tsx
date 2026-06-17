@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { ArrowLeft, Clock, Search, Calendar, ChevronRight, Activity, Target, CheckCircle2, AlertCircle, ChevronLeft } from 'lucide-react'
+import { ArrowLeft, Search, ChevronRight, Activity, Target, CheckCircle2, AlertCircle, ChevronLeft } from 'lucide-react'
 import { apiFetch } from '../utils/api'
 
 interface ExamHistory {
