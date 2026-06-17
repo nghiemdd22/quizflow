@@ -66,9 +66,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
           </p>
 
           <div className="flex flex-wrap gap-4 mb-12">
-            <button onClick={onOpenSignup} className="px-6 py-4 bg-neo-green hover:bg-neo-green-hover text-white neo-btn text-base gap-2">
-              Start for Free <span>➔</span>
-            </button>
+            {isLoggedIn ? (
+              <a href="#why-choose-us" className="px-6 py-4 bg-neo-yellow hover:bg-yellow-400 text-slate-900 neo-btn text-base gap-2 inline-flex items-center">
+                Why Choose Us <span>↓</span>
+              </a>
+            ) : (
+              <button onClick={onOpenSignup} className="px-6 py-4 bg-neo-green hover:bg-neo-green-hover text-white neo-btn text-base gap-2">
+                Start for Free <span>➔</span>
+              </button>
+            )}
             <a href="#features" className="px-6 py-4 bg-blue-50 hover:bg-blue-100 text-slate-900 neo-btn text-base border-blue-200">
               Explore Features
             </a>
@@ -208,7 +214,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
       </section>
 
       {/* WHY CHOOSE US SECTION */}
-      <section className="w-full max-w-7xl mx-auto px-4 py-16 md:py-24 text-center">
+      <section id="why-choose-us" className="w-full max-w-7xl mx-auto px-4 py-16 md:py-24 text-center">
         <div className="inline-flex px-4 py-1.5 bg-[#fee2e2] border-2 border-slate-900 rounded-xl text-rose-800 text-xs font-extrabold mb-4 shadow-[2px_2px_0px_#0f172a]">
           Why Choose Us
         </div>
