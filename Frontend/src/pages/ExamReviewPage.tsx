@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { ArrowLeft, CheckCircle2, XCircle, FileText, Calendar, Target, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { apiFetch } from '../utils/api'
 
 interface QuestionReview {
@@ -23,12 +24,9 @@ interface ExamReview {
   questions: QuestionReview[]
 }
 
-interface ExamReviewPageProps {
-  submissionId: number
-  onBack: () => void
-}
-
-export const ExamReviewPage: React.FC<ExamReviewPageProps> = ({ submissionId, onBack }) => {
+export const ExamReviewPage: React.FC = () => {
+  const { submissionId } = useParams()
+  const navigate = useNavigate()
   const [review, setReview] = useState<ExamReview | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -251,7 +249,7 @@ export const ExamReviewPage: React.FC<ExamReviewPageProps> = ({ submissionId, on
           <h1 className="text-2xl font-black text-slate-900 mb-4">Error Loading Review</h1>
           <p className="text-slate-600 font-bold mb-8">{error || "Unknown error"}</p>
           <button 
-            onClick={onBack}
+            onClick={() => navigate('/exam-history')}
             className="px-8 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-black shadow-[4px_4px_0px_#0f172a] transition-all"
           >
             GO BACK
@@ -265,7 +263,7 @@ export const ExamReviewPage: React.FC<ExamReviewPageProps> = ({ submissionId, on
     <div className="w-full min-h-screen bg-[#f1f5f9] px-4 py-6">
       <div className="max-w-5xl mx-auto">
         <button 
-          onClick={onBack}
+          onClick={() => navigate('/exam-history')}
           className="w-fit mb-6 flex items-center gap-2 text-sm font-bold text-slate-900 bg-white px-4 py-2 rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all"
         >
           <ArrowLeft size={16} strokeWidth={3} /> Back to History
@@ -354,7 +352,7 @@ export const ExamReviewPage: React.FC<ExamReviewPageProps> = ({ submissionId, on
         
         <div className="mt-8 flex justify-center">
           <button 
-            onClick={onBack}
+            onClick={() => navigate('/exam-history')}
             className="px-8 py-3 bg-neo-blue hover:bg-blue-600 text-white border-2 border-slate-900 rounded-xl font-black text-base shadow-[4px_4px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all"
           >
             FINISH REVIEW

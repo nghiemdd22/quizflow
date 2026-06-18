@@ -1,14 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Target, ArrowLeft, ShieldCheck, Clock, MonitorPlay, Zap, QrCode, History, Info } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { apiFetch } from '../utils/api'
-import type { ExamRoomResponse } from '../types'
 
-interface JoinExamPageProps {
-  onBack: () => void
-  onJoinSuccess: (data: ExamRoomResponse) => void
-}
-
-export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSuccess }) => {
+export const JoinExamPage: React.FC = () => {
+  const navigate = useNavigate()
   const [pin, setPin] = useState(['', '', '', '', '', ''])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -86,7 +82,7 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
       }
 
       const data = await response.json()
-      onJoinSuccess(data)
+      navigate('/exam-room', { state: { examRoomData: data } })
     } catch (err) {
       console.error('Join exam error:', err)
       setError('An error occurred connecting to the server')
@@ -101,7 +97,7 @@ export const JoinExamPage: React.FC<JoinExamPageProps> = ({ onBack, onJoinSucces
       <div className="absolute bottom-10 right-10 w-48 h-48 bg-neo-purple/10 rounded-full blur-3xl pointer-events-none"></div>
 
       <button
-        onClick={onBack}
+        onClick={() => navigate('/')}
         className="w-fit mb-6 flex items-center gap-2 text-sm font-bold text-slate-900 bg-white px-4 py-2 rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all self-start z-10"
       >
         <ArrowLeft size={16} strokeWidth={3} /> Back to Home

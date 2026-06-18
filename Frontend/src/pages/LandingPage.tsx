@@ -1,22 +1,21 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Target, Clock, ShieldCheck, Zap, BarChart, Users, Server, MonitorPlay, Activity, FileCheck, Star } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import type { Course } from '../types'
 
 interface LandingPageProps {
   isLoggedIn?: boolean
+  onOpenLogin: () => void
   onOpenSignup: () => void
   onCourseRegister: (course: Course) => void // Kept to prevent breaking App.tsx
-  onNavigateToJoin: () => void
-  onNavigateToHistory: () => void
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSignup, onNavigateToJoin, onNavigateToHistory }) => {
-  const [showLoginToast, setShowLoginToast] = useState(false)
+export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogin, onOpenSignup }) => {
+  const navigate = useNavigate()
 
   const handleRequireLogin = () => {
     if (!isLoggedIn) {
-      setShowLoginToast(true)
-      setTimeout(() => setShowLoginToast(false), 3000)
+      onOpenLogin()
     }
   }
 
@@ -25,7 +24,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
       handleRequireLogin()
       return
     }
-    onNavigateToJoin()
+    navigate('/join-exam')
   }
 
   const handleNavigateToHistory = () => {
@@ -33,20 +32,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
       handleRequireLogin()
       return
     }
-    onNavigateToHistory()
+    navigate('/exam-history')
   }
 
   return (
     <>
-      {showLoginToast && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-pop-in">
-          <div className="bg-rose-100 border-2 border-slate-900 px-6 py-3 rounded-3xl shadow-[4px_4px_0px_#0f172a] flex items-center gap-3">
-            <span className="text-rose-600 font-extrabold text-sm">Please log in to perform this action!</span>
-            <button onClick={() => setShowLoginToast(false)} className="text-slate-900 font-bold hover:text-rose-800">✕</button>
-          </div>
-        </div>
-      )}
-
       {/* HERO SECTION */}
       <section className="w-full max-w-7xl mx-auto px-4 pt-12 pb-4 md:pt-20 md:pb-10 grid md:grid-cols-12 gap-12 items-center">
         <div className="md:col-span-7 flex flex-col items-start text-left">
@@ -66,12 +56,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenSign
           </p>
 
           <div className="flex flex-wrap gap-4 mb-8">
-            <a href="#why-choose-us" className="px-6 py-4 bg-neo-yellow hover:bg-yellow-400 text-slate-900 neo-btn text-base gap-2 inline-flex items-center">
+            <button 
+              onClick={() => document.getElementById('why-choose-us')?.scrollIntoView({ behavior: 'smooth' })} 
+              className="px-6 py-4 bg-neo-yellow hover:bg-yellow-400 text-slate-900 neo-btn text-base gap-2 inline-flex items-center"
+            >
               Why Choose Us <span>↓</span>
-            </a>
-            <a href="#features" className="px-6 py-4 bg-blue-50 hover:bg-blue-100 text-slate-900 neo-btn text-base border-blue-200">
+            </button>
+            <button 
+              onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} 
+              className="px-6 py-4 bg-blue-50 hover:bg-blue-100 text-slate-900 neo-btn text-base border-blue-200"
+            >
               Explore Features
-            </a>
+            </button>
           </div>
 
           <div className="flex gap-10 md:gap-14 w-full max-w-md">

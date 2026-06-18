@@ -1,8 +1,10 @@
 import React from 'react'
 import { ArrowLeft, User, Mail, Shield, Award, Edit3 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 
-export const ProfilePage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+export const ProfilePage: React.FC = () => {
+  const navigate = useNavigate()
   const { userEmail, userFullName, userRole } = useAuthStore()
 
   return (
@@ -13,7 +15,7 @@ export const ProfilePage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
       <div className="w-full max-w-4xl mx-auto px-4 py-8 relative z-10 flex flex-col flex-1">
         <button
-          onClick={onBack}
+          onClick={() => navigate(-1)}
           className="w-fit mb-8 flex items-center gap-2 text-sm font-bold text-slate-900 bg-white px-4 py-2 rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all"
         >
           <ArrowLeft size={16} strokeWidth={3} /> Back

@@ -5,13 +5,16 @@ import { apiFetch } from '../utils/api'
 import type { ExamRoomResponse } from '../types'
 import { Clock, AlertCircle, CheckCircle, ChevronLeft, ChevronRight, LogOut, FileText } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
+import { useLocation, useNavigate, Navigate } from 'react-router-dom'
 
-interface ExamRoomProps {
-  data: ExamRoomResponse
-  onLeave: () => void
-}
+export const ExamRoom: React.FC = () => {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const data = location.state?.examRoomData as ExamRoomResponse
 
-export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
+  if (!data) {
+    return <Navigate to="/join-exam" replace />
+  }
   const [currentQIndex, setCurrentQIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<number, any>>({})
   const [timeLeft, setTimeLeft] = useState<number>(0)
@@ -262,7 +265,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
           </p>
           
           <button 
-            onClick={onLeave}
+            onClick={() => navigate('/', { replace: true })}
             className="px-8 py-4 bg-neo-green hover:bg-emerald-600 text-white rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all font-black text-lg w-full"
           >
             RETURN TO DASHBOARD
@@ -287,7 +290,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
           </p>
           
           <button 
-            onClick={onLeave}
+            onClick={() => navigate('/', { replace: true })}
             className="px-8 py-4 bg-rose-500 hover:bg-rose-600 text-white rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all font-black text-lg w-full"
           >
             RETURN TO DASHBOARD
@@ -365,7 +368,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
               )}
             </div>
           </div>
-          <button onClick={onLeave} className="w-10 h-10 bg-rose-100 text-rose-600 border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0f172a] flex items-center justify-center transition-all">
+          <button onClick={() => navigate('/', { replace: true })} className="w-10 h-10 bg-rose-100 text-rose-600 border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0f172a] flex items-center justify-center transition-all">
             <LogOut size={18} strokeWidth={3} />
           </button>
         </div>
@@ -504,6 +507,12 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({ data, onLeave }) => {
             >
               <CheckCircle size={22} strokeWidth={3} />
               Submit Exam
+            </button>
+            <button
+              onClick={() => navigate('/', { replace: true })}
+              className="w-full mt-3 flex items-center justify-center gap-2 text-rose-500 hover:bg-rose-50 px-4 py-2 rounded-xl transition-colors font-bold border-2 border-transparent hover:border-rose-200"
+            >
+              <LogOut size={20} strokeWidth={2.5} /> Leave Room
             </button>
           </div>
         </div>

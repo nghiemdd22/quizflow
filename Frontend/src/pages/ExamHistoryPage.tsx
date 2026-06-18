@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { ArrowLeft, Search, ChevronRight, Activity, Target, CheckCircle2, AlertCircle, ChevronLeft } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { apiFetch } from '../utils/api'
 
 interface ExamHistory {
@@ -12,12 +13,8 @@ interface ExamHistory {
   status: string
 }
 
-interface ExamHistoryPageProps {
-  onBack: () => void
-  onReviewExam: (submissionId: number) => void
-}
-
-export const ExamHistoryPage: React.FC<ExamHistoryPageProps> = ({ onBack, onReviewExam }) => {
+export const ExamHistoryPage: React.FC = () => {
+  const navigate = useNavigate()
   const [history, setHistory] = useState<ExamHistory[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -114,7 +111,7 @@ export const ExamHistoryPage: React.FC<ExamHistoryPageProps> = ({ onBack, onRevi
   return (
     <div className="w-full max-w-5xl mx-auto px-4 py-6">
       <button
-        onClick={onBack}
+        onClick={() => navigate('/')}
         className="w-fit mb-8 flex items-center gap-2 text-sm font-bold text-slate-900 bg-white px-4 py-2 rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all"
       >
         <ArrowLeft size={16} strokeWidth={3} /> Back to Home
@@ -229,7 +226,7 @@ export const ExamHistoryPage: React.FC<ExamHistoryPageProps> = ({ onBack, onRevi
             {paginatedHistory.map((exam) => (
               <div
                 key={exam.id}
-                onClick={() => onReviewExam(exam.id)}
+                onClick={() => navigate('/exam-review/' + exam.id)}
                 className="flex items-center gap-4 p-4 rounded-xl border-2 border-slate-200 bg-slate-50 hover:border-slate-900 hover:shadow-[4px_4px_0px_#0f172a] hover:-translate-y-1 transition-all cursor-pointer group"
               >
                 <div className="w-12 h-12 bg-white rounded-lg border-2 border-slate-900 flex items-center justify-center text-slate-900 shrink-0">

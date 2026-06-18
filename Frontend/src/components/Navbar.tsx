@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { BookOpen, User } from 'lucide-react'
-
 import { useAuthStore } from '../store/authStore'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 
 interface NavbarProps {
   isHeaderVisible: boolean
@@ -11,8 +11,6 @@ interface NavbarProps {
   onLogout: () => void
   onOpenLogin: () => void
   onOpenSignup: () => void
-  currentView: 'landing' | 'teacher-dashboard' | 'exam-room' | 'join-exam' | 'exam-history' | 'exam-review' | 'about' | 'profile' | 'settings'
-  setCurrentView: (view: 'landing' | 'teacher-dashboard' | 'exam-room' | 'join-exam' | 'exam-history' | 'exam-review' | 'about' | 'profile' | 'settings') => void
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -22,13 +20,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   role,
   onLogout,
   onOpenLogin,
-  onOpenSignup,
-  currentView,
-  setCurrentView
+  onOpenSignup
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const { userFullName } = useAuthStore()
+  const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -43,48 +41,41 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <div className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${isHeaderVisible ? 'translate-y-0' : '-translate-y-[calc(100%+20px)]'}`}>
       <div className="w-full max-w-7xl mx-auto px-4 pt-6">
-        <nav className="bg-white border-2 border-slate-900 rounded-3xl shadow-[4px_4px_0px_#0f172a] hover:shadow-[2px_2px_0px_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] transition-all px-6 py-4 md:px-8 md:py-5 flex items-center justify-between">
-          {/* Logo QuizFlow */}
-          <a href="#" onClick={(e) => { 
-            e.preventDefault(); 
-            if (role === 'TEACHER') {
-              setCurrentView('teacher-dashboard');
-            } else {
-              setCurrentView('landing'); 
-            }
-          }} className="flex items-center gap-4 group transition-opacity hover:opacity-80">
+        <nav className="relative bg-white border-2 border-slate-900 rounded-3xl shadow-[4px_4px_0px_#0f172a] hover:shadow-[2px_2px_0px_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] transition-all px-6 py-4 md:px-8 md:py-5 flex items-center justify-between">
+          {/* Logo */}
+          <Link to={role === 'TEACHER' ? '/teacher-dashboard' : '/'} className="flex items-center gap-4 group transition-opacity hover:opacity-80 z-10">
             <div className="w-12 h-12 rounded-xl bg-[#ffc4b8] border-2 border-slate-900 flex items-center justify-center shadow-[2px_2px_0px_#0f172a]">
               <BookOpen className="text-[#1a3b5c] w-6 h-6" strokeWidth={2.5} />
             </div>
-            <span className="text-3xl font-black text-[#1a3b5c] tracking-tight">QuizFlow</span>
-          </a>
+            <span className="text-3xl font-black text-[#1a3b5c] tracking-tight hidden sm:block">QuizFlow</span>
+          </Link>
 
           {/* Navigation Links (Desktop) */}
-          <div className="hidden md:flex items-center gap-10 font-bold text-base">
-            {role === 'TEACHER' ? (
-              <>
-                <a href="#" className="text-neo-blue font-black border-b-2 border-neo-blue">Dashboard</a>
-                <a href="#" className="hover:text-neo-green transition-colors text-slate-500">Students & Classes</a>
-                <a href="#" className="hover:text-neo-purple transition-colors text-slate-500">Analytics</a>
-                <a href="#" className="hover:text-neo-coral transition-colors text-slate-500">Help</a>
-              </>
-            ) : role === 'STUDENT' ? (
-              <>
-                <button onClick={() => setCurrentView('landing')} className={`transition-all cursor-pointer ${currentView === 'landing' ? 'text-slate-900 font-black' : 'hover:font-black'}`}>Home</button>
-                <button onClick={() => setCurrentView('join-exam')} className={`transition-all cursor-pointer ${currentView === 'join-exam' ? 'text-slate-900 font-black' : 'hover:font-black'}`}>Join Exam</button>
-                <button onClick={() => setCurrentView('exam-history')} className={`transition-all cursor-pointer ${currentView === 'exam-history' || currentView === 'exam-review' ? 'text-slate-900 font-black' : 'hover:font-black'}`}>History</button>
-                <button onClick={() => setCurrentView('about')} className={`transition-all cursor-pointer ${currentView === 'about' ? 'text-slate-900 font-black' : 'hover:font-black'}`}>About</button>
-              </>
-            ) : (
-              <>
-                <button onClick={() => setCurrentView('landing')} className={`transition-all cursor-pointer ${currentView === 'landing' ? 'text-slate-900 font-black' : 'hover:font-black'}`}>Home</button>
-                <button onClick={() => setCurrentView('about')} className={`transition-all cursor-pointer ${currentView === 'about' ? 'text-slate-900 font-black' : 'hover:font-black'}`}>About</button>
-              </>
-            )}
+          <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-10 font-bold text-base whitespace-nowrap">
+              {role === 'TEACHER' ? (
+                <>
+                  <Link to="/teacher-dashboard" className="text-neo-blue font-black border-b-2 border-neo-blue">Dashboard</Link>
+                  <Link to="/teacher/students" className="hover:text-neo-green transition-colors text-slate-500">Students & Classes</Link>
+                  <Link to="/teacher/analytics" className="hover:text-neo-purple transition-colors text-slate-500">Analytics</Link>
+                  <Link to="/teacher/help" className="hover:text-neo-coral transition-colors text-slate-500">Help</Link>
+                </>
+              ) : role === 'STUDENT' ? (
+                <>
+                  <Link to="/" className={`transition-all ${location.pathname === '/' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Home</Link>
+                  <Link to="/join-exam" className={`transition-all ${location.pathname === '/join-exam' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Join Exam</Link>
+                  <Link to="/exam-history" className={`transition-all ${location.pathname.startsWith('/exam-history') || location.pathname.startsWith('/exam-review') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>History</Link>
+                  <Link to="/about" className={`transition-all ${location.pathname === '/about' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>About</Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/" className={`transition-all ${location.pathname === '/' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Home</Link>
+                  <Link to="/about" className={`transition-all ${location.pathname === '/about' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>About</Link>
+                </>
+              )}
           </div>
 
           {/* Auth Controls */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 z-10">
             {isLoggedIn ? (
               <div className="flex items-center gap-3">
                 <div className="relative" ref={dropdownRef}>
@@ -105,18 +96,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <button
                         onClick={() => {
                           setIsDropdownOpen(false)
-                          setCurrentView('profile')
+                          navigate('/profile')
                         }}
-                        className="text-left px-3 py-2 text-sm font-bold hover:bg-slate-100 rounded-xl transition-colors"
+                        className="w-full text-left px-3 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-colors cursor-pointer"
                       >
-                        Profile
+                        My Profile
                       </button>
                       <button
                         onClick={() => {
                           setIsDropdownOpen(false)
-                          setCurrentView('settings')
+                          navigate('/settings')
                         }}
-                        className="text-left px-3 py-2 text-sm font-bold hover:bg-slate-100 rounded-xl transition-colors"
+                        className="w-full text-left px-3 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-colors cursor-pointer"
                       >
                         Settings
                       </button>
