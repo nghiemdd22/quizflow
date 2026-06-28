@@ -212,19 +212,29 @@ public class ExcelService {
                 } else {
                     // Loại Trắc nghiệm: Ghi 4 lựa chọn ra các cột D, E, F, G và gom các đáp án đúng ra cột H
                     List<Map<String, Object>> options = (List<Map<String, Object>>) meta.get("options");
-                    List<Integer> correctIds = (List<Integer>) meta.get("correctAnswers");
+                    List<?> correctIds = (List<?>) meta.get("correctAnswers");
 
                     StringBuilder correctStr = new StringBuilder();
                     if (options != null) {
                         for (int i = 0; i < options.size() && i < 4; i++) {
                             Map<String, Object> opt = options.get(i);
-                            int optId = (int) opt.get("id");
+                            String optIdStr = String.valueOf(opt.get("id"));
                             
                             // Ghi nội dung phương án
                             row.createCell(3 + i).setCellValue((String) opt.get("text"));
 
-                            // Dò xem phương án này có phải đáp án đúng không
-                            if (correctIds != null && correctIds.contains(optId)) {
+                            // Dò xem phương án này có phải đáp án đúng không một cách an toàn (tránh ClassCastException giữa Integer và Long)
+                            boolean isCorrect = false;
+                            if (correctIds != null) {
+                                for (Object cId : correctIds) {
+                                    if (String.valueOf(cId).equals(optIdStr)) {
+                                        isCorrect = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (isCorrect) {
                                 if (correctStr.length() > 0) correctStr.append(",");
                                 // Quy đổi index 0, 1, 2, 3 thành 'A', 'B', 'C', 'D'
                                 correctStr.append((char) ('A' + i));

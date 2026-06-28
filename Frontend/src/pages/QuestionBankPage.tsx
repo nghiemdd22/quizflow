@@ -10,7 +10,8 @@ import {
   Download, 
   Move,
   ArrowLeft,
-  X
+  X,
+  PlusCircle
 } from 'lucide-react'
 
 interface Subject {
@@ -128,8 +129,11 @@ export const QuestionBankPage: React.FC = () => {
     if (!selectedBank) return
 
     const metadataObj = {
-      options: newQOptions.map(o => ({ id: o.id, text: o.text })),
-      correctAnswers: newQOptions.filter(o => o.isCorrect).map(o => o.id)
+      options: newQOptions.map((o, idx) => ({ id: idx + 1, text: o.text })),
+      correctAnswers: newQOptions.filter(o => o.isCorrect).map(o => {
+        const index = newQOptions.findIndex(opt => opt.id === o.id);
+        return index + 1;
+      })
     }
 
     try {
