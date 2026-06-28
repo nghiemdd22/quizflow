@@ -54,22 +54,23 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-10 font-bold text-base whitespace-nowrap">
               {role === 'TEACHER' ? (
                 <>
-                  <Link to="/teacher-dashboard" className="text-neo-blue font-black border-b-2 border-neo-blue">Dashboard</Link>
-                  <Link to="/teacher/students" className="hover:text-neo-green transition-colors text-slate-500">Students & Classes</Link>
-                  <Link to="/teacher/analytics" className="hover:text-neo-purple transition-colors text-slate-500">Analytics</Link>
-                  <Link to="/teacher/help" className="hover:text-neo-coral transition-colors text-slate-500">Help</Link>
+                  <Link to="/teacher-dashboard" data-text="Tổng quan" className={`nav-item transition-all ${location.pathname === '/teacher-dashboard' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Tổng quan</Link>
+                  <Link to="/teacher/question-bank" data-text="Ngân hàng câu hỏi" className={`nav-item transition-all ${location.pathname.startsWith('/teacher/question-bank') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Ngân hàng câu hỏi</Link>
+                  <Link to="/teacher/exam-sessions" data-text="Quản lý Ca thi" className={`nav-item transition-all ${location.pathname.startsWith('/teacher/exam-sessions') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Quản lý Ca thi</Link>
+                  <Link to="/teacher/reports" data-text="Báo cáo & Lịch sử" className={`nav-item transition-all ${location.pathname.startsWith('/teacher/reports') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Báo cáo & Lịch sử</Link>
+                  <Link to="/about" data-text="About" className={`nav-item transition-all ${location.pathname === '/about' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>About</Link>
                 </>
               ) : role === 'STUDENT' ? (
                 <>
-                  <Link to="/" className={`transition-all ${location.pathname === '/' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Home</Link>
-                  <Link to="/join-exam" className={`transition-all ${location.pathname === '/join-exam' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Join Exam</Link>
-                  <Link to="/exam-history" className={`transition-all ${location.pathname.startsWith('/exam-history') || location.pathname.startsWith('/exam-review') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>History</Link>
-                  <Link to="/about" className={`transition-all ${location.pathname === '/about' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>About</Link>
+                  <Link to="/" data-text="Home" className={`nav-item transition-all ${location.pathname === '/' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Home</Link>
+                  <Link to="/join-exam" data-text="Join Exam" className={`nav-item transition-all ${location.pathname === '/join-exam' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Join Exam</Link>
+                  <Link to="/exam-history" data-text="History" className={`nav-item transition-all ${location.pathname.startsWith('/exam-history') || location.pathname.startsWith('/exam-review') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>History</Link>
+                  <Link to="/about" data-text="About" className={`nav-item transition-all ${location.pathname === '/about' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>About</Link>
                 </>
               ) : (
                 <>
-                  <Link to="/" className={`transition-all ${location.pathname === '/' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Home</Link>
-                  <Link to="/about" className={`transition-all ${location.pathname === '/about' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>About</Link>
+                  <Link to="/" data-text="Home" className={`nav-item transition-all ${location.pathname === '/' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Home</Link>
+                  <Link to="/about" data-text="About" className={`nav-item transition-all ${location.pathname === '/about' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>About</Link>
                 </>
               )}
           </div>

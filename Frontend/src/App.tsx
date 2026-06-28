@@ -7,6 +7,9 @@ import { Footer } from './components/Footer'
 import { AuthModal } from './components/AuthModal'
 import { LandingPage } from './pages/LandingPage'
 import { TeacherDashboard } from './pages/TeacherDashboard'
+import { QuestionBankPage } from './pages/QuestionBankPage'
+import { ExamSessionsPage } from './pages/ExamSessionsPage'
+import { ReportsPage } from './pages/ReportsPage'
 import { JoinExamPage } from './pages/JoinExamPage'
 import { ExamRoom } from './pages/ExamRoom'
 import { ExamHistoryPage } from './pages/ExamHistoryPage'
@@ -139,6 +142,9 @@ function App() {
             
             {/* Teacher Routes */}
             <Route path="/teacher-dashboard" element={<ProtectedRoute allowedRoles={['TEACHER']}><TeacherDashboard /></ProtectedRoute>} />
+            <Route path="/teacher/question-bank" element={<ProtectedRoute allowedRoles={['TEACHER']}><QuestionBankPage /></ProtectedRoute>} />
+            <Route path="/teacher/exam-sessions" element={<ProtectedRoute allowedRoles={['TEACHER']}><ExamSessionsPage /></ProtectedRoute>} />
+            <Route path="/teacher/reports" element={<ProtectedRoute allowedRoles={['TEACHER']}><ReportsPage /></ProtectedRoute>} />
 
             {/* Common Routes */}
             <Route path="/about" element={<AboutPage />} />

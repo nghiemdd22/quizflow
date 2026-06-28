@@ -1,495 +1,222 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { apiFetch, apiFetchMultipart } from '../utils/api'
-import { ExamManagementTab } from '../components/ExamManagementTab'
+import React from 'react'
 import { useAuthStore } from '../store/authStore'
-
-interface Subject {
-  id: number
-  name: string
-  code: string
-}
-
-interface QuestionBank {
-  id: number
-  title: string
-  description: string
-  subjectId: number
-}
-
-interface Question {
-  id: number
-  questionBankId: number
-  content: string
-  type: string
-  metadata: any
-}
+import { useNavigate } from 'react-router-dom'
+import { 
+  Users, 
+  BookOpen, 
+  Activity, 
+  FileText, 
+  PlusCircle, 
+  PlayCircle, 
+  BarChart3, 
+  Clock,
+  ArrowRight
+} from 'lucide-react'
 
 export const TeacherDashboard: React.FC = () => {
-  const [banks, setBanks] = useState<QuestionBank[]>([])
-  const [subjects, setSubjects] = useState<Subject[]>([])
-  const [selectedBank, setSelectedBank] = useState<QuestionBank | null>(null)
-  const [questions, setQuestions] = useState<Question[]>([])
-  const [activeTab, setActiveTab] = useState<'BANKS' | 'EXAMS'>('BANKS')
+  const { userFullName } = useAuthStore()
+  const navigate = useNavigate()
 
-  // Modal states
-  const [isNewBankModalOpen, setIsNewBankModalOpen] = useState(false)
-  const [newBankName, setNewBankName] = useState('')
-  const [newBankDesc, setNewBankDesc] = useState('')
-  const [newBankSubject, setNewBankSubject] = useState<number>(0)
+  // MOCK DATA
+  const stats = [
+    { label: 'Tổng số Câu hỏi', value: 1240, icon: FileText, color: 'text-neo-blue', bgColor: 'bg-blue-100' },
+    { label: 'Ca thi đã tạo', value: 45, icon: BookOpen, color: 'text-neo-green', bgColor: 'bg-green-100' },
+    { label: 'Ca thi đang diễn ra', value: 2, icon: Activity, color: 'text-neo-coral', bgColor: 'bg-red-100' },
+    { label: 'Lượt tham gia', value: 3850, icon: Users, color: 'text-neo-purple', bgColor: 'bg-purple-100' },
+  ]
 
-  const [isNewQuestionModalOpen, setIsNewQuestionModalOpen] = useState(false)
-  const [newQContent, setNewQContent] = useState('')
-  const [newQType, setNewQType] = useState('SINGLE')
-  const [newQOptions, setNewQOptions] = useState([{ id: 1, text: '', isCorrect: false }])
+  const activeSessions = [
+    { id: 1, name: 'Kiểm tra Giữa kỳ Toán 10', pin: '883492', students: 42, timeLeft: '25:00', status: 'ACTIVE' },
+    { id: 2, name: '15 phút Vật Lý 11', pin: '112093', students: 35, timeLeft: '10:30', status: 'ACTIVE' }
+  ]
 
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const userId = useAuthStore(state => state.userId)
-
-  const loadBanks = React.useCallback(async () => {
-    try {
-      const res = await apiFetch(`/api/v1/question-banks/teacher/${userId}`)
-      if (res.ok) {
-        const data = await res.json()
-        setBanks(data)
-      }
-    } catch {
-      console.error('Error loading banks')
-    }
-  }, [userId])
-
-  const loadSubjects = React.useCallback(async () => {
-    try {
-      const res = await apiFetch('/api/v1/subjects')
-      if (res.ok) {
-        const data = await res.json()
-        setSubjects(data)
-        if (data.length > 0) setNewBankSubject(data[0].id)
-      }
-    } catch {
-      console.error('Error loading subjects')
-    }
-  }, [])
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadBanks()
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadSubjects()
-  }, [loadBanks, loadSubjects])
-
-  const loadQuestions = async (bankId: number) => {
-    try {
-      const res = await apiFetch(`/api/v1/questions/bank/${bankId}`)
-      if (res.ok) {
-        const data = await res.json()
-        setQuestions(data)
-      }
-    } catch {
-      console.error('Error loading questions')
-    }
-  }
-
-  const handleCreateBank = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newBankSubject) return alert('Vui lòng chọn môn học')
-
-    try {
-      const res = await apiFetch('/api/v1/question-banks', {
-        method: 'POST',
-        body: JSON.stringify({
-          title: newBankName,
-          description: newBankDesc,
-          subjectId: newBankSubject
-        })
-      })
-      if (res.ok) {
-        alert('Tạo Ngân hàng câu hỏi thành công!')
-        setIsNewBankModalOpen(false)
-        setNewBankName('')
-        setNewBankDesc('')
-        loadBanks()
-      } else {
-        const data = await res.json()
-        alert(data.error || 'Lỗi tạo ngân hàng')
-      }
-    } catch {
-      alert('Có lỗi xảy ra')
-    }
-  }
-
-  const handleCreateQuestion = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedBank) return
-
-    // Build metadata
-    const metadataObj = {
-      options: newQOptions.map(o => ({ id: o.id, text: o.text })),
-      correctAnswers: newQOptions.filter(o => o.isCorrect).map(o => o.id)
-    }
-
-    try {
-      const res = await apiFetch('/api/v1/questions', {
-        method: 'POST',
-        body: JSON.stringify({
-          questionBankId: selectedBank.id,
-          content: newQContent,
-          type: newQType,
-          metadata: metadataObj
-        })
-      })
-      if (res.ok) {
-        alert('Thêm câu hỏi thành công!')
-        setIsNewQuestionModalOpen(false)
-        setNewQContent('')
-        setNewQOptions([{ id: 1, text: '', isCorrect: false }])
-        loadQuestions(selectedBank.id)
-      } else {
-        const data = await res.json()
-        alert(data.error || 'Lỗi thêm câu hỏi')
-      }
-    } catch {
-      alert('Có lỗi xảy ra')
-    }
-  }
-
-  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !selectedBank) return
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Dung lượng file vượt quá 5MB')
-      return
-    }
-
-    const formData = new FormData()
-    formData.append('file', file)
-
-    try {
-      const res = await apiFetchMultipart(`/api/v1/questions/bank/${selectedBank.id}/import`, {
-        method: 'POST',
-        body: formData
-      })
-      if (res.ok) {
-        alert('Nhập danh sách câu hỏi thành công!')
-        loadQuestions(selectedBank.id)
-      } else {
-        const data = await res.json()
-        alert(data.error || 'Lỗi nhập file Excel')
-      }
-    } catch {
-      alert('Có lỗi xảy ra khi tải file')
-    }
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }
-
-  const handleExportExcel = async () => {
-    if (!selectedBank) return
-    try {
-      const res = await apiFetchMultipart(`/api/v1/questions/bank/${selectedBank.id}/export`, {
-        method: 'GET'
-      })
-      if (res.ok) {
-        const blob = await res.blob()
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `questions_bank_${selectedBank.id}.xlsx`
-        document.body.appendChild(a)
-        a.click()
-        a.remove()
-        window.URL.revokeObjectURL(url)
-      } else {
-        alert('Lỗi xuất file Excel')
-      }
-    } catch {
-      alert('Có lỗi xảy ra khi xuất file')
-    }
-  }
-
-
-  const handleOptionChange = (id: number, text: string) => {
-    setNewQOptions(opts => opts.map(o => o.id === id ? { ...o, text } : o))
-  }
-
-  const handleCorrectToggle = (id: number) => {
-    if (newQType === 'SINGLE') {
-      setNewQOptions(opts => opts.map(o => ({ ...o, isCorrect: o.id === id })))
-    } else {
-      setNewQOptions(opts => opts.map(o => o.id === id ? { ...o, isCorrect: !o.isCorrect } : o))
-    }
-  }
-
-  const handleAddOption = () => {
-    setNewQOptions(opts => [...opts, { id: Date.now(), text: '', isCorrect: false }])
-  }
-
-  const handleRemoveOption = (id: number) => {
-    setNewQOptions(opts => opts.filter(o => o.id !== id))
-  }
+  const recentHistory = [
+    { id: 101, name: 'Thi thử Hóa 12', date: '28/06/2026', participants: 120, avgScore: 7.5 },
+    { id: 102, name: 'Kiểm tra Anh văn 10', date: '27/06/2026', participants: 45, avgScore: 8.2 },
+    { id: 103, name: 'Khảo sát chất lượng Toán', date: '25/06/2026', participants: 200, avgScore: 6.8 },
+  ]
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-12 md:py-20 text-left">
-      <div className="flex justify-between items-end mb-8">
+    <div className="w-full max-w-7xl mx-auto px-4 py-8 md:py-12 animate-page-enter">
+      {/* Welcome Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
         <div>
-          <h1 className="text-4xl font-extrabold text-slate-900 mb-2">Teacher Dashboard</h1>
-          <div className="flex gap-4 mt-4">
-            <button
-              onClick={() => setActiveTab('BANKS')}
-              className={`px-4 py-2 font-black border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] rounded-xl transition-transform ${activeTab === 'BANKS' ? 'bg-neo-blue text-white' : 'bg-white hover:bg-slate-100'}`}
-            >
-              Ngân hàng câu hỏi
-            </button>
-            <button
-              onClick={() => setActiveTab('EXAMS')}
-              className={`px-4 py-2 font-black border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] rounded-xl transition-transform ${activeTab === 'EXAMS' ? 'bg-neo-blue text-white' : 'bg-white hover:bg-slate-100'}`}
-            >
-              Đề thi & Ca thi
-            </button>
-          </div>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-2 tracking-tight">
+            Chào mừng, {userFullName || 'Thầy/Cô'}! 👋
+          </h1>
+          <p className="text-slate-500 font-bold text-lg">
+            Hôm nay là {new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </p>
         </div>
-        {activeTab === 'BANKS' && selectedBank && (
-          <button
-            onClick={() => setSelectedBank(null)}
-            className="px-4 py-2 bg-slate-200 hover:bg-slate-300 neo-btn text-xs"
-          >
-            ← Quay lại danh sách
-          </button>
-        )}
+        <button 
+          onClick={() => navigate('/teacher/exam-sessions')}
+          className="px-6 py-3 bg-neo-coral hover:bg-red-500 text-white text-lg neo-btn shadow-[4px_4px_0px_#0f172a]"
+        >
+          <PlayCircle className="w-6 h-6 mr-2" strokeWidth={2.5} />
+          Mở Ca Thi Nhanh
+        </button>
       </div>
 
-      {activeTab === 'BANKS' ? (
-        !selectedBank ? (
-          // BANK LIST VIEW
-        <div>
-          <div className="flex justify-between items-center mb-6 border-b-4 border-slate-900 pb-4">
-            <h2 className="text-2xl font-black">Ngân hàng câu hỏi của tôi</h2>
-            <button
-              onClick={() => setIsNewBankModalOpen(true)}
-              className="px-4 py-2 bg-neo-green hover:bg-neo-green-hover text-white neo-btn text-sm"
-            >
-              + Tạo Ngân hàng mới
+      {/* Quick Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        {stats.map((stat, idx) => (
+          <div key={idx} className="bg-white neo-card p-6 flex flex-col justify-between items-start hover:-translate-y-1 hover:shadow-[6px_6px_0px_#0f172a] transition-all cursor-default">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-4 ${stat.bgColor}`}>
+              <stat.icon className={`w-6 h-6 ${stat.color}`} strokeWidth={2.5} />
+            </div>
+            <h3 className="text-slate-500 font-extrabold text-sm uppercase tracking-wider mb-1">{stat.label}</h3>
+            <p className="text-4xl font-black text-slate-900">{stat.value.toLocaleString()}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column: Real-time Monitoring & Recent History */}
+        <div className="lg:col-span-2 space-y-8">
+          
+          {/* Active Sessions */}
+          <div className="bg-neo-bg border-4 border-slate-900 rounded-2xl shadow-[6px_6px_0px_#0f172a] overflow-hidden">
+            <div className="bg-slate-900 px-6 py-4 flex justify-between items-center text-white">
+              <div className="flex items-center gap-3">
+                <Activity className="w-6 h-6 text-neo-green animate-pulse" />
+                <h2 className="text-xl font-black">Giám sát Ca thi đang diễn ra</h2>
+              </div>
+              <span className="neo-badge bg-neo-green text-slate-900 px-3 py-1 text-xs border-2 border-slate-900">
+                {activeSessions.length} Active
+              </span>
+            </div>
+            <div className="p-6">
+              {activeSessions.length > 0 ? (
+                <div className="space-y-4">
+                  {activeSessions.map(session => (
+                    <div key={session.id} className="bg-white neo-card p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-extrabold text-slate-900 mb-1">{session.name}</h3>
+                        <div className="flex flex-wrap gap-3 text-sm font-bold text-slate-600">
+                          <span className="flex items-center gap-1"><Clock className="w-4 h-4 text-neo-coral" /> {session.timeLeft} còn lại</span>
+                          <span className="flex items-center gap-1"><Users className="w-4 h-4 text-neo-blue" /> {session.students} học sinh</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <div className="text-2xl font-black tracking-widest text-slate-900 bg-slate-100 px-3 py-1 rounded-lg border-2 border-slate-900">
+                          {session.pin}
+                        </div>
+                        <button className="text-sm font-extrabold text-neo-blue hover:text-blue-700 hover:underline">
+                          Xem chi tiết →
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-10">
+                  <p className="text-slate-500 font-bold text-lg">Hiện không có ca thi nào đang diễn ra.</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Recent History */}
+          <div className="bg-white neo-card p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-black flex items-center gap-2">
+                <BarChart3 className="w-6 h-6 text-neo-purple" />
+                Lịch sử gần đây
+              </h2>
+              <button 
+                onClick={() => navigate('/teacher/reports')}
+                className="text-neo-blue font-bold hover:underline flex items-center text-sm"
+              >
+                Xem tất cả báo cáo <ArrowRight className="w-4 h-4 ml-1" />
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b-4 border-slate-900 text-sm">
+                    <th className="py-3 px-4 font-black text-slate-500 uppercase">Tên ca thi</th>
+                    <th className="py-3 px-4 font-black text-slate-500 uppercase">Ngày thi</th>
+                    <th className="py-3 px-4 font-black text-slate-500 uppercase">Số lượng</th>
+                    <th className="py-3 px-4 font-black text-slate-500 uppercase">Điểm TB</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentHistory.map((history, idx) => (
+                    <tr key={history.id} className={`border-b-2 border-slate-200 hover:bg-slate-50 transition-colors ${idx === recentHistory.length - 1 ? 'border-b-0' : ''}`}>
+                      <td className="py-4 px-4 font-extrabold text-slate-900">{history.name}</td>
+                      <td className="py-4 px-4 font-bold text-slate-600">{history.date}</td>
+                      <td className="py-4 px-4 font-bold text-slate-600">{history.participants}</td>
+                      <td className="py-4 px-4 font-black text-neo-green">{history.avgScore}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Right Column: Quick Actions */}
+        <div className="space-y-6">
+          <div className="bg-neo-yellow neo-card p-6">
+            <h2 className="text-xl font-black mb-4 flex items-center gap-2 text-slate-900">
+              ⚡ Thao tác nhanh
+            </h2>
+            <div className="space-y-4">
+              <button 
+                onClick={() => navigate('/teacher/question-bank')}
+                className="w-full flex items-center justify-between p-4 bg-white border-2 border-slate-900 rounded-xl shadow-[3px_3px_0px_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-[2px_2px_0px_#0f172a] transition-all text-left group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="bg-green-100 p-2 rounded-lg border-2 border-slate-900 group-hover:bg-neo-green transition-colors">
+                    <PlusCircle className="w-5 h-5 text-slate-900" />
+                  </div>
+                  <span className="font-extrabold text-slate-900 text-lg">Thêm Câu hỏi mới</span>
+                </div>
+                <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-slate-900 transition-colors" />
+              </button>
+
+              <button 
+                onClick={() => navigate('/teacher/exam-sessions')}
+                className="w-full flex items-center justify-between p-4 bg-white border-2 border-slate-900 rounded-xl shadow-[3px_3px_0px_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-[2px_2px_0px_#0f172a] transition-all text-left group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="bg-blue-100 p-2 rounded-lg border-2 border-slate-900 group-hover:bg-neo-blue transition-colors">
+                    <BookOpen className="w-5 h-5 text-slate-900" />
+                  </div>
+                  <span className="font-extrabold text-slate-900 text-lg">Quản lý Ca thi</span>
+                </div>
+                <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-slate-900 transition-colors" />
+              </button>
+
+              <button 
+                onClick={() => navigate('/teacher/reports')}
+                className="w-full flex items-center justify-between p-4 bg-white border-2 border-slate-900 rounded-xl shadow-[3px_3px_0px_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-[2px_2px_0px_#0f172a] transition-all text-left group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="bg-purple-100 p-2 rounded-lg border-2 border-slate-900 group-hover:bg-neo-purple transition-colors">
+                    <BarChart3 className="w-5 h-5 text-slate-900" />
+                  </div>
+                  <span className="font-extrabold text-slate-900 text-lg">Xuất Báo cáo</span>
+                </div>
+                <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-slate-900 transition-colors" />
+              </button>
+            </div>
+          </div>
+          
+          <div className="bg-white neo-card p-6 border-dashed border-4 border-slate-300 shadow-none hover:shadow-none hover:translate-x-0 hover:translate-y-0 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+              <BookOpen className="w-8 h-8 text-slate-400" />
+            </div>
+            <h3 className="font-black text-slate-900 mb-2">Trợ giúp & Hướng dẫn</h3>
+            <p className="text-sm font-bold text-slate-500 mb-4">Cần hỗ trợ về cách tạo đề thi hay quản lý lớp học?</p>
+            <button className="px-4 py-2 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors">
+              Xem tài liệu
             </button>
           </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {banks.map(bank => (
-              <div key={bank.id} className="bg-white neo-card p-6 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-xl font-extrabold mb-2">{bank.title}</h3>
-                  <p className="text-xs font-bold text-slate-500 mb-4">{bank.description}</p>
-                </div>
-                <button
-                  onClick={() => {
-                    setSelectedBank(bank)
-                    loadQuestions(bank.id)
-                  }}
-                  className="w-full py-2 bg-neo-blue hover:bg-blue-600 text-white neo-btn text-xs mt-4"
-                >
-                  Quản lý Câu hỏi
-                </button>
-              </div>
-            ))}
-            {banks.length === 0 && (
-              <div className="col-span-3 text-center py-10 bg-slate-50 border-4 border-dashed border-slate-300 rounded-xl">
-                <p className="text-slate-500 font-bold">Bạn chưa tạo ngân hàng câu hỏi nào.</p>
-              </div>
-            )}
-          </div>
         </div>
-      ) : (
-        // QUESTION LIST VIEW
-        <div>
-          <div className="flex justify-between items-center mb-6 border-b-4 border-slate-900 pb-4">
-            <div>
-              <h2 className="text-2xl font-black">Ngân hàng: {selectedBank.title}</h2>
-              <p className="text-xs font-bold text-slate-500">{selectedBank.description}</p>
-            </div>
-            <div className="flex gap-2">
-              <input 
-                type="file" 
-                accept=".xlsx,.xls" 
-                ref={fileInputRef} 
-                onChange={handleImportExcel} 
-                className="hidden" 
-              />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-2 bg-neo-blue hover:bg-blue-600 text-white neo-btn text-sm"
-              >
-                Nhập Excel
-              </button>
-              <button
-                onClick={handleExportExcel}
-                className="px-4 py-2 bg-neo-purple hover:bg-purple-600 text-white neo-btn text-sm"
-              >
-                Xuất Excel
-              </button>
-              <button
-                onClick={() => setIsNewQuestionModalOpen(true)}
-                className="px-4 py-2 bg-neo-green hover:bg-neo-green-hover text-white neo-btn text-sm"
-              >
-                + Thêm Câu hỏi
-              </button>
-            </div>
-          </div>
 
-          <div className="flex flex-col gap-4">
-            {questions.map((q, idx) => {
-              const meta = typeof q.metadata === 'string' ? JSON.parse(q.metadata || '{}') : (q.metadata || {})
-              return (
-                <div key={q.id} className="bg-white neo-card p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-extrabold text-sm">Câu {idx + 1}: {q.content}</h4>
-                    <span className="text-[10px] font-black bg-orange-100 text-orange-800 px-2 py-1 border border-slate-900 rounded">
-                      {q.type}
-                    </span>
-                  </div>
-                  <ul className="text-xs font-semibold text-slate-600 mt-2 space-y-1">
-                    {(meta.options || []).map((opt: { id: number; text: string }) => (
-                      <li key={opt.id} className="flex items-center gap-2">
-                        <span>{meta.correctAnswers?.includes(opt.id) ? '✅' : '⬜'}</span>
-                        {opt.text}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )
-            })}
-            {questions.length === 0 && (
-              <div className="text-center py-10 bg-slate-50 border-4 border-dashed border-slate-300 rounded-xl">
-                <p className="text-slate-500 font-bold">Ngân hàng này chưa có câu hỏi nào.</p>
-              </div>
-            )}
-          </div>
-        </div>
-        )
-      ) : (
-        <ExamManagementTab subjects={subjects} banks={banks} />
-      )}
-
-      {/* NEW BANK MODAL */}
-      {isNewBankModalOpen && (
-        <div 
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={() => setIsNewBankModalOpen(false)}
-        >
-          <div 
-            className="bg-neo-bg neo-card p-6 md:p-8 max-w-md w-full relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setIsNewBankModalOpen(false)}
-              className="absolute right-4 top-4 w-8 h-8 rounded-full border-2 border-slate-900 bg-white hover:bg-slate-50 flex items-center justify-center font-bold"
-            >✕</button>
-            <h3 className="text-xl font-black mb-6">Tạo Ngân hàng câu hỏi</h3>
-            <form onSubmit={handleCreateBank} className="flex flex-col gap-4">
-              <div>
-                <label className="block text-xs font-black text-slate-800 mb-1">MÔN HỌC</label>
-                <select
-                  value={newBankSubject}
-                  onChange={e => setNewBankSubject(Number(e.target.value))}
-                  className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] font-bold"
-                >
-                  <option value={0}>-- Chọn môn học --</option>
-                  {subjects.map(sub => (
-                    <option key={sub.id} value={sub.id}>{sub.name} ({sub.code})</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-black text-slate-800 mb-1">TÊN NGÂN HÀNG</label>
-                <input
-                  required
-                  value={newBankName}
-                  onChange={e => setNewBankName(e.target.value)}
-                  className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] font-bold"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-black text-slate-800 mb-1">MÔ TẢ</label>
-                <textarea
-                  value={newBankDesc}
-                  onChange={e => setNewBankDesc(e.target.value)}
-                  className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] font-bold h-24"
-                />
-              </div>
-              <button type="submit" className="w-full mt-2 py-3 bg-neo-green hover:bg-neo-green-hover text-white neo-btn">Tạo mới</button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* NEW QUESTION MODAL */}
-      {isNewQuestionModalOpen && (
-        <div 
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={() => setIsNewQuestionModalOpen(false)}
-        >
-          <div 
-            className="bg-neo-bg neo-card p-6 md:p-8 max-w-2xl w-full relative max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setIsNewQuestionModalOpen(false)}
-              className="absolute right-4 top-4 w-8 h-8 rounded-full border-2 border-slate-900 bg-white hover:bg-slate-50 flex items-center justify-center font-bold"
-            >✕</button>
-            <h3 className="text-xl font-black mb-6">Thêm Câu hỏi mới</h3>
-            <form onSubmit={handleCreateQuestion} className="flex flex-col gap-4">
-              <div>
-                <label className="block text-xs font-black text-slate-800 mb-1">NỘI DUNG CÂU HỎI</label>
-                <textarea
-                  required
-                  value={newQContent}
-                  onChange={e => setNewQContent(e.target.value)}
-                  className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] font-bold h-24"
-                />
-              </div>
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <label className="block text-xs font-black text-slate-800 mb-1">LOẠI CÂU HỎI</label>
-                  <select
-                    value={newQType}
-                    onChange={e => setNewQType(e.target.value)}
-                    className="w-full px-4 py-2 text-sm border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] font-bold"
-                  >
-                    <option value="SINGLE">Trắc nghiệm 1 đáp án</option>
-                    <option value="MULTIPLE">Trắc nghiệm nhiều đáp án</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="border-t-2 border-slate-200 mt-2 pt-4">
-                <label className="block text-xs font-black text-slate-800 mb-2">ĐÁP ÁN (Tích chọn đáp án đúng)</label>
-                {newQOptions.map((opt, idx) => (
-                  <div key={opt.id} className="flex items-center gap-2 mb-2">
-                    <input
-                      type={newQType === 'SINGLE' ? 'radio' : 'checkbox'}
-                      name="correct-answer"
-                      checked={opt.isCorrect}
-                      onChange={() => handleCorrectToggle(opt.id)}
-                      className="w-5 h-5 accent-neo-green cursor-pointer"
-                    />
-                    <input
-                      required
-                      value={opt.text}
-                      onChange={e => handleOptionChange(opt.id, e.target.value)}
-                      placeholder={`Đáp án ${idx + 1}`}
-                      className="flex-1 px-3 py-1.5 text-sm border-2 border-slate-900 rounded shadow-[1px_1px_0px_#0f172a] font-bold"
-                    />
-                    {newQOptions.length > 1 && (
-                      <button type="button" onClick={() => handleRemoveOption(opt.id)} className="text-red-500 font-bold px-2">X</button>
-                    )}
-                  </div>
-                ))}
-                <button type="button" onClick={handleAddOption} className="text-xs font-bold text-neo-blue mt-2">+ Thêm lựa chọn</button>
-              </div>
-
-              <button type="submit" className="w-full mt-4 py-3 bg-neo-green hover:bg-neo-green-hover text-white neo-btn">Lưu câu hỏi</button>
-            </form>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   )
 }
