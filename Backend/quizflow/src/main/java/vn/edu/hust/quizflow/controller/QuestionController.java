@@ -164,4 +164,24 @@ public class QuestionController {
                     .body(Map.of("error", "Lỗi khi xuất file Excel: " + e.getMessage()));
         }
     }
+
+    /**
+     * Cập nhật hàng loạt thứ tự câu hỏi (Kéo thả).
+     * URL: PUT http://localhost:8080/api/v1/questions/bank/{bankId}/reorder
+     */
+    @PutMapping("/bank/{bankId}/reorder")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResponseEntity<?> reorderQuestions(@PathVariable Long bankId,
+                                              @RequestBody List<vn.edu.hust.quizflow.dto.QuestionOrderUpdateDto> updates,
+                                              Principal principal) {
+        try {
+            String username = principal.getName();
+            questionService.reorderQuestions(bankId, updates, username);
+            return ResponseEntity.ok(Map.of("message", "Cập nhật thứ tự thành công"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        }
+    }
 }

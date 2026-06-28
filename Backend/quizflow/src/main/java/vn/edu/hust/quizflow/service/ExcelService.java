@@ -162,8 +162,13 @@ public class ExcelService {
     }
 
     public byte[] exportQuestionsToExcel(Long bankId) throws IOException {
+        // Kiểm tra bank
+        if (!questionBankRepository.existsById(bankId)) {
+            throw new IllegalArgumentException("Ngân hàng câu hỏi không tồn tại.");
+        }
+
         // Truy vấn danh sách câu hỏi thuộc ngân hàng chỉ định
-        List<Question> questions = questionRepository.findByQuestionBankId(bankId);
+        List<Question> questions = questionRepository.findByQuestionBankIdOrderByOrderIndexAscIdAsc(bankId);
 
         // Khởi tạo Workbook và OutputStream để tạo file dạng bộ nhớ (byte array)
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {

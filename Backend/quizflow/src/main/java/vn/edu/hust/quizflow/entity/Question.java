@@ -37,6 +37,9 @@ public class Question {
     @Column(name = "metadata", columnDefinition = "json")
     private Map<String, Object> metadata;
 
+    @Column(name = "order_index")
+    private Integer orderIndex;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

@@ -34,6 +34,8 @@ public class QuestionDTO {
     @NotNull(message = "Dữ liệu metadata (options, đáp án) không được để trống")
     private Map<String, Object> metadata;
 
+    private Integer orderIndex;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

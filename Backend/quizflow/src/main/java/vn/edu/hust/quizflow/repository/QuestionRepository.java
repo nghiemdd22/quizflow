@@ -14,5 +14,11 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
      * @param bankId ID của ngân hàng câu hỏi
      * @return Danh sách câu hỏi
      */
-    List<Question> findByQuestionBankId(Long bankId);
+    List<Question> findByQuestionBankIdOrderByOrderIndexAscIdAsc(Long bankId);
+    
+    /**
+     * Tìm giá trị orderIndex lớn nhất trong một ngân hàng câu hỏi
+     */
+    @org.springframework.data.jpa.repository.Query("SELECT COALESCE(MAX(q.orderIndex), 0) FROM Question q WHERE q.questionBank.id = :bankId")
+    Integer findMaxOrderIndexByBankId(@org.springframework.data.repository.query.Param("bankId") Long bankId);
 }

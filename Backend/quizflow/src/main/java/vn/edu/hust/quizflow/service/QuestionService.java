@@ -4,12 +4,15 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.hust.quizflow.dto.QuestionDTO;
+import vn.edu.hust.quizflow.dto.QuestionOrderUpdateDto;
 import vn.edu.hust.quizflow.entity.Question;
 import vn.edu.hust.quizflow.entity.QuestionBank;
 import vn.edu.hust.quizflow.repository.QuestionBankRepository;
 import vn.edu.hust.quizflow.repository.QuestionRepository;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,7 +36,7 @@ public class QuestionService {
             throw new IllegalArgumentException("Ngân hàng câu hỏi không tồn tại.");
         }
         
-        List<Question> questions = questionRepository.findByQuestionBankId(bankId);
+        List<Question> questions = questionRepository.findByQuestionBankIdOrderByOrderIndexAscIdAsc(bankId);
         return questions.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
@@ -60,11 +63,15 @@ public class QuestionService {
             throw new AccessDeniedException("Bạn không có quyền thêm câu hỏi vào ngân hàng câu hỏi này.");
         }
 
+        // Lấy max order index hiện tại
+        Integer maxOrder = questionRepository.findMaxOrderIndexByBankId(bank.getId());
+
         Question question = Question.builder()
                 .questionBank(bank)
                 .type(dto.getType())
                 .content(dto.getContent())
                 .metadata(dto.getMetadata())
+                .orderIndex(maxOrder != null ? maxOrder + 1 : 1)
                 .build();
 
         Question savedQuestion = questionRepository.save(question);
@@ -115,6 +122,32 @@ public class QuestionService {
     }
 
     /**
+     * Cập nhật hàng loạt thứ tự câu hỏi (Kéo thả).
+     */
+    @Transactional
+    public void reorderQuestions(Long bankId, List<QuestionOrderUpdateDto> updates, String username) {
+        QuestionBank bank = questionBankRepository.findById(bankId)
+                .orElseThrow(() -> new IllegalArgumentException("Ngân hàng câu hỏi không tồn tại."));
+
+        if (!bank.getTeacher().getUsername().equals(username)) {
+            throw new AccessDeniedException("Bạn không có quyền sắp xếp lại câu hỏi trong ngân hàng này.");
+        }
+
+        List<Question> questions = questionRepository.findByQuestionBankIdOrderByOrderIndexAscIdAsc(bankId);
+        Map<Long, Question> questionMap = questions.stream()
+                .collect(Collectors.toMap(Question::getId, Function.identity()));
+
+        for (QuestionOrderUpdateDto update : updates) {
+            Question q = questionMap.get(update.getId());
+            if (q != null) {
+                q.setOrderIndex(update.getOrderIndex());
+            }
+        }
+        
+        questionRepository.saveAll(questions);
+    }
+
+    /**
      * Hàm tiện ích map Entity sang DTO.
      */
     private QuestionDTO mapToDTO(Question question) {
@@ -124,6 +157,7 @@ public class QuestionService {
                 .type(question.getType())
                 .content(question.getContent())
                 .metadata(question.getMetadata())
+                .orderIndex(question.getOrderIndex())
                 .createdAt(question.getCreatedAt())
                 .updatedAt(question.getUpdatedAt())
                 .build();

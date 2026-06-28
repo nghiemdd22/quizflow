@@ -11,8 +11,27 @@ import {
   Move,
   ArrowLeft,
   X,
-  PlusCircle
+  PlusCircle,
+  GripVertical
 } from 'lucide-react'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  defaultDropAnimationSideEffects
+} from '@dnd-kit/core'
+import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface Subject {
   id: number
@@ -35,11 +54,110 @@ interface Question {
   metadata: any
 }
 
+import { forwardRef } from 'react'
+
+const QuestionCard = forwardRef<HTMLDivElement, any>(({ 
+  q, 
+  idx, 
+  isMultiple, 
+  meta, 
+  isOverlay = false, 
+  isDragging = false,
+  dragListeners, 
+  dragAttributes, 
+  style,
+  ...props
+}, ref) => {
+  return (
+    <div 
+      id={`question-${q.id}`}
+      ref={ref} 
+      style={style} 
+      {...props}
+      className={`bg-white neo-card p-5 group flex gap-4 relative ${
+        isDragging 
+          ? 'shadow-[16px_16px_0px_#0f172a] border-neo-blue ring-2 ring-neo-blue cursor-grabbing z-50 !transition-none' 
+          : 'hover:shadow-[4px_4px_0px_#0f172a] transition-shadow duration-200'
+      }`}
+    >
+      <div 
+        {...dragAttributes} 
+        {...dragListeners}
+        className={`mt-1 touch-none text-slate-400 ${isDragging ? 'cursor-grabbing text-neo-blue' : 'cursor-grab hover:text-slate-800 transition-colors'}`}
+      >
+        <GripVertical className="w-6 h-6" />
+      </div>
+      <div className="flex-1">
+        <div className="flex justify-between items-start mb-4 gap-4">
+          <h4 className="font-extrabold text-lg flex-1">
+            <span className="text-neo-blue mr-2">Câu {idx + 1}:</span>
+            {q.content}
+          </h4>
+          <span className={`text-xs font-black px-3 py-1 border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] shrink-0 ${isMultiple ? 'bg-neo-yellow' : 'bg-neo-green text-white'}`}>
+            {isMultiple ? 'Nhiều đáp án' : 'Một đáp án'}
+          </span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+          {(meta.options || []).map((opt: { id: number; text: string }) => {
+            const isCorrect = meta.correctAnswers?.includes(opt.id)
+            return (
+              <div key={opt.id} className={`flex items-start gap-3 p-3 rounded-xl border-2 transition-colors ${isCorrect ? 'border-neo-green bg-green-50' : 'border-slate-200 bg-slate-50'}`}>
+                <div className={`mt-0.5 w-5 h-5 rounded flex items-center justify-center shrink-0 border-2 ${isCorrect ? 'border-neo-green bg-neo-green text-white' : 'border-slate-300'}`}>
+                  {isCorrect && <span className="text-sm font-black leading-none">✓</span>}
+                </div>
+                <span className={`font-bold text-sm ${isCorrect ? 'text-slate-900' : 'text-slate-600'}`}>
+                  {opt.text}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+})
+QuestionCard.displayName = 'QuestionCard'
+
+const SortableQuestion = ({ q, idx, isMultiple, meta }: { q: Question, idx: number, isMultiple: boolean, meta: any }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: q.id })
+
+  const style = {
+    // CSS.Translate keeps sizes intact, no scaling
+    transform: CSS.Translate.toString(transform),
+    // Disable transition completely while dragging to prevent neo-card CSS transition from lagging the pointer tracking
+    transition: isDragging ? undefined : transition,
+    // Bring dragged item to front
+    zIndex: isDragging ? 50 : 1,
+  }
+
+  return (
+    <QuestionCard
+      q={q}
+      idx={idx}
+      isMultiple={isMultiple}
+      meta={meta}
+      isDragging={isDragging}
+      dragListeners={listeners}
+      dragAttributes={attributes}
+      ref={setNodeRef}
+      style={style}
+    />
+  )
+}
+
 export const QuestionBankPage: React.FC = () => {
   const [banks, setBanks] = useState<QuestionBank[]>([])
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [selectedBank, setSelectedBank] = useState<QuestionBank | null>(null)
   const [questions, setQuestions] = useState<Question[]>([])
+  const [activeId, setActiveId] = useState<number | null>(null)
 
   // Modal states
   const [isNewBankModalOpen, setIsNewBankModalOpen] = useState(false)
@@ -157,6 +275,50 @@ export const QuestionBankPage: React.FC = () => {
       }
     } catch {
       alert('Có lỗi xảy ra')
+    }
+  }
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5, // Cần kéo ít nhất 5px mới kích hoạt, giúp không bị nhầm với click
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as number)
+  }
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    setActiveId(null)
+    const { active, over } = event
+    
+    if (over && active.id !== over.id) {
+      setQuestions((items) => {
+        const oldIndex = items.findIndex(item => item.id === active.id)
+        const newIndex = items.findIndex(item => item.id === over.id)
+        
+        const newItems = arrayMove(items, oldIndex, newIndex)
+        
+        // Cập nhật lên backend
+        if (selectedBank) {
+          const updates = newItems.map((item, index) => ({
+            id: item.id,
+            orderIndex: index
+          }))
+          
+          apiFetch(`/api/v1/questions/bank/${selectedBank.id}/reorder`, {
+            method: 'PUT',
+            body: JSON.stringify(updates)
+          }).catch(err => console.error('Failed to reorder', err))
+        }
+
+        return newItems
+      })
     }
   }
 
@@ -362,50 +524,33 @@ export const QuestionBankPage: React.FC = () => {
               disabled
               title="Tính năng sẽ sớm ra mắt"
             >
-              <Move className="w-4 h-4 mr-2" /> Kéo thả thứ tự (Coming Soon)
-            </button>
-            <button
-              className="px-4 py-2 bg-slate-200 text-slate-400 neo-btn text-sm flex items-center cursor-not-allowed opacity-70"
-              disabled
-              title="Tính năng sẽ sớm ra mắt"
-            >
               <FileText className="w-4 h-4 mr-2" /> In PDF (Coming Soon)
             </button>
           </div>
 
           <div className="flex flex-col gap-4">
-            {questions.map((q, idx) => {
-              const meta = typeof q.metadata === 'string' ? JSON.parse(q.metadata || '{}') : (q.metadata || {})
-              const isMultiple = q.type === 'MULTIPLE'
-              return (
-                <div key={q.id} className="bg-white neo-card p-5 group transition-colors">
-                  <div className="flex justify-between items-start mb-4 gap-4">
-                    <h4 className="font-extrabold text-lg flex-1">
-                      <span className="text-neo-blue mr-2">Câu {idx + 1}:</span>
-                      {q.content}
-                    </h4>
-                    <span className={`text-xs font-black px-3 py-1 border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] shrink-0 ${isMultiple ? 'bg-neo-yellow' : 'bg-neo-green text-white'}`}>
-                      {isMultiple ? 'Nhiều đáp án' : 'Một đáp án'}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                    {(meta.options || []).map((opt: { id: number; text: string }) => {
-                      const isCorrect = meta.correctAnswers?.includes(opt.id)
-                      return (
-                        <div key={opt.id} className={`flex items-start gap-3 p-3 rounded-xl border-2 transition-colors ${isCorrect ? 'border-neo-green bg-green-50' : 'border-slate-200 bg-slate-50'}`}>
-                          <div className={`mt-0.5 w-5 h-5 rounded flex items-center justify-center shrink-0 border-2 ${isCorrect ? 'border-neo-green bg-neo-green text-white' : 'border-slate-300'}`}>
-                            {isCorrect && <span className="text-sm font-black leading-none">✓</span>}
-                          </div>
-                          <span className={`font-bold text-sm ${isCorrect ? 'text-slate-900' : 'text-slate-600'}`}>
-                            {opt.text}
-                          </span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )
-            })}
+            <DndContext 
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              onDragCancel={() => setActiveId(null)}
+            >
+              <SortableContext 
+                items={questions.map(q => q.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {questions.map((q, index) => (
+                  <SortableQuestion 
+                    key={q.id} 
+                    q={q} 
+                    idx={index} 
+                    isMultiple={q.type === 'MULTIPLE'} 
+                    meta={typeof q.metadata === 'string' ? JSON.parse(q.metadata || '{}') : (q.metadata || {})}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
 
             {questions.length === 0 && (
               <div className="text-center py-20 border-4 border-dashed border-slate-300 rounded-2xl bg-white shadow-[8px_8px_0px_rgba(0,0,0,0.05)]">
