@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useReactToPrint } from 'react-to-print'
 import { apiFetch, apiFetchMultipart } from '../utils/api'
 import { useAuthStore } from '../store/authStore'
+import { PrintableExam } from '../components/PrintableExam'
 import { 
   FolderOpen, 
   Plus, 
@@ -12,7 +14,8 @@ import {
   ArrowLeft,
   X,
   PlusCircle,
-  GripVertical
+  GripVertical,
+  Printer
 } from 'lucide-react'
 import {
   DndContext,
@@ -171,6 +174,7 @@ export const QuestionBankPage: React.FC = () => {
   const [newQOptions, setNewQOptions] = useState([{ id: 1, text: '', isCorrect: false }])
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const printRef = useRef<HTMLDivElement>(null)
   const userId = useAuthStore(state => state.userId)
 
   const loadBanks = React.useCallback(async () => {
@@ -376,6 +380,11 @@ export const QuestionBankPage: React.FC = () => {
     }
   }
 
+  const handlePrintPdf = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: selectedBank ? `De_Thi_${selectedBank.title}` : 'De_Thi'
+  })
+
   const handleOptionChange = (id: number, text: string) => {
     setNewQOptions(opts => opts.map(o => o.id === id ? { ...o, text } : o))
   }
@@ -510,6 +519,15 @@ export const QuestionBankPage: React.FC = () => {
               </button>
 
               <button
+                onClick={() => handlePrintPdf()}
+                className="flex-1 lg:flex-none px-4 py-2 bg-slate-900 text-white neo-btn text-sm flex items-center justify-center group"
+                title="In đề thi ra PDF"
+              >
+                <Printer className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                In PDF
+              </button>
+
+              <button
                 onClick={() => setIsNewQuestionModalOpen(true)}
                 className="flex-1 lg:flex-none px-4 py-2 bg-neo-blue hover:bg-blue-600 text-white neo-btn text-sm flex items-center justify-center"
               >
@@ -551,6 +569,11 @@ export const QuestionBankPage: React.FC = () => {
                 ))}
               </SortableContext>
             </DndContext>
+
+            {/* Hidden component for printing */}
+            <div className="hidden">
+              <PrintableExam ref={printRef} bank={selectedBank} questions={questions} />
+            </div>
 
             {questions.length === 0 && (
               <div className="text-center py-20 border-4 border-dashed border-slate-300 rounded-2xl bg-white shadow-[8px_8px_0px_rgba(0,0,0,0.05)]">
