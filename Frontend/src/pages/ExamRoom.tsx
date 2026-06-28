@@ -17,6 +17,7 @@ export const ExamRoom: React.FC = () => {
   }
   const [currentQIndex, setCurrentQIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<number, any>>({})
+  const [syncStatus, setSyncStatus] = useState<Record<number, 'UNANSWERED' | 'PENDING' | 'SYNCED' | 'ERROR_DISCONNECTED' | 'ERROR_REDIS'>>({})
   const [timeLeft, setTimeLeft] = useState<number>(0)
   const [isConnected, setIsConnected] = useState(false)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -57,19 +58,42 @@ export const ExamRoom: React.FC = () => {
           }
         })
 
+        client.subscribe('/user/queue/answer-ack', (message) => {
+          try {
+            const payload = JSON.parse(message.body)
+            if (payload.status === 'SYNCED') {
+              setSyncStatus(prev => ({
+                ...prev,
+                [payload.questionId]: 'SYNCED'
+              }))
+            } else if (payload.status === 'FAILED') {
+              setSyncStatus(prev => ({
+                ...prev,
+                [payload.questionId]: 'ERROR_REDIS'
+              }))
+            }
+          } catch (e) {
+            console.error("Error parsing ACK result", e)
+          }
+        })
+
         // Auto Sync when connected
         apiFetch(`/api/v1/student/sessions/${data.sessionId}/sync`)
           .then(res => res.json())
           .then(syncedAnswers => {
             const parsedAnswers: Record<number, any> = {}
+            const parsedSyncStatus: Record<number, 'SYNCED'> = {}
             for (const key in syncedAnswers) {
               try {
                 parsedAnswers[parseInt(key)] = JSON.parse(syncedAnswers[key])
+                parsedSyncStatus[parseInt(key)] = 'SYNCED'
               } catch (e) {
                 parsedAnswers[parseInt(key)] = syncedAnswers[key]
+                parsedSyncStatus[parseInt(key)] = 'SYNCED'
               }
             }
             setAnswers(parsedAnswers)
+            setSyncStatus(prev => ({ ...prev, ...parsedSyncStatus }))
           })
           .catch(err => console.error("Sync error:", err))
       },
@@ -140,6 +164,10 @@ export const ExamRoom: React.FC = () => {
     }))
 
     if (stompClientRef.current && stompClientRef.current.connected) {
+      setSyncStatus(prev => ({
+        ...prev,
+        [questionId]: 'PENDING'
+      }))
       stompClientRef.current.publish({
         destination: '/app/submit-answer',
         body: JSON.stringify({
@@ -148,6 +176,11 @@ export const ExamRoom: React.FC = () => {
           answerData: answerData
         })
       })
+    } else {
+      setSyncStatus(prev => ({
+        ...prev,
+        [questionId]: 'ERROR_DISCONNECTED'
+      }))
     }
   }
 
@@ -227,13 +260,13 @@ export const ExamRoom: React.FC = () => {
       <div className="w-full min-h-screen bg-[#f1f5f9] flex flex-col items-center justify-center p-4 relative overflow-hidden">
         <div className="absolute top-10 left-10 w-32 h-32 bg-neo-yellow/20 rounded-full blur-2xl pointer-events-none"></div>
         <div className="absolute bottom-10 right-10 w-48 h-48 bg-neo-blue/10 rounded-full blur-3xl pointer-events-none"></div>
-        
+
         <div className="w-full max-w-xl bg-white neo-card p-8 md:p-12 flex flex-col items-center text-center relative z-10 shadow-[8px_8px_0px_#0f172a]">
           <div className="w-20 h-20 mb-8 border-4 border-slate-200 border-t-neo-blue rounded-full animate-spin"></div>
           <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-6 animate-pulse tracking-tight uppercase">
             Grading in progress...
           </h1>
-          
+
           <div className="w-full h-4 bg-slate-100 rounded-full border-2 border-slate-900 overflow-hidden mb-4">
             <div className="h-full bg-neo-yellow w-full origin-left animate-progress-indeterminate"></div>
           </div>
@@ -248,7 +281,7 @@ export const ExamRoom: React.FC = () => {
       <div className="w-full min-h-screen bg-[#f1f5f9] flex flex-col items-center justify-center p-4 relative overflow-hidden">
         <div className="absolute top-10 right-10 w-32 h-32 bg-neo-green/20 rounded-full blur-2xl pointer-events-none"></div>
         <div className="absolute bottom-10 left-10 w-48 h-48 bg-neo-yellow/20 rounded-full blur-3xl pointer-events-none"></div>
-        
+
         <div className="w-full max-w-xl bg-white rounded-3xl border-4 border-neo-green p-8 md:p-12 flex flex-col items-center text-center relative z-10 shadow-[8px_8px_0px_#10b981] animate-bounce-short">
           <div className="w-24 h-24 mb-6 rounded-full bg-emerald-100 flex items-center justify-center border-4 border-neo-green text-neo-green">
             <CheckCircle size={48} strokeWidth={3} />
@@ -259,12 +292,12 @@ export const ExamRoom: React.FC = () => {
           <div className="text-8xl font-black text-neo-green mb-8 tracking-tighter">
             {finalScore !== null ? finalScore : '-'} <span className="text-3xl text-emerald-600">points</span>
           </div>
-          
+
           <p className="text-sm font-bold text-slate-500 mb-8 max-w-sm">
             Your exam has been graded automatically.
           </p>
-          
-          <button 
+
+          <button
             onClick={() => navigate('/', { replace: true })}
             className="px-8 py-4 bg-neo-green hover:bg-emerald-600 text-white rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all font-black text-lg w-full"
           >
@@ -288,8 +321,8 @@ export const ExamRoom: React.FC = () => {
           <p className="text-base font-bold text-slate-600 mb-8">
             {failedMessage}
           </p>
-          
-          <button 
+
+          <button
             onClick={() => navigate('/', { replace: true })}
             className="px-8 py-4 bg-rose-500 hover:bg-rose-600 text-white rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all font-black text-lg w-full"
           >
@@ -302,7 +335,7 @@ export const ExamRoom: React.FC = () => {
 
   return (
     <div className="w-full min-h-screen bg-[#f1f5f9] flex flex-col md:flex-row p-4 gap-4 relative">
-      
+
       {/* Time Out Modal */}
       {showTimeOutModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
@@ -314,7 +347,7 @@ export const ExamRoom: React.FC = () => {
             <p className="text-slate-600 font-bold mb-8">
               Your time has expired! The system has automatically submitted your exam.
             </p>
-            <button 
+            <button
               onClick={() => setShowTimeOutModal(false)}
               className="w-full py-3 bg-neo-blue hover:bg-blue-600 text-white font-black border-2 border-slate-900 rounded-xl shadow-[4px_4px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all"
             >
@@ -336,13 +369,13 @@ export const ExamRoom: React.FC = () => {
               Are you sure you want to submit? This action cannot be undone and you cannot change your answers.
             </p>
             <div className="flex w-full gap-4">
-              <button 
+              <button
                 onClick={() => setShowConfirmModal(false)}
                 className="flex-1 py-3 bg-white hover:bg-slate-100 text-slate-900 font-black border-2 border-slate-900 rounded-xl shadow-[4px_4px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all"
               >
                 GO BACK
               </button>
-              <button 
+              <button
                 onClick={confirmSubmitExam}
                 className="flex-1 py-3 bg-neo-green hover:bg-emerald-500 text-white font-black border-2 border-slate-900 rounded-xl shadow-[4px_4px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all"
               >
@@ -478,21 +511,31 @@ export const ExamRoom: React.FC = () => {
         <div className="bg-white neo-card p-6 flex-1 flex flex-col">
           <h3 className="font-extrabold text-slate-900 mb-4 border-b-2 border-slate-100 pb-2">Question List</h3>
 
-          <div className="grid grid-cols-5 gap-2 overflow-y-auto max-h-[300px] md:max-h-none content-start">
+          <div className="grid grid-cols-5 gap-3 overflow-y-auto max-h-[300px] md:max-h-none content-start p-2">
             {data.questions.map((q: any, idx: number) => {
               const isAnswered = answers[q.id] !== undefined && answers[q.id] !== '' && (Array.isArray(answers[q.id]) ? answers[q.id].length > 0 : true)
+              const status = isAnswered ? (syncStatus[q.id] || 'PENDING') : 'UNANSWERED'
               const isCurrent = currentQIndex === idx
+
+              const baseColor = status === 'SYNCED'
+                ? 'bg-neo-green text-white hover:bg-emerald-400'
+                : status === 'PENDING'
+                  ? 'bg-neo-blue text-white cursor-wait hover:bg-blue-400'
+                  : status === 'ERROR_DISCONNECTED'
+                    ? 'bg-orange-500 text-white hover:bg-orange-400'
+                    : status === 'ERROR_REDIS'
+                      ? 'bg-rose-500 text-white hover:bg-rose-400'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+
+              const borderAndShadow = isCurrent
+                ? 'border-2 border-slate-900 shadow-[3px_3px_0px_#0f172a] -translate-y-[2px] -translate-x-[2px]'
+                : 'border-2 border-transparent shadow-none'
 
               return (
                 <button
                   key={q.id}
                   onClick={() => setCurrentQIndex(idx)}
-                  className={`aspect-square rounded-xl border-2 border-slate-900 font-black text-sm flex items-center justify-center transition-all ${isCurrent
-                    ? 'bg-slate-900 text-white shadow-none translate-x-[2px] translate-y-[2px]'
-                    : isAnswered
-                      ? 'bg-[#d1fae5] text-emerald-800 shadow-[2px_2px_0px_#0f172a] hover:bg-[#a7f3d0]'
-                      : 'bg-white text-slate-600 shadow-[2px_2px_0px_#0f172a] hover:bg-slate-50'
-                    }`}
+                  className={`aspect-square rounded-xl font-black text-sm flex items-center justify-center transition-all ${baseColor} ${borderAndShadow}`}
                 >
                   {idx + 1}
                 </button>

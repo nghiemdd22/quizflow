@@ -8,6 +8,9 @@ import vn.edu.hust.quizflow.entity.User;
 import vn.edu.hust.quizflow.repository.UserRepository;
 import vn.edu.hust.quizflow.service.RedisService;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import vn.edu.hust.quizflow.dto.message.AnswerAckMessage;
+
 import java.security.Principal;
 
 /**
@@ -20,6 +23,7 @@ public class ExamWebSocketController {
 
     private final RedisService redisService;
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     /**
      * Phương thức xử lý khi có client (học sinh) nộp câu trả lời lên server.
@@ -39,9 +43,17 @@ public class ExamWebSocketController {
         User student = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy học sinh"));
         
-        // Lưu câu trả lời của học sinh vào bộ đệm Redis
-        // Việc dùng Redis giúp hệ thống có thể xử lý lượng lớn câu trả lời cùng lúc một cách cực kỳ nhanh chóng 
-        // mà không gây quá tải cho cơ sở dữ liệu chính (MySQL).
-        redisService.saveAnswer(request.getSessionId(), student.getId(), request.getQuestionId(), request.getAnswerData());
+        try {
+            // Lưu câu trả lời của học sinh vào bộ đệm Redis
+            redisService.saveAnswer(request.getSessionId(), student.getId(), request.getQuestionId(), request.getAnswerData());
+
+            // Bắn gói tin xác nhận (ACK) về cho riêng học sinh này để UI chuyển màu từ Xanh dương (Pending) sang Xanh lá (Synced)
+            AnswerAckMessage ackMessage = new AnswerAckMessage(request.getQuestionId(), "SYNCED");
+            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/answer-ack", ackMessage);
+        } catch (Exception e) {
+            // Nếu Redis sập hoặc xảy ra lỗi ngầm, bắn gói tin báo FAILED về để UI chuyển sang màu Đỏ (Red)
+            AnswerAckMessage errMessage = new AnswerAckMessage(request.getQuestionId(), "FAILED");
+            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/answer-ack", errMessage);
+        }
     }
 }

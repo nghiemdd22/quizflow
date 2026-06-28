@@ -28,6 +28,7 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+      timeout: 2000 # Ép Java văng lỗi sau 2 giây nếu không kết nối được thay vì chờ vô tận
 
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
