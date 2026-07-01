@@ -136,11 +136,8 @@ public class AuthService {
         User user = refreshToken.getUser();
         String newToken = jwtUtils.generateToken(user.getUsername(), user.getRole().name());
 
-        // Rotate Refresh Token (cấp cái mới)
-        String newRefreshTokenString = java.util.UUID.randomUUID().toString();
-        refreshToken.setTokenHash(newRefreshTokenString);
-        refreshToken.setExpiresAt(java.time.LocalDateTime.now().plusDays(7));
-        refreshTokenRepository.save(refreshToken);
+        // KHÔNG CÒN ROTATE REFRESH TOKEN NỮA
+        // Trả về thẳng Access Token mới, giữ nguyên Refresh Token cũ
 
         return AuthResponse.builder()
                 .id(user.getId())
@@ -148,7 +145,7 @@ public class AuthService {
                 .username(user.getUsername())
                 .fullName(user.getFullName())
                 .role(user.getRole())
-                .refreshToken(newRefreshTokenString)
+                .refreshToken(refreshTokenString) // Sử dụng lại token cũ
                 .build();
     }
 }
