@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Clock, Plus, Users, Hash, FileText } from 'lucide-react'
-import { apiFetch } from '../utils/api'
+import { ArrowLeft, Clock, Plus, Users, Hash, FileText, Download, Upload, File as FileIcon, Image as ImageIcon } from 'lucide-react'
+import { apiFetch, apiFetchMultipart } from '../utils/api'
 import { useAuthStore } from '../store/authStore'
 import { Navbar } from '../components/Navbar'
 import { ClassChatBox } from '../components/ClassChatBox'
@@ -20,6 +20,16 @@ interface Exam {
   title: string
 }
 
+interface ClassDocument {
+  id: number
+  fileName: string
+  fileUrl: string
+  format: string
+  sizeBytes: number
+  uploadedAt: string
+  uploaderName: string
+}
+
 interface ClassroomDetail {
   id: number
   name: string
@@ -36,8 +46,12 @@ export const ClassDetailPage: React.FC = () => {
   const [classroom, setClassroom] = useState<ClassroomDetail | null>(null)
   const [sessions, setSessions] = useState<ExamSession[]>([])
   const [exams, setExams] = useState<Exam[]>([])
+  const [documents, setDocuments] = useState<ClassDocument[]>([])
 
   const [isNewSessionModalOpen, setIsNewSessionModalOpen] = useState(false)
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+  const [uploadFile, setUploadFile] = useState<File | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
   const [sessionTitle, setSessionTitle] = useState('')
   const [startTime, setStartTime] = useState('')
   const [endTime, setEndTime] = useState('')
@@ -47,6 +61,7 @@ export const ClassDetailPage: React.FC = () => {
   useEffect(() => {
     loadClassroom()
     loadSessions()
+    loadDocuments()
     if (userRole === 'TEACHER') {
       loadExams()
     }
@@ -73,6 +88,17 @@ export const ClassDetailPage: React.FC = () => {
       }
     } catch (e) {
       console.error(e)
+    }
+  }
+
+  const loadDocuments = async () => {
+    try {
+      const res = await apiFetch(`/api/v1/classes/${classId}/documents`)
+      if (res.ok) {
+        setDocuments(await res.json())
+      }
+    } catch (e) {
+      console.error('Failed to load documents', e)
     }
   }
 
@@ -130,6 +156,48 @@ export const ClassDetailPage: React.FC = () => {
     } catch (err) {
       alert('Lỗi kết nối máy chủ')
     }
+  }
+
+  const handleUploadDocument = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!uploadFile) return alert('Vui lòng chọn file')
+
+    setIsUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', uploadFile)
+
+      const res = await apiFetchMultipart(`/api/v1/classes/${classId}/documents`, {
+        method: 'POST',
+        body: formData,
+      })
+      if (res.ok) {
+        setIsUploadModalOpen(false)
+        setUploadFile(null)
+        loadDocuments()
+        alert('Tải lên thành công!')
+      } else {
+        alert('Lỗi tải lên tài liệu')
+      }
+    } catch (err) {
+      alert('Có lỗi xảy ra khi tải lên')
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  }
+
+  const getFileIcon = (format: string) => {
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(format?.toLowerCase())) return <ImageIcon size={24} className="text-neo-blue" />
+    if (['pdf'].includes(format?.toLowerCase())) return <FileText size={24} className="text-neo-red" />
+    return <FileIcon size={24} className="text-slate-500" />
   }
 
   const getStatusColor = (status: string) => {
@@ -230,6 +298,54 @@ export const ClassDetailPage: React.FC = () => {
                 ))}
               </div>
             )}
+
+            {/* Danh sách Tài liệu */}
+            <div className="flex justify-between items-center mt-12 mb-6">
+              <h2 className="text-2xl font-black text-slate-900">Tài Liệu Lớp Học</h2>
+              {userRole === 'TEACHER' && (
+                <button
+                  onClick={() => setIsUploadModalOpen(true)}
+                  className="flex items-center gap-2 bg-neo-yellow text-slate-900 px-5 py-2.5 rounded-xl font-black neo-btn"
+                >
+                  <Upload size={20} /> Tải tài liệu
+                </button>
+              )}
+            </div>
+
+            {documents.length === 0 ? (
+              <div className="bg-white border-2 border-slate-900 rounded-xl p-12 text-center shadow-[4px_4px_0px_#0f172a]">
+                <FileText size={48} className="mx-auto mb-4 text-slate-300" />
+                <h3 className="text-xl font-black text-slate-900 mb-2">Chưa có tài liệu nào</h3>
+                <p className="text-slate-500 font-bold">
+                  {userRole === 'TEACHER' ? 'Hãy tải lên tài liệu học tập cho lớp.' : 'Lớp học hiện chưa có tài liệu.'}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {documents.map(doc => (
+                  <div key={doc.id} className="bg-white border-2 border-slate-900 rounded-xl p-4 shadow-[4px_4px_0px_#0f172a] flex items-start gap-4">
+                    <div className="bg-slate-100 p-3 rounded-xl border-2 border-slate-900">
+                      {getFileIcon(doc.format)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-black text-slate-900 truncate" title={doc.fileName}>{doc.fileName}</h3>
+                      <div className="text-xs font-bold text-slate-500 mt-1 flex flex-col gap-1">
+                        <span>{formatBytes(doc.sizeBytes)} • {doc.format?.toUpperCase()}</span>
+                        <span>Bởi {doc.uploaderName} • {new Date(doc.uploadedAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <a
+                      href={doc.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-neo-blue text-white p-2 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0f172a] transition-all"
+                    >
+                      <Download size={18} />
+                    </a>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Cột phải: Chatbox (30-40%) */}
@@ -318,6 +434,47 @@ export const ClassDetailPage: React.FC = () => {
                     className="flex-1 py-3 font-black text-white bg-neo-blue border-2 border-slate-900 rounded-xl hover:bg-blue-600 transition-colors neo-btn"
                   >
                     Tạo mới
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Tải Lên Tài Liệu (Giáo viên) */}
+        {isUploadModalOpen && (
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white border-4 border-slate-900 rounded-2xl p-6 max-w-md w-full shadow-[8px_8px_0px_#0f172a] animate-scale-up">
+              <h2 className="text-2xl font-black text-slate-900 mb-6">Tải Lên Tài Liệu</h2>
+              
+              <form onSubmit={handleUploadDocument} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Chọn File (PDF, Hình ảnh, DOCX...)</label>
+                  <input
+                    type="file"
+                    onChange={(e) => setUploadFile(e.target.files ? e.target.files[0] : null)}
+                    required
+                    className="w-full px-4 py-2.5 bg-slate-50 border-2 border-slate-900 rounded-xl font-bold focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-2 file:border-slate-900 file:text-sm file:font-black file:bg-neo-yellow file:text-slate-900 hover:file:bg-yellow-400"
+                  />
+                </div>
+
+                <div className="flex gap-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsUploadModalOpen(false)
+                      setUploadFile(null)
+                    }}
+                    className="flex-1 py-3 font-black text-slate-700 bg-slate-100 border-2 border-slate-900 rounded-xl hover:bg-slate-200 transition-colors"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isUploading || !uploadFile}
+                    className="flex-1 py-3 font-black text-white bg-neo-green border-2 border-slate-900 rounded-xl hover:bg-green-600 transition-colors neo-btn disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isUploading ? 'Đang tải...' : <><Upload size={20} /> Tải lên</>}
                   </button>
                 </div>
               </form>

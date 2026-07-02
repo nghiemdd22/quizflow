@@ -1,6 +1,10 @@
 spring:
   application:
     name: quizflow
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
 
   datasource:
     url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:quizflow}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh
@@ -44,3 +48,7 @@ jwt:
   secret: ${JWT_SECRET:quizflowjwtsecretkey2026hustuniversity}
   expiration-ms: ${JWT_EXPIRATION_MS:86400000}
 
+cloudinary:
+  cloud-name: avgccvua
+  api-key: 798122979194662
+  api-secret: hImbOTtMacwUsD71ussbxO0vxyc
