@@ -117,7 +117,11 @@ export const ClassroomsPage: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {classrooms.map((c) => (
-              <div key={c.id} className="bg-white border-2 border-slate-900 rounded-xl p-6 shadow-[4px_4px_0px_#0f172a] hover:-translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0px_#0f172a] transition-all cursor-pointer group flex flex-col justify-between h-48">
+              <div 
+                key={c.id} 
+                onClick={() => navigate(`/classes/${c.id}`)}
+                className="bg-white border-2 border-slate-900 rounded-xl p-6 shadow-[4px_4px_0px_#0f172a] hover:-translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0px_#0f172a] transition-all cursor-pointer group flex flex-col justify-between h-48"
+              >
                 <div>
                   <h3 className="text-xl font-black text-slate-900 line-clamp-2 mb-2 group-hover:text-neo-blue transition-colors">
                     {c.name}

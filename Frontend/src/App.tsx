@@ -8,6 +8,7 @@ import { AuthModal } from './components/AuthModal'
 import { LandingPage } from './pages/LandingPage'
 import { TeacherDashboard } from './pages/TeacherDashboard'
 import { ClassroomsPage } from './pages/ClassroomsPage'
+import { ClassDetailPage } from './pages/ClassDetailPage'
 import { QuestionBankPage } from './pages/QuestionBankPage'
 import { ExamSessionsPage } from './pages/ExamSessionsPage'
 import { ReportsPage } from './pages/ReportsPage'
@@ -148,6 +149,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['TEACHER', 'STUDENT']}>
                   <ClassroomsPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/classes/:classId" 
+              element={
+                <ProtectedRoute allowedRoles={['TEACHER', 'STUDENT']}>
+                  <ClassDetailPage />
                 </ProtectedRoute>
               } 
             />

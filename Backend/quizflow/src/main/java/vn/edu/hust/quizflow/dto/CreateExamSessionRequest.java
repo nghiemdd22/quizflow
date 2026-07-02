@@ -11,6 +11,9 @@ public class CreateExamSessionRequest {
     @NotBlank(message = "Tên ca thi không được để trống")
     private String title;
 
+    @NotNull(message = "Lớp học không được để trống")
+    private Long classId;
+
     @NotNull(message = "Thời gian bắt đầu không được để trống")
     private LocalDateTime startTime;
 

@@ -22,7 +22,10 @@ import vn.edu.hust.quizflow.repository.UserRepository;
 import vn.edu.hust.quizflow.repository.ExamSubmissionRepository;
 import vn.edu.hust.quizflow.repository.ExamQuestionRepository;
 import vn.edu.hust.quizflow.repository.StudentAnswerRepository;
+import vn.edu.hust.quizflow.repository.ClassroomRepository;
+import vn.edu.hust.quizflow.repository.ClassMemberRepository;
 import vn.edu.hust.quizflow.service.RedisService;
+import vn.edu.hust.quizflow.entity.Classroom;
 
 import java.security.SecureRandom;
 import java.util.List;
@@ -49,6 +52,8 @@ public class ExamSessionService {
     private final ExamSubmissionRepository examSubmissionRepository;
     private final ExamQuestionRepository examQuestionRepository;
     private final StudentAnswerRepository studentAnswerRepository;
+    private final ClassroomRepository classroomRepository;
+    private final ClassMemberRepository classMemberRepository;
     private final RedisService redisService;
     private final RabbitTemplate rabbitTemplate;
 
@@ -72,6 +77,13 @@ public class ExamSessionService {
         if (!exam.getTeacher().getUsername().equals(username)) {
             throw new IllegalArgumentException("Bạn không có quyền mở ca thi cho đề này");
         }
+        
+        Classroom classroom = classroomRepository.findById(request.getClassId())
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lớp học"));
+                
+        if (!classroom.getTeacher().getUsername().equals(username)) {
+            throw new IllegalArgumentException("Bạn không có quyền quản lý lớp học này");
+        }
 
         // Cập nhật trạng thái đề thi thành PUBLISHED nếu là lần mở đầu tiên
         if (exam.getStatus() == ExamStatus.DRAFT) {
@@ -79,16 +91,10 @@ public class ExamSessionService {
             examRepository.save(exam);
         }
 
-        // Sinh mã PIN unique
-        String pinCode;
-        do {
-            pinCode = generateRandomPin(6);
-        } while (examSessionRepository.findByPinCode(pinCode).isPresent());
-
         ExamSession session = ExamSession.builder()
                 .exam(exam)
+                .classroom(classroom)
                 .title(request.getTitle())
-                .pinCode(pinCode)
                 .startTime(request.getStartTime())
                 .endTime(request.getEndTime())
                 .durationMinutes(request.getDurationMinutes())
@@ -118,12 +124,28 @@ public class ExamSessionService {
                 .stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
-    private String generateRandomPin(int length) {
-        StringBuilder sb = new StringBuilder(length);
-        for (int i = 0; i < length; i++) {
-            sb.append(DIGITS.charAt(RANDOM.nextInt(DIGITS.length())));
+    public List<ExamSessionDTO> getSessionsByClassroomId(Long classroomId, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy user"));
+        
+        Classroom classroom = classroomRepository.findById(classroomId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lớp học"));
+
+        // Nếu là giáo viên, kiểm tra xem có phải chủ lớp không
+        if (user.getRole() == vn.edu.hust.quizflow.entity.UserRole.TEACHER) {
+            if (!classroom.getTeacher().getId().equals(user.getId())) {
+                throw new IllegalArgumentException("Bạn không có quyền truy cập lớp học này");
+            }
+        } else {
+            // Nếu là học sinh, kiểm tra xem có phải thành viên lớp không
+            boolean isMember = classMemberRepository.existsByClassroomIdAndStudentId(classroomId, user.getId());
+            if (!isMember) {
+                throw new IllegalArgumentException("Bạn không thuộc lớp học này");
+            }
         }
-        return sb.toString();
+
+        return examSessionRepository.findByClassroomId(classroomId)
+                .stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
     private ExamSessionDTO mapToDTO(ExamSession session) {
@@ -131,7 +153,7 @@ public class ExamSessionService {
         dto.setId(session.getId());
         dto.setExamId(session.getExam().getId());
         dto.setTitle(session.getTitle());
-        dto.setPinCode(session.getPinCode());
+        dto.setClassId(session.getClassroom().getId());
         dto.setStartTime(session.getStartTime());
         dto.setEndTime(session.getEndTime());
         dto.setDurationMinutes(session.getDurationMinutes());
@@ -141,23 +163,29 @@ public class ExamSessionService {
 
     /**
      * Xử lý nghiệp vụ khi học sinh tham gia vào một phiên thi (vào phòng thi).
-     * Hàm này chịu trách nhiệm kiểm tra mã PIN, kiểm tra thời gian thi, che giấu
+     * Hàm này chịu trách nhiệm kiểm tra tư cách thành viên, kiểm tra thời gian thi, che giấu
      * đáp án đúng,
      * và tính toán thời gian làm bài thực tế của từng học sinh.
      *
-     * @param pinCode  Mã PIN của phòng thi do học sinh nhập
+     * @param sessionId  ID của phiên thi
      * @param username Tên đăng nhập của học sinh
      * @return DTO chứa thông tin phòng thi và danh sách câu hỏi (đã che đáp án)
      */
     @Transactional
-    public ExamRoomResponse joinSession(String pinCode, String username) {
+    public ExamRoomResponse joinSession(Long sessionId, String username) {
         // 1. Kiểm tra mã PIN và lấy thông tin phiên thi
-        ExamSession session = examSessionRepository.findByPinCode(pinCode)
-                .orElseThrow(() -> new IllegalArgumentException("Mã PIN không hợp lệ"));
+        ExamSession session = examSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ca thi"));
 
         // 2. Lấy thông tin học sinh
         User student = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy học sinh"));
+
+        // 2.5 Kiểm tra học sinh có trong lớp không
+        boolean isMember = classMemberRepository.existsByClassroomIdAndStudentId(session.getClassroom().getId(), student.getId());
+        if (!isMember) {
+            throw new IllegalArgumentException("Bạn không thuộc lớp học này nên không thể tham gia thi.");
+        }
 
         // 3. Kiểm tra mốc thời gian (Ca thi đã đến giờ mở chưa, hoặc đã kết thúc chưa)
         LocalDateTime now = LocalDateTime.now();

@@ -300,12 +300,6 @@ export const ExamSessionsPage: React.FC = () => {
               >
                 <Plus className="w-5 h-5 mr-1" /> Thêm câu hỏi
               </button>
-              <button
-                onClick={() => setIsNewSessionModalOpen(true)}
-                className="flex-1 lg:flex-none px-4 py-3 bg-neo-purple hover:bg-purple-600 text-white neo-btn text-sm flex items-center justify-center font-black"
-              >
-                <PlayCircle className="w-5 h-5 mr-1" /> Mở Ca thi (Tạo PIN)
-              </button>
             </div>
           </div>
 
@@ -418,39 +412,6 @@ export const ExamSessionsPage: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL TẠO CA THI */}
-      {isNewSessionModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-page-enter">
-          <div className="bg-white neo-card p-6 md:p-8 max-w-md w-full relative">
-            <button onClick={() => setIsNewSessionModalOpen(false)} className="absolute right-4 top-4 w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-100 hover:bg-neo-coral hover:text-white flex items-center justify-center font-bold transition-colors"><X className="w-4 h-4" /></button>
-            <h3 className="text-2xl font-black mb-6 flex items-center gap-2"><PlayCircle className="text-neo-purple" /> Mở Ca thi mới</h3>
-            <form onSubmit={handleCreateSession} className="flex flex-col gap-5">
-              <div>
-                <label className="block text-xs font-black text-slate-800 mb-2">TÊN CA THI</label>
-                <input required value={sessionTitle} onChange={e => setSessionTitle(e.target.value)} placeholder="Ví dụ: Thi cuối kỳ K66" className="w-full px-4 py-3 text-sm border-2 border-slate-900 rounded-xl shadow-[3px_3px_0px_#0f172a] font-bold outline-none focus:translate-y-[1px] focus:translate-x-[1px] focus:shadow-[2px_2px_0px_#0f172a] transition-all" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-black text-slate-800 mb-2">BẮT ĐẦU</label>
-                  <input required type="datetime-local" value={startTime} onChange={e => setStartTime(e.target.value)} className="w-full px-3 py-3 text-sm border-2 border-slate-900 rounded-xl shadow-[3px_3px_0px_#0f172a] font-bold outline-none focus:translate-y-[1px] focus:translate-x-[1px] focus:shadow-[2px_2px_0px_#0f172a] transition-all" />
-                </div>
-                <div>
-                  <label className="block text-xs font-black text-slate-800 mb-2">KẾT THÚC</label>
-                  <input required type="datetime-local" value={endTime} onChange={e => setEndTime(e.target.value)} className="w-full px-3 py-3 text-sm border-2 border-slate-900 rounded-xl shadow-[3px_3px_0px_#0f172a] font-bold outline-none focus:translate-y-[1px] focus:translate-x-[1px] focus:shadow-[2px_2px_0px_#0f172a] transition-all" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-black text-slate-800 mb-2">THỜI GIAN LÀM BÀI (PHÚT)</label>
-                <input required type="number" min={1} value={durationMinutes} onChange={e => setDurationMinutes(Number(e.target.value))} className="w-full px-4 py-3 text-sm border-2 border-slate-900 rounded-xl shadow-[3px_3px_0px_#0f172a] font-bold outline-none focus:translate-y-[1px] focus:translate-x-[1px] focus:shadow-[2px_2px_0px_#0f172a] transition-all" />
-              </div>
-              <div className="p-4 bg-purple-50 border-2 border-neo-purple rounded-xl mt-2 text-sm font-bold text-slate-700">
-                Mã PIN sẽ được sinh ngẫu nhiên sau khi bạn bấm nút khởi tạo bên dưới.
-              </div>
-              <button type="submit" className="w-full mt-2 py-4 bg-neo-purple hover:bg-purple-600 text-white text-lg neo-btn">Khởi tạo Ca thi</button>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

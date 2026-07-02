@@ -45,7 +45,7 @@ public class ExamSessionScheduler {
         // Duyệt qua từng ca thi hết hạn để cập nhật trạng thái
         for (ExamSession session : expiredSessions) {
             session.setStatus(SessionStatus.CLOSED);
-            log.info("Đã tự động đóng Ca thi có ID: {} và Mã PIN: {}", session.getId(), session.getPinCode());
+            log.info("Đã tự động đóng Ca thi có ID: {}", session.getId());
             
             // Quan trọng! Quét Redis lấy đáp án của tất cả học sinh chưa nộp bài trong phòng này và đẩy vào RabbitMQ để ép thu bài tự động.
             examSessionService.forceSubmitAllPendingSubmissions(session.getId());

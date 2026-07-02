@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface ExamSessionRepository extends JpaRepository<ExamSession, Long> {
-    Optional<ExamSession> findByPinCode(String pinCode);
     List<ExamSession> findByExamId(Long examId);
+    List<ExamSession> findByClassroomId(Long classroomId);
     List<ExamSession> findAllByStatusAndEndTimeBefore(vn.edu.hust.quizflow.entity.SessionStatus status, java.time.LocalDateTime endTime);
 }

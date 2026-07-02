@@ -26,8 +26,9 @@ public class ExamSession {
     @Column(nullable = false)
     private String title;
 
-    @Column(name = "pin_code", nullable = false, unique = true, length = 6)
-    private String pinCode;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_id", nullable = false)
+    private Classroom classroom;
 
     @Column(name = "room_password")
     private String roomPassword;

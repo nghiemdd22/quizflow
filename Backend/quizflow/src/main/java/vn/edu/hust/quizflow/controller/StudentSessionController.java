@@ -7,7 +7,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.hust.quizflow.dto.ExamRoomResponse;
 import vn.edu.hust.quizflow.dto.ExamHistoryResponse;
-import vn.edu.hust.quizflow.dto.JoinSessionRequest;
 import vn.edu.hust.quizflow.service.ExamSessionService;
 
 import java.security.Principal;
@@ -27,20 +26,18 @@ public class StudentSessionController {
     private final ExamSessionService examSessionService;
 
     /**
-     * API cho phép học sinh tham gia vào một phiên thi bằng mã PIN.
-     * @PreAuthorize("hasRole('STUDENT')") Yêu cầu người gọi API này phải đã đăng nhập và có quyền (Role) là STUDENT.
+     * API cho phép học sinh tham gia vào một phiên thi của một lớp học.
      *
-     * @param request Đối tượng payload gửi từ Frontend, chứa mã PIN phòng thi. @Valid để kiểm tra tính hợp lệ của dữ liệu.
-     * @param principal Đối tượng bảo mật chứa thông tin tài khoản của học sinh đang đăng nhập (Spring Security tự động lấy từ Token).
+     * @param sessionId ID của phiên thi
+     * @param principal Thông tin tài khoản
      * @return Trả về thông tin chi tiết của phòng thi (ExamRoomResponse) nếu tham gia thành công.
      */
     @PreAuthorize("hasRole('STUDENT')")
-    @PostMapping("/join")
+    @PostMapping("/{sessionId}/join")
     public ResponseEntity<ExamRoomResponse> joinSession(
-            @Valid @RequestBody JoinSessionRequest request,
+            @PathVariable Long sessionId,
             Principal principal) {
-        // Truyền mã PIN và tên đăng nhập của học sinh xuống tầng Service để thực hiện nghiệp vụ kiểm tra và vào phòng thi
-        return ResponseEntity.ok(examSessionService.joinSession(request.getPinCode(), principal.getName()));
+        return ResponseEntity.ok(examSessionService.joinSession(sessionId, principal.getName()));
     }
 
     /**

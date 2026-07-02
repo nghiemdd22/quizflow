@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 public class ExamSessionDTO {
     private Long id;
     private Long examId;
+    private Long classId;
     private String title;
-    private String pinCode;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private int durationMinutes;
