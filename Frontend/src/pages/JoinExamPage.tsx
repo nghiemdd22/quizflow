@@ -37,7 +37,7 @@ export const JoinExamPage: React.FC = () => {
     } else if (e.key === 'Enter') {
       const fullPin = pin.join('')
       if (fullPin.length === 6) {
-        handleJoinExam()
+        handleJoinClass()
       }
     }
   }
@@ -58,10 +58,10 @@ export const JoinExamPage: React.FC = () => {
     }
   }
 
-  const handleJoinExam = async () => {
+  const handleJoinClass = async () => {
     const fullPin = pin.join('')
     if (fullPin.length < 6) {
-      setError("Please enter a 6-character PIN!")
+      setError("Please enter a 6-character Code!")
       return
     }
 
@@ -69,22 +69,23 @@ export const JoinExamPage: React.FC = () => {
     setError(null)
 
     try {
-      const response = await apiFetch('/api/v1/student/sessions/join', {
+      const response = await apiFetch('/api/v1/classes/join', {
         method: 'POST',
-        body: JSON.stringify({ pinCode: fullPin })
+        body: JSON.stringify({ code: fullPin })
       })
 
       if (!response.ok) {
         const errorData = await response.json()
-        setError(errorData.error || 'Error joining the exam session')
+        setError(errorData.error || 'Error joining classroom')
         setIsLoading(false)
         return
       }
 
       const data = await response.json()
-      navigate('/exam-room', { state: { examRoomData: data } })
+      // Redirect to classes page (we'll create this soon)
+      navigate('/classes', { state: { newClass: data } })
     } catch (err) {
-      console.error('Join exam error:', err)
+      console.error('Join class error:', err)
       setError('An error occurred connecting to the server')
       setIsLoading(false)
     }
@@ -149,9 +150,9 @@ export const JoinExamPage: React.FC = () => {
                 <Info size={16} /> Important Notes
               </div>
               <ul className="text-xs text-purple-100 list-disc list-inside space-y-1">
-                <li>Do NOT use F5 while taking the exam.</li>
-                <li>Do not switch tabs more than 3 times.</li>
-                <li>Double-check the PIN provided by your teacher.</li>
+                <li>Classes provide exclusive access to tests and materials.</li>
+                <li>You only need to join the class once.</li>
+                <li>Double-check the Code provided by your teacher.</li>
               </ul>
             </div>
           </div>
@@ -161,7 +162,7 @@ export const JoinExamPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: PIN Input Form */}
+        {/* Right Column: Code Input Form */}
         <div className="flex-[1.2] bg-white neo-card p-5 lg:p-8 flex flex-col justify-center relative">
 
           {/* Nút Scan QR trang trí */}
@@ -177,8 +178,8 @@ export const JoinExamPage: React.FC = () => {
             <div className="w-12 h-12 rounded-xl bg-rose-100 flex items-center justify-center border-2 border-slate-900 text-rose-500 shadow-[3px_3px_0px_#0f172a] mb-4">
               <Target size={24} strokeWidth={2.5} />
             </div>
-            <h2 className="text-xl font-black text-slate-900 mb-1">Enter PIN</h2>
-            <p className="text-xs font-bold text-slate-500">6-character PIN provided by your teacher</p>
+            <h2 className="text-xl font-black text-slate-900 mb-1">Enter Class Code</h2>
+            <p className="text-xs font-bold text-slate-500">6-character Code provided by your teacher</p>
           </div>
 
           {error && (
@@ -211,7 +212,7 @@ export const JoinExamPage: React.FC = () => {
             </div>
 
             <button
-              onClick={handleJoinExam}
+              onClick={handleJoinClass}
               disabled={isLoading || pin.join('').length < 6}
               className="w-full py-3 text-base font-black bg-neo-green hover:bg-neo-green-hover text-white neo-btn disabled:opacity-50 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[4px_4px_0px_#0f172a] disabled:cursor-not-allowed group flex items-center justify-center gap-2"
             >
@@ -229,7 +230,7 @@ export const JoinExamPage: React.FC = () => {
           {/* Lịch sử tham gia gần đây (Trang trí) */}
           <div className="mt-6 pt-4 border-t-2 border-dashed border-slate-200">
             <div className="flex items-center gap-2 text-sm font-bold text-slate-500 mb-4">
-              <History size={16} /> Recent PINs
+              <History size={16} /> Recent Codes
             </div>
             <div className="flex gap-2">
               <button onClick={() => setPin(['P', 'H', 'Y', '1', '0', '1'])} className="px-3 py-1.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-xs font-black text-slate-600 hover:border-neo-blue hover:text-neo-blue transition-colors">

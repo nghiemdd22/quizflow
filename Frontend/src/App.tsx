@@ -7,6 +7,7 @@ import { Footer } from './components/Footer'
 import { AuthModal } from './components/AuthModal'
 import { LandingPage } from './pages/LandingPage'
 import { TeacherDashboard } from './pages/TeacherDashboard'
+import { ClassroomsPage } from './pages/ClassroomsPage'
 import { QuestionBankPage } from './pages/QuestionBankPage'
 import { ExamSessionsPage } from './pages/ExamSessionsPage'
 import { ReportsPage } from './pages/ReportsPage'
@@ -135,14 +136,23 @@ function App() {
             <Route path="/" element={<LandingPage isLoggedIn={isLoggedIn} onOpenLogin={() => { setAuthMode('login'); setIsAuthOpen(true) }} onOpenSignup={() => { setAuthMode('signup'); setIsAuthOpen(true) }} onCourseRegister={handleCourseRegister} />} />
             
             {/* Student Routes */}
-            <Route path="/join-exam" element={<ProtectedRoute allowedRoles={['STUDENT']}><JoinExamPage /></ProtectedRoute>} />
+            <Route path="/join-class" element={<ProtectedRoute allowedRoles={['STUDENT']}><JoinExamPage /></ProtectedRoute>} />
             <Route path="/exam-room" element={<ProtectedRoute allowedRoles={['STUDENT']}><ExamRoom /></ProtectedRoute>} />
             <Route path="/exam-history" element={<ProtectedRoute allowedRoles={['STUDENT']}><ExamHistoryPage /></ProtectedRoute>} />
             <Route path="/exam-review/:submissionId" element={<ProtectedRoute allowedRoles={['STUDENT']}><ExamReviewPage /></ProtectedRoute>} />
             
             {/* Teacher Routes */}
             <Route path="/teacher-dashboard" element={<ProtectedRoute allowedRoles={['TEACHER']}><TeacherDashboard /></ProtectedRoute>} />
-            <Route path="/teacher/question-bank" element={<ProtectedRoute allowedRoles={['TEACHER']}><QuestionBankPage /></ProtectedRoute>} />
+            <Route 
+              path="/classes" 
+              element={
+                <ProtectedRoute allowedRoles={['TEACHER', 'STUDENT']}>
+                  <ClassroomsPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/question-bank" element={<ProtectedRoute allowedRoles={['TEACHER']}><QuestionBankPage /></ProtectedRoute>} />
             <Route path="/teacher/exam-sessions" element={<ProtectedRoute allowedRoles={['TEACHER']}><ExamSessionsPage /></ProtectedRoute>} />
             <Route path="/teacher/reports" element={<ProtectedRoute allowedRoles={['TEACHER']}><ReportsPage /></ProtectedRoute>} />
 
