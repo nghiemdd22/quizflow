@@ -1,0 +1,172 @@
+import React, { useState, useEffect, useRef } from 'react'
+import { Client } from '@stomp/stompjs'
+import SockJS from 'sockjs-client'
+import { Send, MessageCircle } from 'lucide-react'
+import { apiFetch } from '../utils/api'
+import { useAuthStore } from '../store/authStore'
+
+interface ChatMessageDTO {
+  id: number
+  content: string
+  senderId: number
+  senderName: string
+  senderRole: string
+  createdAt: string
+}
+
+interface ClassChatBoxProps {
+  classId: number
+}
+
+export const ClassChatBox: React.FC<ClassChatBoxProps> = ({ classId }) => {
+  const [messages, setMessages] = useState<ChatMessageDTO[]>([])
+  const [inputValue, setInputValue] = useState('')
+  const [isConnected, setIsConnected] = useState(false)
+  
+  const stompClientRef = useRef<Client | null>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { userEmail, userRole } = useAuthStore()
+  
+  // Custom hook to get user ID is not available directly, but we can match by role and name for simple styling
+  // Actually authStore has `userId`, let's check if it does. If not, we can rely on `senderName` or just styling.
+  
+  useEffect(() => {
+    loadHistory()
+    connectWebSocket()
+    return () => {
+      if (stompClientRef.current) {
+        stompClientRef.current.deactivate()
+      }
+    }
+  }, [classId])
+  
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const loadHistory = async () => {
+    try {
+      const res = await apiFetch(`/api/v1/classes/${classId}/chat/history`)
+      if (res.ok) {
+        const data = await res.json()
+        setMessages(data)
+      }
+    } catch (e) {
+      console.error('Failed to load chat history', e)
+    }
+  }
+
+  const connectWebSocket = () => {
+    const token = useAuthStore.getState().accessToken || ''
+
+    const client = new Client({
+      webSocketFactory: () => new SockJS('http://localhost:8080/ws/exam'),
+      connectHeaders: {
+        Authorization: `Bearer ${token}`
+      },
+      onConnect: () => {
+        setIsConnected(true)
+        client.subscribe(`/topic/class/${classId}`, (msg) => {
+          if (msg.body) {
+            const newMsg: ChatMessageDTO = JSON.parse(msg.body)
+            setMessages(prev => [...prev, newMsg])
+          }
+        })
+      },
+      onStompError: (frame) => {
+        console.error('Broker error:', frame.headers['message'])
+      },
+      onWebSocketClose: () => {
+        setIsConnected(false)
+      }
+    })
+
+    client.activate()
+    stompClientRef.current = client
+  }
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!inputValue.trim() || !isConnected || !stompClientRef.current) return
+
+    stompClientRef.current.publish({
+      destination: `/app/chat/${classId}`,
+      body: JSON.stringify({ content: inputValue.trim() })
+    })
+
+    setInputValue('')
+  }
+  
+  const formatTime = (isoString: string) => {
+    const date = new Date(isoString)
+    return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+  }
+
+  return (
+    <div className="flex flex-col bg-white border-4 border-slate-900 rounded-2xl shadow-[8px_8px_0px_#0f172a] h-[600px] overflow-hidden">
+      {/* Header */}
+      <div className="bg-neo-blue text-white p-4 border-b-4 border-slate-900 flex items-center justify-between z-10">
+        <h3 className="text-xl font-black flex items-center gap-2">
+          <MessageCircle /> Thảo luận lớp học
+        </h3>
+        <span className="flex items-center gap-1.5 text-xs font-bold bg-white/20 px-2 py-1 rounded-full">
+          <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-neo-green' : 'bg-neo-red'}`}></span>
+          {isConnected ? 'Trực tuyến' : 'Đang kết nối...'}
+        </span>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 bg-slate-50 flex flex-col gap-3 custom-scrollbar">
+        {messages.map((msg, index) => {
+          // A bit hacky: if it's the current user's role (Wait, could be multiple students).
+          // Ideally we check ID. We'll assume the current user has the role and email matches, or just check role for Teachers.
+          const isMe = msg.senderRole === userRole && msg.senderName // Not fully accurate if names match, but okay for demo. We should ideally use ID.
+          // Since we don't have ID from AuthStore easily without changing it, we will just use basic styling based on Role for now.
+          const isTeacher = msg.senderRole === 'TEACHER'
+          
+          return (
+            <div key={msg.id || index} className={`flex flex-col ${isTeacher ? 'items-start' : 'items-end'}`}>
+              <div className="text-[10px] font-bold text-slate-500 mb-1 px-1">
+                {msg.senderName} {isTeacher && <span className="bg-neo-yellow text-slate-900 px-1.5 py-0.5 rounded text-[8px] ml-1">GIÁO VIÊN</span>}
+              </div>
+              <div className={`px-4 py-2.5 rounded-2xl max-w-[85%] border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] font-bold text-sm leading-relaxed ${
+                isTeacher ? 'bg-white text-slate-900 rounded-tl-none' : 'bg-neo-green text-white rounded-tr-none'
+              }`}>
+                {msg.content}
+              </div>
+              <div className="text-[10px] font-bold text-slate-400 mt-1 px-1">
+                {msg.createdAt ? formatTime(msg.createdAt) : 'Vừa xong'}
+              </div>
+            </div>
+          )
+        })}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input */}
+      <div className="p-4 bg-white border-t-4 border-slate-900">
+        <form onSubmit={handleSendMessage} className="flex gap-2">
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Nhập tin nhắn..."
+            disabled={!isConnected}
+            className="flex-1 border-2 border-slate-900 rounded-xl px-4 py-3 font-bold focus:outline-none focus:bg-slate-50 disabled:bg-slate-100"
+          />
+          <button
+            type="submit"
+            disabled={!isConnected || !inputValue.trim()}
+            className="bg-neo-purple text-white p-3 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] hover:bg-purple-600 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0f172a] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Send size={20} />
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}

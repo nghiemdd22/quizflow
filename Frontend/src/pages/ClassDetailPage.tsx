@@ -4,6 +4,7 @@ import { ArrowLeft, Clock, Plus, Users, Hash, FileText } from 'lucide-react'
 import { apiFetch } from '../utils/api'
 import { useAuthStore } from '../store/authStore'
 import { Navbar } from '../components/Navbar'
+import { ClassChatBox } from '../components/ClassChatBox'
 
 interface ExamSession {
   id: number
@@ -172,61 +173,70 @@ export const ClassDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Danh sách kỳ thi */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-black text-slate-900">Danh sách Kỳ Thi</h2>
-          {userRole === 'TEACHER' && (
-            <button
-              onClick={() => setIsNewSessionModalOpen(true)}
-              className="flex items-center gap-2 bg-neo-blue text-white px-5 py-2.5 rounded-xl font-black neo-btn"
-            >
-              <Plus size={20} /> Tạo Ca Thi
-            </button>
-          )}
-        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Cột trái: Danh sách kỳ thi (60-70%) */}
+          <div className="lg:col-span-2">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-black text-slate-900">Danh sách Kỳ Thi</h2>
+              {userRole === 'TEACHER' && (
+                <button
+                  onClick={() => setIsNewSessionModalOpen(true)}
+                  className="flex items-center gap-2 bg-neo-blue text-white px-5 py-2.5 rounded-xl font-black neo-btn"
+                >
+                  <Plus size={20} /> Tạo Ca Thi
+                </button>
+              )}
+            </div>
 
-        {sessions.length === 0 ? (
-          <div className="bg-white border-2 border-slate-900 rounded-xl p-12 text-center shadow-[4px_4px_0px_#0f172a]">
-            <Clock size={48} className="mx-auto mb-4 text-slate-300" />
-            <h3 className="text-xl font-black text-slate-900 mb-2">Chưa có kỳ thi nào</h3>
-            <p className="text-slate-500 font-bold">
-              {userRole === 'TEACHER' ? 'Hãy tạo ca thi đầu tiên cho lớp học này.' : 'Vui lòng chờ giáo viên giao bài kiểm tra.'}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {sessions.map(session => (
-              <div key={session.id} className="bg-white border-2 border-slate-900 rounded-xl p-5 shadow-[4px_4px_0px_#0f172a] flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-black text-slate-900">{session.title}</h3>
-                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border-2 ${getStatusColor(session.status)}`}>
-                      {session.status}
-                    </span>
-                  </div>
-                  <div className="text-sm font-bold text-slate-500 flex items-center gap-4">
-                    <span className="flex items-center gap-1.5"><Clock size={14} /> {session.durationMinutes} phút</span>
-                    <span>Bắt đầu: {new Date(session.startTime).toLocaleString()}</span>
-                  </div>
-                </div>
-                
-                {userRole === 'STUDENT' && (session.status === 'ACTIVE' || session.status === 'UPCOMING') && (
-                  <button
-                    onClick={() => handleJoinExam(session.id)}
-                    className="bg-neo-green text-white font-black px-6 py-2 rounded-xl neo-btn"
-                  >
-                    Vào thi
-                  </button>
-                )}
-                {userRole === 'TEACHER' && (
-                  <button className="bg-slate-100 text-slate-700 font-black px-4 py-2 rounded-xl border-2 border-slate-900 hover:bg-slate-200 transition-colors shadow-[2px_2px_0px_#0f172a] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0f172a]">
-                    Xem KQ
-                  </button>
-                )}
+            {sessions.length === 0 ? (
+              <div className="bg-white border-2 border-slate-900 rounded-xl p-12 text-center shadow-[4px_4px_0px_#0f172a]">
+                <Clock size={48} className="mx-auto mb-4 text-slate-300" />
+                <h3 className="text-xl font-black text-slate-900 mb-2">Chưa có kỳ thi nào</h3>
+                <p className="text-slate-500 font-bold">
+                  {userRole === 'TEACHER' ? 'Hãy tạo ca thi đầu tiên cho lớp học này.' : 'Vui lòng chờ giáo viên giao bài kiểm tra.'}
+                </p>
               </div>
-            ))}
+            ) : (
+              <div className="space-y-4">
+                {sessions.map(session => (
+                  <div key={session.id} className="bg-white border-2 border-slate-900 rounded-xl p-5 shadow-[4px_4px_0px_#0f172a] flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-lg font-black text-slate-900">{session.title}</h3>
+                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border-2 ${getStatusColor(session.status)}`}>
+                          {session.status}
+                        </span>
+                      </div>
+                      <div className="text-sm font-bold text-slate-500 flex items-center gap-4">
+                        <span className="flex items-center gap-1.5"><Clock size={14} /> {session.durationMinutes} phút</span>
+                        <span>Bắt đầu: {new Date(session.startTime).toLocaleString()}</span>
+                      </div>
+                    </div>
+                    
+                    {userRole === 'STUDENT' && (session.status === 'ACTIVE' || session.status === 'UPCOMING') && (
+                      <button
+                        onClick={() => handleJoinExam(session.id)}
+                        className="bg-neo-green text-white font-black px-6 py-2 rounded-xl neo-btn"
+                      >
+                        Vào thi
+                      </button>
+                    )}
+                    {userRole === 'TEACHER' && (
+                      <button className="bg-slate-100 text-slate-700 font-black px-4 py-2 rounded-xl border-2 border-slate-900 hover:bg-slate-200 transition-colors shadow-[2px_2px_0px_#0f172a] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0f172a]">
+                        Xem KQ
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+
+          {/* Cột phải: Chatbox (30-40%) */}
+          <div className="lg:col-span-1">
+            <ClassChatBox classId={Number(classId)} />
+          </div>
+        </div>
 
         {/* Modal Tạo Ca Thi (Giáo viên) */}
         {isNewSessionModalOpen && (
