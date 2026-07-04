@@ -92,4 +92,15 @@ public class ExamController {
             Principal principal) {
         return ResponseEntity.ok(examSessionService.getSessionsByExamId(examId, principal.getName()));
     }
+
+    /**
+     * API lấy danh sách các hành vi gian lận của một ca thi cụ thể.
+     */
+    @PreAuthorize("hasRole('TEACHER')")
+    @GetMapping("/sessions/{sessionId}/cheat-logs")
+    public ResponseEntity<List<CheatLogDTO>> getCheatLogs(
+            @PathVariable Long sessionId,
+            Principal principal) {
+        return ResponseEntity.ok(examSessionService.getCheatLogs(sessionId, principal.getName()));
+    }
 }

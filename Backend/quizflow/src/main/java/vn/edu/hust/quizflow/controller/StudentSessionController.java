@@ -95,4 +95,14 @@ public class StudentSessionController {
             Principal principal) {
         return ResponseEntity.ok(examSessionService.getExamReview(submissionId, principal.getName()));
     }
+    @PreAuthorize("hasRole('STUDENT')")
+    @PostMapping("/{sessionId}/cheat")
+    public ResponseEntity<Void> logCheat(
+            @PathVariable Long sessionId,
+            @RequestBody Map<String, String> payload,
+            Principal principal) {
+        String cheatDetails = payload.getOrDefault("details", "Không xác định");
+        examSessionService.logCheat(sessionId, principal.getName(), cheatDetails);
+        return ResponseEntity.ok().build();
+    }
 }

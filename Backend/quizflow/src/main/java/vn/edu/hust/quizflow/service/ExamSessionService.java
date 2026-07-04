@@ -26,6 +26,12 @@ import vn.edu.hust.quizflow.repository.ClassroomRepository;
 import vn.edu.hust.quizflow.repository.ClassMemberRepository;
 import vn.edu.hust.quizflow.service.RedisService;
 import vn.edu.hust.quizflow.entity.Classroom;
+import vn.edu.hust.quizflow.service.NotificationService;
+import vn.edu.hust.quizflow.entity.NotificationType;
+import vn.edu.hust.quizflow.entity.ClassMember;
+import vn.edu.hust.quizflow.entity.CheatLog;
+import vn.edu.hust.quizflow.dto.CheatLogDTO;
+import vn.edu.hust.quizflow.repository.CheatLogRepository;
 
 import java.security.SecureRandom;
 import java.util.List;
@@ -56,6 +62,8 @@ public class ExamSessionService {
     private final ClassMemberRepository classMemberRepository;
     private final RedisService redisService;
     private final RabbitTemplate rabbitTemplate;
+    private final NotificationService notificationService;
+    private final CheatLogRepository cheatLogRepository;
 
     private static final String DIGITS = "0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -102,6 +110,19 @@ public class ExamSessionService {
                 .build();
 
         ExamSession savedSession = examSessionRepository.save(session);
+
+        // Bắn thông báo cho toàn bộ học sinh trong lớp
+        List<ClassMember> members = classMemberRepository.findByClassroomId(classroom.getId());
+        for (ClassMember member : members) {
+            notificationService.createAndSendNotification(
+                    member.getStudent(),
+                    "Kỳ thi mới",
+                    "Giáo viên vừa tạo một ca thi mới: " + request.getTitle() + " trong lớp " + classroom.getName(),
+                    NotificationType.EXAM_CREATED,
+                    classroom.getId()
+            );
+        }
+
         return mapToDTO(savedSession);
     }
 
@@ -120,7 +141,7 @@ public class ExamSessionService {
             throw new IllegalArgumentException("Bạn không có quyền xem thông tin đề thi này");
         }
 
-        return examSessionRepository.findByExamId(examId)
+        return examSessionRepository.findByExamIdOrderByStartTimeDesc(examId)
                 .stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
@@ -144,7 +165,7 @@ public class ExamSessionService {
             }
         }
 
-        return examSessionRepository.findByClassroomId(classroomId)
+        return examSessionRepository.findByClassroomIdOrderByStartTimeDesc(classroomId)
                 .stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
@@ -472,5 +493,60 @@ public class ExamSessionService {
                 .status(submission.getStatus())
                 .questions(questionDtos)
                 .build();
+    }
+
+    /**
+     * Lưu log gian lận và thông báo cho giáo viên
+     */
+    @Transactional
+    public void logCheat(Long sessionId, String username, String cheatDetails) {
+        User student = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy học sinh"));
+
+        ExamSession session = examSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ca thi"));
+
+        // Lưu vào bảng CheatLog và tăng cheatCount
+        examSubmissionRepository.findByExamSessionIdAndStudentId(sessionId, student.getId())
+                .ifPresent(submission -> {
+                    submission.setCheatCount(submission.getCheatCount() + 1);
+                    examSubmissionRepository.save(submission);
+
+                    CheatLog cheatLog = CheatLog.builder()
+                            .examSubmission(submission)
+                            .violationDetail(cheatDetails)
+                            .build();
+                    cheatLogRepository.save(cheatLog);
+                });
+
+        User teacher = session.getClassroom().getTeacher();
+
+        notificationService.createAndSendNotification(
+                teacher,
+                "Cảnh báo gian lận",
+                "Học sinh " + student.getFullName() + " có hành vi đáng ngờ: " + cheatDetails + " trong ca thi " + session.getTitle(),
+                NotificationType.CHEAT_DETECTED,
+                sessionId
+        );
+    }
+
+    /**
+     * Lấy danh sách lịch sử vi phạm gian lận của một ca thi (Dành cho giáo viên).
+     */
+    public List<CheatLogDTO> getCheatLogs(Long sessionId, String username) {
+        ExamSession session = examSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ca thi"));
+
+        if (!session.getClassroom().getTeacher().getUsername().equals(username)) {
+            throw new IllegalArgumentException("Bạn không có quyền xem thông tin ca thi này");
+        }
+
+        List<CheatLog> logs = cheatLogRepository.findByExamSubmission_ExamSession_IdOrderByCreatedAtDesc(sessionId);
+
+        return logs.stream().map(log -> CheatLogDTO.builder()
+                .studentName(log.getExamSubmission().getStudent().getFullName())
+                .detail(log.getViolationDetail())
+                .timestamp(log.getCreatedAt())
+                .build()).collect(Collectors.toList());
     }
 }

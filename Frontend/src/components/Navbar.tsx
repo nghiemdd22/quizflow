@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { BookOpen, User } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { NotificationDropdown } from './NotificationDropdown'
 
 interface NavbarProps {
   isHeaderVisible: boolean
@@ -80,6 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-4 z-10">
             {isLoggedIn ? (
               <div className="flex items-center gap-3">
+                <NotificationDropdown />
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}

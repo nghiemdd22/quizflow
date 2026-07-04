@@ -36,6 +36,7 @@ interface ClassroomDetail {
   code: string
   teacherName: string
   memberCount: number
+  unreadMessageCount?: number
 }
 
 export const ClassDetailPage: React.FC = () => {
@@ -57,6 +58,9 @@ export const ClassDetailPage: React.FC = () => {
   const [endTime, setEndTime] = useState('')
   const [durationMinutes, setDurationMinutes] = useState(45)
   const [selectedExamId, setSelectedExamId] = useState<number>(0)
+
+  const [sessionPage, setSessionPage] = useState(1)
+  const sessionsPerPage = 4
 
   useEffect(() => {
     loadClassroom()
@@ -266,7 +270,7 @@ export const ClassDetailPage: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {sessions.map(session => (
+                {sessions.slice((sessionPage - 1) * sessionsPerPage, sessionPage * sessionsPerPage).map(session => (
                   <div key={session.id} className="bg-white border-2 border-slate-900 rounded-xl p-5 shadow-[4px_4px_0px_#0f172a] flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
@@ -290,12 +294,44 @@ export const ClassDetailPage: React.FC = () => {
                       </button>
                     )}
                     {userRole === 'TEACHER' && (
-                      <button className="bg-slate-100 text-slate-700 font-black px-4 py-2 rounded-xl border-2 border-slate-900 hover:bg-slate-200 transition-colors shadow-[2px_2px_0px_#0f172a] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0f172a]">
-                        Xem KQ
-                      </button>
+                      <div className="flex gap-2">
+                        {(session.status === 'ACTIVE' || session.status === 'UPCOMING') && (
+                          <button 
+                            onClick={() => navigate(`/teacher/exam-sessions/${session.id}/proctor`)}
+                            className="bg-neo-yellow text-slate-900 font-black px-4 py-2 rounded-xl border-2 border-slate-900 hover:bg-yellow-400 transition-colors shadow-[2px_2px_0px_#0f172a] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0f172a]"
+                          >
+                            Giám sát
+                          </button>
+                        )}
+                        <button className="bg-slate-100 text-slate-700 font-black px-4 py-2 rounded-xl border-2 border-slate-900 hover:bg-slate-200 transition-colors shadow-[2px_2px_0px_#0f172a] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0f172a]">
+                          Xem KQ
+                        </button>
+                      </div>
                     )}
                   </div>
                 ))}
+
+                {sessions.length > sessionsPerPage && (
+                  <div className="flex justify-center items-center gap-4 mt-6">
+                    <button
+                      onClick={() => setSessionPage(p => Math.max(1, p - 1))}
+                      disabled={sessionPage === 1}
+                      className="px-4 py-2 border-2 border-slate-900 rounded-xl font-black disabled:opacity-50 disabled:bg-slate-100 bg-white hover:bg-slate-50 transition-colors shadow-[2px_2px_0px_#0f172a] active:shadow-none active:translate-y-[2px] active:translate-x-[2px]"
+                    >
+                      Trang trước
+                    </button>
+                    <span className="font-black text-slate-700">
+                      Trang {sessionPage} / {Math.ceil(sessions.length / sessionsPerPage)}
+                    </span>
+                    <button
+                      onClick={() => setSessionPage(p => Math.min(Math.ceil(sessions.length / sessionsPerPage), p + 1))}
+                      disabled={sessionPage >= Math.ceil(sessions.length / sessionsPerPage)}
+                      className="px-4 py-2 border-2 border-slate-900 rounded-xl font-black disabled:opacity-50 disabled:bg-slate-100 bg-white hover:bg-slate-50 transition-colors shadow-[2px_2px_0px_#0f172a] active:shadow-none active:translate-y-[2px] active:translate-x-[2px]"
+                    >
+                      Trang sau
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -350,7 +386,7 @@ export const ClassDetailPage: React.FC = () => {
 
           {/* Cột phải: Chatbox (30-40%) */}
           <div className="lg:col-span-1">
-            <ClassChatBox classId={Number(classId)} />
+            <ClassChatBox classId={Number(classId)} unreadCount={classroom.unreadMessageCount || 0} />
           </div>
         </div>
 

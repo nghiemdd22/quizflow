@@ -16,6 +16,7 @@ import { JoinExamPage } from './pages/JoinExamPage'
 import { ExamRoom } from './pages/ExamRoom'
 import { ExamHistoryPage } from './pages/ExamHistoryPage'
 import { ExamReviewPage } from './pages/ExamReviewPage'
+import { ProctoringPage } from './pages/ProctoringPage'
 import { AboutPage } from './pages/AboutPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { SettingsPage } from './pages/SettingsPage'
@@ -164,6 +165,7 @@ function App() {
               path="/question-bank" element={<ProtectedRoute allowedRoles={['TEACHER']}><QuestionBankPage /></ProtectedRoute>} />
             <Route path="/teacher/exam-sessions" element={<ProtectedRoute allowedRoles={['TEACHER']}><ExamSessionsPage /></ProtectedRoute>} />
             <Route path="/teacher/reports" element={<ProtectedRoute allowedRoles={['TEACHER']}><ReportsPage /></ProtectedRoute>} />
+            <Route path="/teacher/exam-sessions/:sessionId/proctor" element={<ProtectedRoute allowedRoles={['TEACHER']}><ProctoringPage /></ProtectedRoute>} />
 
             {/* Common Routes */}
             <Route path="/about" element={<AboutPage />} />

@@ -36,3 +36,15 @@ export interface ExamRoomResponse {
   submissionId: number
   questions: StudentQuestionDTO[]
 }
+
+export type NotificationType = 'EXAM_CREATED' | 'DOCUMENT_UPLOADED' | 'CHEAT_DETECTED' | 'CHAT_BADGE_UPDATE'
+
+export interface NotificationDTO {
+  id: number
+  title: string
+  message: string
+  type: NotificationType
+  relatedId?: number
+  isRead: boolean
+  createdAt: string
+}

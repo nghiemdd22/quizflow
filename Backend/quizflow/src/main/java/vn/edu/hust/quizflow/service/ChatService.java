@@ -9,6 +9,9 @@ import vn.edu.hust.quizflow.dto.request.ChatMessageRequest;
 import vn.edu.hust.quizflow.entity.ChatMessage;
 import vn.edu.hust.quizflow.entity.Classroom;
 import vn.edu.hust.quizflow.entity.User;
+import vn.edu.hust.quizflow.entity.User;
+import vn.edu.hust.quizflow.entity.NotificationType;
+import vn.edu.hust.quizflow.entity.ClassMember;
 import vn.edu.hust.quizflow.repository.ClassMemberRepository;
 import vn.edu.hust.quizflow.repository.ClassroomRepository;
 import vn.edu.hust.quizflow.repository.ChatMessageRepository;
@@ -27,8 +30,10 @@ public class ChatService {
     private final ClassroomRepository classroomRepository;
     private final UserRepository userRepository;
     private final ClassMemberRepository classMemberRepository;
+    private final vn.edu.hust.quizflow.repository.ClassChatStateRepository classChatStateRepository;
+    private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<ChatMessageDTO> getChatHistory(Long classId, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy user"));
@@ -43,6 +48,9 @@ public class ChatService {
         
         // Đảo ngược lại để tin cũ xếp trên, tin mới xếp dưới (như chat app thông thường)
         Collections.reverse(messages);
+        
+        // Reset unread_count vì đã mở chat
+        classChatStateRepository.resetUnreadCount(classId, user.getId());
 
         return messages.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
@@ -66,7 +74,44 @@ public class ChatService {
 
         chatMessage = chatMessageRepository.save(chatMessage);
         
+        // Cập nhật biến đếm unread_count cho giáo viên
+        if (!user.getId().equals(classroom.getTeacher().getId())) {
+            incrementUnreadCountAndNotify(classroom, classroom.getTeacher());
+        }
+
+        // Cập nhật biến đếm unread_count cho học sinh
+        List<ClassMember> members = classMemberRepository.findByClassroomId(classroom.getId());
+        for (ClassMember member : members) {
+            if (!member.getStudent().getId().equals(user.getId())) {
+                incrementUnreadCountAndNotify(classroom, member.getStudent());
+            }
+        }
+
         return mapToDTO(chatMessage);
+    }
+
+    private void incrementUnreadCountAndNotify(Classroom classroom, User recipient) {
+        vn.edu.hust.quizflow.entity.ClassChatState state = classChatStateRepository.findByUserIdAndClassroomId(recipient.getId(), classroom.getId())
+                .orElseGet(() -> vn.edu.hust.quizflow.entity.ClassChatState.builder()
+                        .user(recipient)
+                        .classroom(classroom)
+                        .unreadCount(0)
+                        .build());
+        
+        state.setUnreadCount(state.getUnreadCount() + 1);
+        classChatStateRepository.save(state);
+
+        // Gửi Realtime payload nhỏ để Frontend tự cập nhật số đếm
+        // (Dùng NotificationDTO giả định để tái sử dụng kênh STOMP hiện tại)
+        vn.edu.hust.quizflow.dto.NotificationDTO dto = vn.edu.hust.quizflow.dto.NotificationDTO.builder()
+                .title("CHAT_BADGE_UPDATE")
+                .message(String.valueOf(state.getUnreadCount())) // payload là số tin nhắn chưa đọc
+                .type(vn.edu.hust.quizflow.entity.NotificationType.CHAT_BADGE_UPDATE)
+                .relatedId(classroom.getId())
+                .isRead(false)
+                .build();
+                
+        messagingTemplate.convertAndSendToUser(recipient.getUsername(), "/queue/notifications", dto);
     }
 
     private void checkAccess(Classroom classroom, User user) {

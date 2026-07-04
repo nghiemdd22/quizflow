@@ -16,15 +16,18 @@ interface ChatMessageDTO {
 
 interface ClassChatBoxProps {
   classId: number
+  unreadCount?: number
 }
 
-export const ClassChatBox: React.FC<ClassChatBoxProps> = ({ classId }) => {
+export const ClassChatBox: React.FC<ClassChatBoxProps> = ({ classId, unreadCount = 0 }) => {
   const [messages, setMessages] = useState<ChatMessageDTO[]>([])
   const [inputValue, setInputValue] = useState('')
   const [isConnected, setIsConnected] = useState(false)
   
   const stompClientRef = useRef<Client | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const initialUnreadRef = useRef(unreadCount)
+  const [dividerIndex, setDividerIndex] = useState<number>(-1)
   const { userEmail, userRole } = useAuthStore()
   
   // Custom hook to get user ID is not available directly, but we can match by role and name for simple styling
@@ -54,6 +57,15 @@ export const ClassChatBox: React.FC<ClassChatBoxProps> = ({ classId }) => {
       if (res.ok) {
         const data = await res.json()
         setMessages(data)
+        
+        // Tính toán vị trí divider cố định
+        if (initialUnreadRef.current > 0) {
+          if (initialUnreadRef.current >= data.length) {
+            setDividerIndex(0)
+          } else {
+            setDividerIndex(data.length - initialUnreadRef.current)
+          }
+        }
       }
     } catch (e) {
       console.error('Failed to load chat history', e)
@@ -127,9 +139,20 @@ export const ClassChatBox: React.FC<ClassChatBoxProps> = ({ classId }) => {
           const isMe = msg.senderRole === userRole && msg.senderName // Not fully accurate if names match, but okay for demo. We should ideally use ID.
           // Since we don't have ID from AuthStore easily without changing it, we will just use basic styling based on Role for now.
           const isTeacher = msg.senderRole === 'TEACHER'
+          const isUnreadDivider = dividerIndex === index
           
           return (
-            <div key={msg.id || index} className={`flex flex-col ${isTeacher ? 'items-start' : 'items-end'}`}>
+            <React.Fragment key={msg.id || index}>
+              {isUnreadDivider && (
+                <div className="flex items-center gap-4 my-2">
+                  <div className="flex-1 h-[2px] bg-red-200"></div>
+                  <span className="text-xs font-black text-red-500 bg-red-50 px-3 py-1 rounded-full border-2 border-red-200">
+                    {initialUnreadRef.current} tin nhắn chưa đọc
+                  </span>
+                  <div className="flex-1 h-[2px] bg-red-200"></div>
+                </div>
+              )}
+              <div className={`flex flex-col ${isTeacher ? 'items-start' : 'items-end'}`}>
               <div className="text-[10px] font-bold text-slate-500 mb-1 px-1">
                 {msg.senderName} {isTeacher && <span className="bg-neo-yellow text-slate-900 px-1.5 py-0.5 rounded text-[8px] ml-1">GIÁO VIÊN</span>}
               </div>
@@ -142,6 +165,7 @@ export const ClassChatBox: React.FC<ClassChatBoxProps> = ({ classId }) => {
                 {msg.createdAt ? formatTime(msg.createdAt) : 'Vừa xong'}
               </div>
             </div>
+            </React.Fragment>
           )
         })}
         <div ref={messagesEndRef} />

@@ -23,6 +23,7 @@ public class ClassroomService {
     private final ClassroomRepository classroomRepository;
     private final ClassMemberRepository classMemberRepository;
     private final UserRepository userRepository;
+    private final vn.edu.hust.quizflow.repository.ClassChatStateRepository classChatStateRepository;
 
     @Transactional
     public ClassroomResponse createClassroom(ClassroomCreateRequest request, String username) {
@@ -45,7 +46,7 @@ public class ClassroomService {
                 .build();
         
         Classroom saved = classroomRepository.save(classroom);
-        return mapToResponse(saved, 0);
+        return mapToResponse(saved, 0, 0);
     }
 
     @Transactional
@@ -68,7 +69,7 @@ public class ClassroomService {
         classMemberRepository.save(member);
 
         long count = classMemberRepository.findByClassroomId(classroom.getId()).size();
-        return mapToResponse(classroom, count);
+        return mapToResponse(classroom, count, 0);
     }
 
     public List<ClassroomResponse> getMyClassrooms(String username) {
@@ -77,12 +78,22 @@ public class ClassroomService {
 
         if (user.getRole() == UserRole.TEACHER) {
             return classroomRepository.findByTeacherId(user.getId()).stream()
-                    .map(c -> mapToResponse(c, classMemberRepository.findByClassroomId(c.getId()).size()))
+                    .map(c -> {
+                        int unread = classChatStateRepository.findByUserIdAndClassroomId(user.getId(), c.getId())
+                                .map(vn.edu.hust.quizflow.entity.ClassChatState::getUnreadCount)
+                                .orElse(0);
+                        return mapToResponse(c, classMemberRepository.findByClassroomId(c.getId()).size(), unread);
+                    })
                     .collect(Collectors.toList());
         } else {
             return classMemberRepository.findByStudentId(user.getId()).stream()
                     .map(ClassMember::getClassroom)
-                    .map(c -> mapToResponse(c, classMemberRepository.findByClassroomId(c.getId()).size()))
+                    .map(c -> {
+                        int unread = classChatStateRepository.findByUserIdAndClassroomId(user.getId(), c.getId())
+                                .map(vn.edu.hust.quizflow.entity.ClassChatState::getUnreadCount)
+                                .orElse(0);
+                        return mapToResponse(c, classMemberRepository.findByClassroomId(c.getId()).size(), unread);
+                    })
                     .collect(Collectors.toList());
         }
     }
@@ -97,7 +108,7 @@ public class ClassroomService {
         return sb.toString();
     }
 
-    private ClassroomResponse mapToResponse(Classroom classroom, long memberCount) {
+    private ClassroomResponse mapToResponse(Classroom classroom, long memberCount, int unreadCount) {
         return ClassroomResponse.builder()
                 .id(classroom.getId())
                 .name(classroom.getName())
@@ -106,6 +117,7 @@ public class ClassroomService {
                 .status(classroom.getStatus())
                 .createdAt(classroom.getCreatedAt())
                 .memberCount(memberCount)
+                .unreadMessageCount(unreadCount)
                 .build();
     }
 }

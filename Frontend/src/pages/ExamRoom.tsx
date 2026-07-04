@@ -109,8 +109,36 @@ export const ExamRoom: React.FC = () => {
     client.activate()
     stompClientRef.current = client
 
+    // CHỨNG NĂNG GIÁM SÁT GIAN LẬN
+    let lastCheatTime = 0
+    const handleCheat = (reason: string) => {
+      const now = Date.now()
+      if (now - lastCheatTime < 1000) return // Ngăn chặn blur và visibilitychange bắn cùng lúc
+      lastCheatTime = now
+
+      apiFetch(`/api/v1/student/sessions/${data.sessionId}/cheat`, {
+        method: 'POST',
+        body: JSON.stringify({ details: reason })
+      }).catch(() => {})
+    }
+
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        handleCheat('Chuyển tab hoặc thu nhỏ trình duyệt')
+      }
+    }
+
+    const onBlur = () => {
+      handleCheat('Click chuột ra ngoài cửa sổ thi')
+    }
+
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    window.addEventListener('blur', onBlur)
+
     return () => {
       client.deactivate()
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      window.removeEventListener('blur', onBlur)
     }
   }, [data.sessionId])
 

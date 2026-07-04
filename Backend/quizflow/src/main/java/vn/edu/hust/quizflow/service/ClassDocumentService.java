@@ -8,6 +8,8 @@ import vn.edu.hust.quizflow.dto.ClassDocumentDTO;
 import vn.edu.hust.quizflow.entity.ClassDocument;
 import vn.edu.hust.quizflow.entity.Classroom;
 import vn.edu.hust.quizflow.entity.User;
+import vn.edu.hust.quizflow.entity.NotificationType;
+import vn.edu.hust.quizflow.entity.ClassMember;
 import vn.edu.hust.quizflow.repository.ClassDocumentRepository;
 import vn.edu.hust.quizflow.repository.ClassMemberRepository;
 import vn.edu.hust.quizflow.repository.ClassroomRepository;
@@ -27,6 +29,7 @@ public class ClassDocumentService {
     private final UserRepository userRepository;
     private final ClassMemberRepository classMemberRepository;
     private final CloudinaryService cloudinaryService;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public List<ClassDocumentDTO> getDocuments(Long classId, String username) {
@@ -73,6 +76,19 @@ public class ClassDocumentService {
                 .build();
 
         document = documentRepository.save(document);
+
+        // Bắn thông báo cho học sinh trong lớp
+        List<ClassMember> members = classMemberRepository.findByClassroomId(classroom.getId());
+        for (ClassMember member : members) {
+            notificationService.createAndSendNotification(
+                    member.getStudent(),
+                    "Tài liệu mới",
+                    "Giáo viên vừa tải lên tài liệu mới: " + document.getFileName() + " trong lớp " + classroom.getName(),
+                    NotificationType.DOCUMENT_UPLOADED,
+                    classroom.getId()
+            );
+        }
+
         return mapToDTO(document);
     }
 

@@ -20,4 +20,5 @@ public class ClassroomResponse {
     private ClassroomStatus status;
     private LocalDateTime createdAt;
     private long memberCount;
+    private int unreadMessageCount;
 }

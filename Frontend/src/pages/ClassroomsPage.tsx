@@ -11,6 +11,7 @@ interface Classroom {
   code: string
   teacherName: string
   memberCount: number
+  unreadMessageCount?: number
 }
 
 export const ClassroomsPage: React.FC = () => {
@@ -42,6 +43,16 @@ export const ClassroomsPage: React.FC = () => {
 
   useEffect(() => {
     fetchClassrooms()
+    
+    const handleBadgeUpdate = (e: any) => {
+      const { classId, unreadCount } = e.detail
+      setClassrooms(prev => prev.map(c => 
+        c.id === classId ? { ...c, unreadMessageCount: unreadCount } : c
+      ))
+    }
+    
+    window.addEventListener('chatBadgeUpdate', handleBadgeUpdate)
+    return () => window.removeEventListener('chatBadgeUpdate', handleBadgeUpdate)
   }, [])
 
   const handleCreateClass = async () => {
@@ -123,8 +134,13 @@ export const ClassroomsPage: React.FC = () => {
                 className="bg-white border-2 border-slate-900 rounded-xl p-6 shadow-[4px_4px_0px_#0f172a] hover:-translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0px_#0f172a] transition-all cursor-pointer group flex flex-col justify-between h-48"
               >
                 <div>
-                  <h3 className="text-xl font-black text-slate-900 line-clamp-2 mb-2 group-hover:text-neo-blue transition-colors">
-                    {c.name}
+                  <h3 className="text-xl font-black text-slate-900 line-clamp-2 mb-2 group-hover:text-neo-blue transition-colors flex items-center justify-between">
+                    <span>{c.name}</span>
+                    {(c.unreadMessageCount && c.unreadMessageCount > 0) ? (
+                      <span className="shrink-0 ml-2 min-w-[24px] h-6 px-1.5 flex items-center justify-center bg-red-500 text-white text-xs font-black rounded-full border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] animate-bounce">
+                        {c.unreadMessageCount > 99 ? '99+' : c.unreadMessageCount}
+                      </span>
+                    ) : null}
                   </h3>
                   <p className="text-sm font-bold text-slate-500 flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs text-slate-700 border-2 border-slate-900">
