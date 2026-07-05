@@ -6,6 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.hust.quizflow.dto.*;
+import vn.edu.hust.quizflow.dto.ExamSessionDTO;
+import vn.edu.hust.quizflow.dto.ProctoringStudentDTO;
+import vn.edu.hust.quizflow.dto.ProctoringDashboardDTO;
 import vn.edu.hust.quizflow.service.ExamService;
 import vn.edu.hust.quizflow.service.ExamSessionService;
 
@@ -97,10 +100,10 @@ public class ExamController {
      * API lấy danh sách các hành vi gian lận của một ca thi cụ thể.
      */
     @PreAuthorize("hasRole('TEACHER')")
-    @GetMapping("/sessions/{sessionId}/cheat-logs")
-    public ResponseEntity<List<CheatLogDTO>> getCheatLogs(
+    @GetMapping("/sessions/{sessionId}/proctoring-data")
+    public ResponseEntity<ProctoringDashboardDTO> getProctoringData(
             @PathVariable Long sessionId,
             Principal principal) {
-        return ResponseEntity.ok(examSessionService.getCheatLogs(sessionId, principal.getName()));
+        return ResponseEntity.ok(examSessionService.getProctoringData(sessionId, principal.getName()));
     }
 }

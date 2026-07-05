@@ -111,9 +111,11 @@ export const ExamRoom: React.FC = () => {
 
     // CHỨNG NĂNG GIÁM SÁT GIAN LẬN
     let lastCheatTime = 0
+    let blurTimeout: NodeJS.Timeout | null = null
+
     const handleCheat = (reason: string) => {
       const now = Date.now()
-      if (now - lastCheatTime < 1000) return // Ngăn chặn blur và visibilitychange bắn cùng lúc
+      if (now - lastCheatTime < 1000) return
       lastCheatTime = now
 
       apiFetch(`/api/v1/student/sessions/${data.sessionId}/cheat`, {
@@ -124,12 +126,23 @@ export const ExamRoom: React.FC = () => {
 
     const onVisibilityChange = () => {
       if (document.hidden) {
-        handleCheat('Chuyển tab hoặc thu nhỏ trình duyệt')
+        if (blurTimeout) {
+          clearTimeout(blurTimeout)
+          blurTimeout = null
+        }
+        handleCheat('Chuyển tab / Ẩn trình duyệt')
       }
     }
 
     const onBlur = () => {
-      handleCheat('Click chuột ra ngoài cửa sổ thi')
+      if (document.hidden) return
+
+      if (blurTimeout) clearTimeout(blurTimeout)
+      blurTimeout = setTimeout(() => {
+        if (!document.hidden) {
+          handleCheat('Mất focus / Bấm ra ngoài')
+        }
+      }, 200)
     }
 
     document.addEventListener('visibilitychange', onVisibilityChange)

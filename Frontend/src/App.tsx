@@ -163,7 +163,7 @@ function App() {
             />
             <Route 
               path="/question-bank" element={<ProtectedRoute allowedRoles={['TEACHER']}><QuestionBankPage /></ProtectedRoute>} />
-            <Route path="/teacher/exam-sessions" element={<ProtectedRoute allowedRoles={['TEACHER']}><ExamSessionsPage /></ProtectedRoute>} />
+            <Route path="/teacher/exams" element={<ProtectedRoute allowedRoles={['TEACHER']}><ExamSessionsPage /></ProtectedRoute>} />
             <Route path="/teacher/reports" element={<ProtectedRoute allowedRoles={['TEACHER']}><ReportsPage /></ProtectedRoute>} />
             <Route path="/teacher/exam-sessions/:sessionId/proctor" element={<ProtectedRoute allowedRoles={['TEACHER']}><ProctoringPage /></ProtectedRoute>} />
 

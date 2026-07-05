@@ -48,3 +48,28 @@ export interface NotificationDTO {
   isRead: boolean
   createdAt: string
 }
+
+export interface CheatEventDTO {
+  detail: string
+  timestamp: string
+}
+
+export interface ProctoringStudentDTO {
+  studentName: string
+  username: string
+  startedAt: string
+  cheatCount: number
+  cheatEvents: CheatEventDTO[]
+}
+
+export interface ProctoringDashboardDTO {
+  examTitle: string
+  startTime: string
+  endTime: string
+  durationMinutes: number
+  totalStudentsInClass: number
+  studentsInProgress: number
+  studentsSubmitted: number
+  studentsNotStarted: number
+  students: ProctoringStudentDTO[]
+}

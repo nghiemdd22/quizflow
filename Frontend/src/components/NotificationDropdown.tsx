@@ -141,7 +141,7 @@ export const NotificationDropdown: React.FC = () => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-12 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-900 flex items-center justify-center shadow-[3px_3px_0px_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-[1px_1px_0px_#0f172a] active:shadow-none active:translate-y-[3px] active:translate-x-[3px] transition-all p-0 cursor-pointer relative"
+        className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 transition-colors p-0 cursor-pointer relative"
       >
         <Bell className="w-6 h-6 text-slate-900" strokeWidth={2.5} />
         {unreadCount > 0 && (

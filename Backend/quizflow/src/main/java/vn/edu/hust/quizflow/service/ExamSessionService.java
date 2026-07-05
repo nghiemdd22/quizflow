@@ -31,6 +31,9 @@ import vn.edu.hust.quizflow.entity.NotificationType;
 import vn.edu.hust.quizflow.entity.ClassMember;
 import vn.edu.hust.quizflow.entity.CheatLog;
 import vn.edu.hust.quizflow.dto.CheatLogDTO;
+import vn.edu.hust.quizflow.dto.ProctoringStudentDTO;
+import vn.edu.hust.quizflow.dto.ProctoringDashboardDTO;
+import vn.edu.hust.quizflow.dto.CheatEventDTO;
 import vn.edu.hust.quizflow.repository.CheatLogRepository;
 
 import java.security.SecureRandom;
@@ -531,9 +534,9 @@ public class ExamSessionService {
     }
 
     /**
-     * Lấy danh sách lịch sử vi phạm gian lận của một ca thi (Dành cho giáo viên).
+     * Lấy danh sách học sinh đang làm bài và lịch sử vi phạm gian lận (Dành cho giáo viên).
      */
-    public List<CheatLogDTO> getCheatLogs(Long sessionId, String username) {
+    public ProctoringDashboardDTO getProctoringData(Long sessionId, String username) {
         ExamSession session = examSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ca thi"));
 
@@ -541,12 +544,51 @@ public class ExamSessionService {
             throw new IllegalArgumentException("Bạn không có quyền xem thông tin ca thi này");
         }
 
-        List<CheatLog> logs = cheatLogRepository.findByExamSubmission_ExamSession_IdOrderByCreatedAtDesc(sessionId);
+        List<ExamSubmission> inProgress = examSubmissionRepository.findByExamSessionIdAndStatus(sessionId, SubmissionStatus.IN_PROGRESS);
+        List<ExamSubmission> submitted = examSubmissionRepository.findByExamSessionIdAndStatus(sessionId, SubmissionStatus.COMPLETED); // Or whatever status means submitted
+        // Note: we have SUBMITTED and GRADING, wait, what are the statuses?
+        // Let's just fetch all and group them.
+        List<ExamSubmission> allSubmissions = examSubmissionRepository.findByExamSessionId(sessionId);
+        
+        int studentsInProgress = 0;
+        int studentsSubmitted = 0;
+        for (ExamSubmission sub : allSubmissions) {
+            if (sub.getStatus() == SubmissionStatus.IN_PROGRESS) {
+                studentsInProgress++;
+            } else {
+                studentsSubmitted++;
+            }
+        }
+        
+        int totalStudentsInClass = classMemberRepository.countByClassroomId(session.getClassroom().getId());
+        int studentsNotStarted = Math.max(0, totalStudentsInClass - allSubmissions.size());
 
-        return logs.stream().map(log -> CheatLogDTO.builder()
-                .studentName(log.getExamSubmission().getStudent().getFullName())
-                .detail(log.getViolationDetail())
-                .timestamp(log.getCreatedAt())
-                .build()).collect(Collectors.toList());
+        List<ProctoringStudentDTO> students = allSubmissions.stream().map(sub -> {
+            List<CheatEventDTO> events = cheatLogRepository.findByExamSubmission_ExamSession_IdOrderByCreatedAtDesc(sessionId)
+                    .stream()
+                    .filter(log -> log.getExamSubmission().getId().equals(sub.getId()))
+                    .map(log -> new CheatEventDTO(log.getViolationDetail(), log.getCreatedAt()))
+                    .collect(Collectors.toList());
+
+            return ProctoringStudentDTO.builder()
+                    .studentName(sub.getStudent().getFullName())
+                    .username(sub.getStudent().getUsername())
+                    .startedAt(sub.getStartedAt())
+                    .cheatCount(sub.getCheatCount())
+                    .cheatEvents(events)
+                    .build();
+        }).collect(Collectors.toList());
+
+        return ProctoringDashboardDTO.builder()
+                .examTitle(session.getExam().getTitle())
+                .startTime(session.getStartTime())
+                .endTime(session.getEndTime())
+                .durationMinutes(session.getDurationMinutes())
+                .totalStudentsInClass(totalStudentsInClass)
+                .studentsInProgress(studentsInProgress)
+                .studentsSubmitted(studentsSubmitted)
+                .studentsNotStarted(studentsNotStarted)
+                .students(students)
+                .build();
     }
 }

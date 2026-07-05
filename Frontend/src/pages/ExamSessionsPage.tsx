@@ -262,7 +262,7 @@ export const ExamSessionsPage: React.FC = () => {
                   className="w-full py-3 bg-neo-blue hover:bg-blue-600 text-white font-black rounded-xl border-2 border-slate-900 shadow-[3px_3px_0px_#0f172a] transition-all flex justify-center items-center gap-2"
                 >
                   <PlayCircle className="w-5 h-5" />
-                  Quản lý Ca thi
+                  Quản lý Đề thi
                 </button>
               </div>
             ))}

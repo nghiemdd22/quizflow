@@ -56,9 +56,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               {role === 'TEACHER' ? (
                 <>
                   <Link to="/teacher-dashboard" data-text="Tổng quan" className={`nav-item transition-all ${location.pathname === '/teacher-dashboard' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Tổng quan</Link>
-                  <Link to="/teacher/question-bank" data-text="Ngân hàng câu hỏi" className={`nav-item transition-all ${location.pathname.startsWith('/teacher/question-bank') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Ngân hàng câu hỏi</Link>
+                  <Link to="/question-bank" data-text="Ngân hàng câu hỏi" className={`nav-item transition-all ${location.pathname.startsWith('/question-bank') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Ngân hàng câu hỏi</Link>
                   <Link to="/classes" data-text="Lớp học" className={`nav-item transition-all ${location.pathname.startsWith('/classes') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Lớp học</Link>
-                  <Link to="/teacher/exam-sessions" data-text="Quản lý Ca thi" className={`nav-item transition-all ${location.pathname.startsWith('/teacher/exam-sessions') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Quản lý Ca thi</Link>
+                  <Link to="/teacher/exams" data-text="Quản lý Đề thi" className={`nav-item transition-all ${location.pathname.startsWith('/teacher/exams') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Quản lý Đề thi</Link>
                   <Link to="/teacher/reports" data-text="Báo cáo & Lịch sử" className={`nav-item transition-all ${location.pathname.startsWith('/teacher/reports') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Báo cáo & Lịch sử</Link>
                   <Link to="/about" data-text="About" className={`nav-item transition-all ${location.pathname === '/about' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>About</Link>
                 </>

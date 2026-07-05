@@ -49,7 +49,7 @@ export const TeacherDashboard: React.FC = () => {
           </p>
         </div>
         <button 
-          onClick={() => navigate('/teacher/exam-sessions')}
+          onClick={() => navigate('/teacher/exams')}
           className="px-6 py-3 bg-neo-coral hover:bg-red-500 text-white text-lg neo-btn shadow-[4px_4px_0px_#0f172a]"
         >
           <PlayCircle className="w-6 h-6 mr-2" strokeWidth={2.5} />
@@ -177,7 +177,7 @@ export const TeacherDashboard: React.FC = () => {
               </button>
 
               <button 
-                onClick={() => navigate('/teacher/exam-sessions')}
+                onClick={() => navigate('/teacher/exams')}
                 className="w-full flex items-center justify-between p-4 bg-white border-2 border-slate-900 rounded-xl shadow-[3px_3px_0px_#0f172a] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-[2px_2px_0px_#0f172a] transition-all text-left group"
               >
                 <div className="flex items-center gap-3">
