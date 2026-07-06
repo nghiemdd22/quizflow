@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.hust.quizflow.dto.request.CreatePostRequest;
+import vn.edu.hust.quizflow.dto.request.VoteRequest;
 import vn.edu.hust.quizflow.dto.response.PostResponse;
 import vn.edu.hust.quizflow.service.PostService;
 
@@ -25,12 +26,22 @@ public class PostController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return ResponseEntity.ok(postService.getPosts(PageRequest.of(page, size)));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = null;
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+            username = auth.getName();
+        }
+        return ResponseEntity.ok(postService.getPosts(PageRequest.of(page, size), username));
     }
 
     @GetMapping("/search")
     public ResponseEntity<?> searchPosts(@RequestParam String q) {
-        return ResponseEntity.ok(postService.searchPosts(q));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = null;
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+            username = auth.getName();
+        }
+        return ResponseEntity.ok(postService.searchPosts(q, username));
     }
 
     @GetMapping("/{id}")
@@ -48,5 +59,12 @@ public class PostController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
         return ResponseEntity.ok(postService.createPost(username, request));
+    }
+
+    @PostMapping("/{id}/vote")
+    public ResponseEntity<PostResponse> votePost(@PathVariable Long id, @Valid @RequestBody VoteRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        return ResponseEntity.ok(postService.votePost(id, username, request.getVoteType()));
     }
 }

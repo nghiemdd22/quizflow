@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { ArrowUp, ArrowDown, CheckCircle, Download } from 'lucide-react'
+import { ArrowUp, ArrowDown, CheckCircle, Download, MessageSquare, Share2, Award } from 'lucide-react'
 import { apiFetch } from '../utils/api'
 import { useAuthStore } from '../store/authStore'
 import { formatDistanceToNow } from 'date-fns'
@@ -56,13 +56,32 @@ export function PostDetailPage() {
 
   const handleVote = async (commentId: number, type: 'up' | 'down') => {
     if (!isLoggedIn) {
-      alert("Bạn cần đăng nhập để vote!")
+      alert("Bạn cần đăng nhập để vote bình luận!")
       return
     }
     const voteType = type === 'up' ? 1 : -1
     try {
       await apiFetch(`/api/v1/comments/${commentId}/vote?type=${voteType}`, { method: 'POST' })
       fetchComments()
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const handlePostVote = async (voteType: number) => {
+    if (!isLoggedIn) {
+      alert("Bạn cần đăng nhập để vote bài viết!")
+      return
+    }
+    try {
+      const res = await apiFetch(`/api/v1/posts/${id}/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ voteType })
+      })
+      if (!res.ok) throw new Error("Vote failed")
+      const updatedPost = await res.json()
+      setPost(updatedPost)
     } catch (e) {
       console.error(e)
     }
@@ -81,17 +100,18 @@ export function PostDetailPage() {
 
   return (
     <div className="pt-24 pb-12 px-4 max-w-6xl mx-auto space-y-6">
-      {/* NỘI DUNG BÀI VIẾT */}
-      <div className="bg-white border border-slate-300 rounded-lg shadow-sm p-6">
-        <h1 className="text-2xl font-semibold text-slate-900 mb-4">{post.title}</h1>
+      <div className="bg-white border border-slate-300 rounded-lg shadow-sm flex flex-col overflow-hidden">
+        {/* Post Content */}
+        <div className="p-6 lg:p-8 flex-1">
+          <h1 className="text-2xl font-semibold text-slate-900 mb-4">{post.title}</h1>
 
-        <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
-          <span className="text-blue-600 font-medium">u/{post.authorName}</span>
-          <span>•</span>
-          <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: vi })}</span>
-          <span>•</span>
-          <span>{post.viewsCount} lượt xem</span>
-        </div>
+          <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
+            <span className="text-blue-600 font-medium">u/{post.authorName}</span>
+            <span>•</span>
+            <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: vi })}</span>
+            <span>•</span>
+            <span>{post.viewsCount} lượt xem</span>
+          </div>
 
         <div className="flex gap-2 mb-6">
           {post.tags?.map((tag: any) => (
@@ -129,6 +149,37 @@ export function PostDetailPage() {
             </div>
           </div>
         )}
+        
+          <div className="flex gap-2 text-slate-800 text-sm font-semibold mt-6 pt-4 border-t border-slate-100">
+            {/* Vote Pill */}
+            <div className="flex items-center bg-slate-100 rounded-full">
+              <button onClick={() => handlePostVote(1)} className={`p-1.5 px-3 hover:bg-slate-200 rounded-l-full transition-colors flex items-center justify-center ${post.currentUserVote === 1 ? 'text-orange-500' : 'text-slate-600 hover:text-orange-500'}`}>
+                <ArrowUp className="w-5 h-5" />
+              </button>
+              <span className="px-2">{post.upvotes !== undefined ? post.upvotes - (post.downvotes || 0) : 0}</span>
+              <button onClick={() => handlePostVote(-1)} className={`p-1.5 px-3 hover:bg-slate-200 rounded-r-full transition-colors flex items-center justify-center ${post.currentUserVote === -1 ? 'text-blue-500' : 'text-slate-600 hover:text-blue-500'}`}>
+                <ArrowDown className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Comments Pill */}
+            <div className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 rounded-full px-4 py-1.5 transition-colors cursor-pointer">
+              <MessageSquare className="w-4 h-4" />
+              <span>{comments.length}</span>
+            </div>
+            
+            {/* Award Pill */}
+            <div className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 rounded-full px-4 py-1.5 transition-colors cursor-pointer">
+              <Award className="w-4 h-4" />
+            </div>
+
+            {/* Share Pill */}
+            <div className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 rounded-full px-4 py-1.5 transition-colors cursor-pointer" onClick={() => { navigator.clipboard.writeText(window.location.href); alert('Đã copy link!'); }}>
+              <Share2 className="w-4 h-4" />
+              <span>Chia sẻ</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* KHU VỰC BÌNH LUẬN */}
@@ -163,31 +214,8 @@ export function PostDetailPage() {
               key={comment.id}
               className={`flex border border-slate-200 rounded-md overflow-hidden transition-all ${comment.isAccepted ? 'bg-green-50 border-green-200' : 'bg-white hover:border-slate-300'}`}
             >
-              {/* Vote Column */}
-              <div className="w-12 bg-slate-50 border-r border-slate-100 p-2 flex flex-col items-center gap-1">
-                <button
-                  onClick={() => handleVote(comment.id, 'up')}
-                  className={`p-1 rounded transition-colors ${comment.currentUserVote === 1 ? 'text-orange-500' : 'text-slate-400 hover:text-orange-500'}`}
-                >
-                  <ArrowUp className="w-5 h-5" />
-                </button>
-                <span className="font-bold text-sm text-slate-900">{comment.upvoteCount - comment.downvoteCount}</span>
-                <button
-                  onClick={() => handleVote(comment.id, 'down')}
-                  className={`p-1 rounded transition-colors ${comment.currentUserVote === -1 ? 'text-blue-500' : 'text-slate-400 hover:text-blue-500'}`}
-                >
-                  <ArrowDown className="w-5 h-5" />
-                </button>
-
-                {comment.isAccepted && (
-                  <div className="mt-2 text-green-500" title="Câu trả lời hay nhất">
-                    <CheckCircle className="w-5 h-5" />
-                  </div>
-                )}
-              </div>
-
               {/* Content Column */}
-              <div className="flex-1 p-4 relative">
+              <div className="flex-1 p-4 relative flex flex-col">
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex items-center gap-2 text-xs">
                     <span className="font-medium text-slate-900">u/{comment.authorName}</span>
@@ -204,8 +232,28 @@ export function PostDetailPage() {
                     </button>
                   )}
                 </div>
-                <div className="prose max-w-none text-slate-800 text-sm whitespace-pre-wrap">
+                <div className="prose max-w-none text-slate-800 text-sm whitespace-pre-wrap mb-4">
                   {comment.content}
+                </div>
+                
+                <div className="flex gap-2 text-slate-800 text-sm font-semibold mt-auto pt-2">
+                  {/* Vote Pill */}
+                  <div className="flex items-center bg-slate-100 rounded-full">
+                    <button onClick={() => handleVote(comment.id, 'up')} className={`p-1.5 px-3 hover:bg-slate-200 rounded-l-full transition-colors flex items-center justify-center ${comment.currentUserVote === 1 ? 'text-orange-500' : 'text-slate-600 hover:text-orange-500'}`}>
+                      <ArrowUp className="w-4 h-4" />
+                    </button>
+                    <span className="px-2">{comment.upvoteCount - comment.downvoteCount}</span>
+                    <button onClick={() => handleVote(comment.id, 'down')} className={`p-1.5 px-3 hover:bg-slate-200 rounded-r-full transition-colors flex items-center justify-center ${comment.currentUserVote === -1 ? 'text-blue-500' : 'text-slate-600 hover:text-blue-500'}`}>
+                      <ArrowDown className="w-4 h-4" />
+                    </button>
+                  </div>
+                  
+                  {comment.isAccepted && (
+                    <div className="flex items-center gap-1.5 bg-green-50 text-green-700 rounded-full px-3 py-1.5 border border-green-200" title="Câu trả lời hay nhất">
+                      <CheckCircle className="w-4 h-4" />
+                      <span>Câu trả lời hay nhất</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

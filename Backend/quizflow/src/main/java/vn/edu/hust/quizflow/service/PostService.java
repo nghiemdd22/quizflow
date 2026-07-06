@@ -1,5 +1,6 @@
 package vn.edu.hust.quizflow.service;
 
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,9 +38,11 @@ public class PostService {
     private final UserRepository userRepository;
     private final PostAttachmentRepository postAttachmentRepository;
     private final PostViewRepository postViewRepository;
+    private final PostVoteRepository postVoteRepository;
     private final CloudinaryService cloudinaryService;
     private final RabbitTemplate rabbitTemplate;
     private final Client meilisearchClient;
+    private final EntityManager entityManager;
 
     @Transactional
     public PostResponse createPost(String username, CreatePostRequest request) {
@@ -96,14 +99,25 @@ public class PostService {
                 syncMessage
         );
         
-        return mapToResponse(savedPost, attachments);
+        return mapToResponse(savedPost, attachments, 0);
     }
 
-    public Page<PostResponse> getPosts(Pageable pageable) {
+    public Page<PostResponse> getPosts(Pageable pageable, String username) {
+        User user = null;
+        if (username != null && !username.isEmpty()) {
+            user = userRepository.findByUsername(username).orElse(null);
+        }
+        final User currentUser = user;
+        
         return postRepository.findAllByOrderByCreatedAtDesc(pageable)
                 .map(post -> {
                     List<PostAttachment> attachments = postAttachmentRepository.findByPostId(post.getId());
-                    return mapToResponse(post, attachments);
+                    int currentUserVote = 0;
+                    if (currentUser != null) {
+                        PostVote vote = postVoteRepository.findByPostIdAndUserId(post.getId(), currentUser.getId()).orElse(null);
+                        if (vote != null) currentUserVote = vote.getVoteType();
+                    }
+                    return mapToResponse(post, attachments, currentUserVote);
                 });
     }
 
@@ -112,6 +126,7 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài viết"));
 
+        int currentUserVote = 0;
         if (username != null && !username.isEmpty()) {
             User user = userRepository.findByUsername(username).orElse(null);
             if (user != null) {
@@ -123,14 +138,22 @@ public class PostService {
                     post.setViewsCount(post.getViewsCount() + 1);
                     postRepository.save(post);
                 }
+                
+                PostVote vote = postVoteRepository.findByPostIdAndUserId(postId, user.getId()).orElse(null);
+                if (vote != null) currentUserVote = vote.getVoteType();
             }
         }
 
         List<PostAttachment> attachments = postAttachmentRepository.findByPostId(postId);
-        return mapToResponse(post, attachments);
+        return mapToResponse(post, attachments, currentUserVote);
     }
 
-    public Object searchPosts(String query) {
+    public Object searchPosts(String query, String username) {
+        User user = null;
+        if (username != null && !username.isEmpty()) {
+            user = userRepository.findByUsername(username).orElse(null);
+        }
+        final User currentUser = user;
         try {
             Index index = meilisearchClient.index("posts");
             com.meilisearch.sdk.model.Searchable result = index.search(new SearchRequest(query));
@@ -140,12 +163,61 @@ public class PostService {
             org.springframework.data.domain.Page<Post> dbResults = postRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(query, query, org.springframework.data.domain.PageRequest.of(0, 50));
             return dbResults.map(post -> {
                 List<PostAttachment> attachments = postAttachmentRepository.findByPostId(post.getId());
-                return mapToResponse(post, attachments);
+                int currentUserVote = 0;
+                if (currentUser != null) {
+                    PostVote vote = postVoteRepository.findByPostIdAndUserId(post.getId(), currentUser.getId()).orElse(null);
+                    if (vote != null) currentUserVote = vote.getVoteType();
+                }
+                return mapToResponse(post, attachments, currentUserVote);
             }).getContent();
         }
     }
 
-    private PostResponse mapToResponse(Post post, List<PostAttachment> attachments) {
+    @Transactional
+    public PostResponse votePost(Long postId, String username, int voteType) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng"));
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài viết"));
+
+        PostVote existingVote = postVoteRepository.findByPostIdAndUserId(postId, user.getId()).orElse(null);
+
+        if (voteType == 0) {
+            if (existingVote != null) {
+                postVoteRepository.delete(existingVote);
+            }
+        } else {
+            if (existingVote != null) {
+                if (existingVote.getVoteType() == voteType) {
+                    postVoteRepository.delete(existingVote); // Toggle off if clicked same
+                } else {
+                    existingVote.setVoteType(voteType);
+                    postVoteRepository.save(existingVote);
+                }
+            } else {
+                PostVote newVote = PostVote.builder()
+                        .post(post)
+                        .user(user)
+                        .voteType(voteType)
+                        .build();
+                postVoteRepository.save(newVote);
+            }
+        }
+
+        // Must flush or re-fetch for @Formula to recalculate
+        postVoteRepository.flush();
+        entityManager.refresh(post);
+        List<PostAttachment> attachments = postAttachmentRepository.findByPostId(postId);
+        
+        int currentUserVote = 0;
+        PostVote currentVote = postVoteRepository.findByPostIdAndUserId(postId, user.getId()).orElse(null);
+        if (currentVote != null) currentUserVote = currentVote.getVoteType();
+        
+        return mapToResponse(post, attachments, currentUserVote);
+    }
+
+    private PostResponse mapToResponse(Post post, List<PostAttachment> attachments, int currentUserVote) {
         List<TagResponse> tagResponses = post.getTags().stream()
                 .map(t -> TagResponse.builder().id(t.getId()).name(t.getName()).build())
                 .collect(Collectors.toList());
@@ -170,8 +242,9 @@ public class PostService {
                 .tags(tagResponses)
                 .attachments(attachmentResponses)
                 .upvotes(post.getUpvotes())
-                .downvotes(0)
+                .downvotes(post.getDownvotes())
                 .commentsCount(post.getCommentsCount())
+                .currentUserVote(currentUserVote)
                 .build();
     }
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { MessageSquare, ArrowUp, ArrowDown, Paperclip, Search } from 'lucide-react'
+import { MessageSquare, ArrowUp, ArrowDown, Paperclip, Search, Share2, Award } from 'lucide-react'
 import { apiFetch } from '../utils/api'
 import { useAuthStore } from '../store/authStore'
 import { formatDistanceToNow } from 'date-fns'
@@ -54,13 +54,25 @@ export function ForumPage() {
     }
   }
 
-  const handleVote = async (e: React.MouseEvent) => {
+  const handleVote = async (e: React.MouseEvent, postId: number, voteType: number) => {
     e.preventDefault() // prevent navigating to post detail
+    e.stopPropagation() // prevent bubbling to Link
     if (!isLoggedIn) {
       alert("Bạn cần đăng nhập để vote!")
       return
     }
-    // TODO: Gọi API vote ở Sprint 2
+    try {
+      const res = await apiFetch(`/api/v1/posts/${postId}/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ voteType })
+      })
+      if (!res.ok) throw new Error("Vote failed")
+      const updatedPost = await res.json()
+      setPosts(prev => prev.map(p => p.id === postId ? updatedPost : p))
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   return (
@@ -104,23 +116,9 @@ export function ForumPage() {
         ) : (
           posts.map(post => (
             <Link to={`/forum/${post.id}`} key={post.id} className="block group mb-3">
-              <div className="bg-white border border-slate-300 rounded-md flex overflow-hidden hover:border-slate-400 transition-colors">
-                {/* Cột Vote bên trái */}
-                <div className="w-12 bg-slate-50 border-r border-slate-100 p-2 flex flex-col items-center gap-1">
-                  <button onClick={(e) => handleVote(e)} className="p-1 hover:bg-slate-200 rounded text-slate-400 hover:text-orange-500 transition-colors">
-                    <ArrowUp className="w-5 h-5" />
-                  </button>
-                  <span className="font-bold text-sm text-slate-900">
-                    {/* Hỗ trợ dữ liệu từ Meilisearch (nó trả về JSON) hoặc DB */}
-                    {post.upvotes !== undefined ? post.upvotes - (post.downvotes || 0) : 0}
-                  </span>
-                  <button onClick={(e) => handleVote(e)} className="p-1 hover:bg-slate-200 rounded text-slate-400 hover:text-blue-500 transition-colors">
-                    <ArrowDown className="w-5 h-5" />
-                  </button>
-                </div>
-                
+              <div className="bg-white border border-slate-300 rounded-md flex flex-col hover:border-slate-400 transition-colors">
                 {/* Nội dung chính */}
-                <div className="p-3 flex-1">
+                <div className="p-4 flex-1">
                   <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
                     <span className="text-slate-900 font-medium">u/{post.authorName}</span>
                     <span>•</span>
@@ -149,15 +147,39 @@ export function ForumPage() {
                     {post.content}
                   </p>
                   
-                  <div className="flex gap-4 text-slate-500 text-xs font-bold">
-                    <div className="flex items-center gap-1.5 hover:bg-slate-100 p-1 rounded transition-colors">
-                      <MessageSquare className="w-4 h-4" />
-                      <span>{post.commentsCount || 0} Comments</span>
+                  <div className="flex gap-2 text-slate-800 text-sm font-semibold mt-4">
+                    {/* Vote Pill */}
+                    <div className="flex items-center bg-slate-100 rounded-full">
+                      <button onClick={(e) => handleVote(e, post.id, 1)} className={`p-1.5 px-2 hover:bg-slate-200 rounded-l-full transition-colors flex items-center justify-center ${post.currentUserVote === 1 ? 'text-orange-500' : 'text-slate-600 hover:text-orange-500'}`}>
+                        <ArrowUp className="w-5 h-5" />
+                      </button>
+                      <span className="px-1">{post.upvotes !== undefined ? post.upvotes - (post.downvotes || 0) : 0}</span>
+                      <button onClick={(e) => handleVote(e, post.id, -1)} className={`p-1.5 px-2 hover:bg-slate-200 rounded-r-full transition-colors flex items-center justify-center ${post.currentUserVote === -1 ? 'text-blue-500' : 'text-slate-600 hover:text-blue-500'}`}>
+                        <ArrowDown className="w-5 h-5" />
+                      </button>
                     </div>
+
+                    {/* Comments Pill */}
+                    <div className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 rounded-full px-3 py-1.5 transition-colors cursor-pointer">
+                      <MessageSquare className="w-4 h-4" />
+                      <span>{post.commentsCount || 0}</span>
+                    </div>
+                    
+                    {/* Award Pill */}
+                    <div className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 rounded-full px-3 py-1.5 transition-colors cursor-pointer">
+                      <Award className="w-4 h-4" />
+                    </div>
+
+                    {/* Share Pill */}
+                    <div className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 rounded-full px-3 py-1.5 transition-colors cursor-pointer" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigator.clipboard.writeText(window.location.origin + `/forum/${post.id}`); alert('Đã copy link!'); }}>
+                      <Share2 className="w-4 h-4" />
+                      <span>Chia sẻ</span>
+                    </div>
+
                     {post.attachments && post.attachments.length > 0 && (
-                      <div className="flex items-center gap-1.5 p-1">
+                      <div className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 rounded-full px-3 py-1.5 transition-colors">
                         <Paperclip className="w-4 h-4" />
-                        <span>{post.attachments.length} files</span>
+                        <span>{post.attachments.length}</span>
                       </div>
                     )}
                   </div>

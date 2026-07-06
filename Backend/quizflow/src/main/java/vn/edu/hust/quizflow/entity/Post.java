@@ -50,8 +50,11 @@ public class Post {
     @org.hibernate.annotations.Formula("(SELECT COUNT(*) FROM comments c WHERE c.post_id = id)")
     private int commentsCount;
 
-    @org.hibernate.annotations.Formula("(SELECT COALESCE(SUM(cv.vote_type), 0) FROM comments c LEFT JOIN comment_votes cv ON c.id = cv.comment_id WHERE c.post_id = id)")
+    @org.hibernate.annotations.Formula("(SELECT COUNT(pv.id) FROM post_votes pv WHERE pv.post_id = id AND pv.vote_type = 1)")
     private int upvotes;
+
+    @org.hibernate.annotations.Formula("(SELECT COUNT(pv.id) FROM post_votes pv WHERE pv.post_id = id AND pv.vote_type = -1)")
+    private int downvotes;
 
     @PrePersist
     protected void onCreate() {

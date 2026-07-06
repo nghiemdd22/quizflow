@@ -21,4 +21,5 @@ public class PostResponse {
     private int upvotes;
     private int downvotes;
     private int commentsCount;
+    private int currentUserVote;
 }
