@@ -45,7 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <nav className="relative bg-white border-2 border-slate-900 rounded-3xl shadow-[4px_4px_0px_#0f172a] hover:shadow-[2px_2px_0px_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] transition-all px-6 py-4 md:px-8 md:py-5 flex items-center justify-between">
           {/* Logo */}
           <Link to={role === 'TEACHER' ? '/teacher-dashboard' : '/'} className="flex items-center gap-4 group transition-opacity hover:opacity-80 z-10">
-            <div className="w-12 h-12 rounded-xl bg-[#ffc4b8] border-2 border-slate-900 flex items-center justify-center shadow-[2px_2px_0px_#0f172a]">
+            <div className="w-12 h-12 rounded-xl bg-[#ffc4b8] flex items-center justify-center">
               <BookOpen className="text-[#1a3b5c] w-6 h-6" strokeWidth={2.5} />
             </div>
             <span className="text-3xl font-black text-[#1a3b5c] tracking-tight hidden sm:block">QuizFlow</span>
@@ -94,7 +94,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </button>
 
                   {isDropdownOpen && (
-                    <div className="absolute right-0 mt-3 w-48 bg-white border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] rounded-xl flex flex-col p-2 z-50 animate-pop-in origin-top-right">
+                    <div className="absolute right-0 mt-3 w-48 bg-white border border-slate-900 rounded-xl flex flex-col p-2 z-50 animate-pop-in origin-top-right">
                       <div className="px-3 py-2 border-b-2 border-slate-100 mb-2">
                         <p className="text-xs font-bold text-slate-500">Account</p>
                         <p className="text-sm font-black truncate text-slate-900">{userFullName || userEmail}</p>

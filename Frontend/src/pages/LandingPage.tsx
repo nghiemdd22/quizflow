@@ -24,7 +24,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
       handleRequireLogin()
       return
     }
-    navigate('/join-exam')
+    navigate('/join-class')
   }
 
   const handleNavigateToHistory = () => {
@@ -89,7 +89,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
         <div className="md:col-span-5 relative flex justify-center">
           <div className="w-full max-w-md bg-white neo-card p-6 relative z-10 hover:rotate-1 transition-transform duration-300">
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-xl bg-rose-100 flex items-center justify-center border-2 border-slate-900 text-rose-500 font-bold shadow-[2px_2px_0px_#0f172a]">
+              <div className="w-12 h-12 rounded-xl bg-rose-100 flex items-center justify-center text-rose-500 font-bold">
                 <Target size={24} strokeWidth={2.5} />
               </div>
               <div className="text-left">
@@ -103,7 +103,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
                 onClick={handleNavigateToJoin}
                 className="w-full py-4 text-base bg-neo-green hover:bg-neo-green-hover text-white neo-btn flex items-center justify-center gap-2"
               >
-                Join Exam Room ➔
+                Join Class ➔
               </button>
 
               <button
@@ -139,7 +139,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
             {/* Feature 1 */}
             <div className="bg-white neo-card p-8 flex flex-col text-left group hover:bg-slate-50 transition-colors">
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-14 h-14 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-xl font-bold border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+                <div className="w-14 h-14 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-xl font-bold">
                   <ShieldCheck size={28} />
                 </div>
                 <div>
@@ -155,7 +155,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
             {/* Feature 2 */}
             <div className="bg-white neo-card p-8 flex flex-col text-left group hover:bg-slate-50 transition-colors">
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-14 h-14 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl font-bold border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+                <div className="w-14 h-14 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl font-bold">
                   <Server size={28} />
                 </div>
                 <div>
@@ -171,7 +171,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
             {/* Feature 3 */}
             <div className="bg-white neo-card p-8 flex flex-col text-left group hover:bg-slate-50 transition-colors">
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-14 h-14 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl font-bold border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+                <div className="w-14 h-14 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl font-bold">
                   <BarChart size={28} />
                 </div>
                 <div>
@@ -187,7 +187,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
             {/* Feature 4 */}
             <div className="bg-white neo-card p-8 flex flex-col text-left group hover:bg-slate-50 transition-colors">
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-14 h-14 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center text-xl font-bold border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+                <div className="w-14 h-14 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center text-xl font-bold">
                   <MonitorPlay size={28} />
                 </div>
                 <div>
@@ -215,7 +215,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Card 1 */}
           <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
-            <div className="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-5"><ShieldCheck size={24} strokeWidth={2.5} /></div>
+            <div className="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center mb-5"><ShieldCheck size={24} strokeWidth={2.5} /></div>
             <h3 className="font-extrabold text-lg text-slate-900 mb-2">Absolute Security</h3>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
               All data connections are end-to-end encrypted. Students cannot inspect source code to find answers.
@@ -223,7 +223,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
           </div>
           {/* Card 2 */}
           <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
-            <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-5"><Zap size={24} strokeWidth={2.5} /></div>
+            <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mb-5"><Zap size={24} strokeWidth={2.5} /></div>
             <h3 className="font-extrabold text-lg text-slate-900 mb-2">Lightning Fast</h3>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
               Built on a robust infrastructure capable of handling up to 10,000 concurrent students smoothly without bottlenecks.
@@ -231,7 +231,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
           </div>
           {/* Card 3 */}
           <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
-            <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-5"><FileCheck size={24} strokeWidth={2.5} /></div>
+            <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center mb-5"><FileCheck size={24} strokeWidth={2.5} /></div>
             <h3 className="font-extrabold text-lg text-slate-900 mb-2">100% Accuracy</h3>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
               Smart automated grading system, supporting various complex multiple-choice question types instantly.
@@ -239,7 +239,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
           </div>
           {/* Card 4 */}
           <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
-            <div className="w-12 h-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-5"><Users size={24} strokeWidth={2.5} /></div>
+            <div className="w-12 h-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center mb-5"><Users size={24} strokeWidth={2.5} /></div>
             <h3 className="font-extrabold text-lg text-slate-900 mb-2">Easy Management</h3>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
               Teachers can create question banks and manage exam sessions with just a few intuitive clicks.
@@ -337,7 +337,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
                 onClick={handleNavigateToJoin}
                 className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-slate-50 text-slate-900 neo-btn text-base"
               >
-                Student: Join Exam Room
+                Student: Join Class
               </button>
             </div>
             <div className="flex justify-center gap-6 text-xs text-slate-500 font-bold">
