@@ -36,6 +36,14 @@ export const ClassChatBox: React.FC<ClassChatBoxProps> = ({ classId, unreadCount
   useEffect(() => {
     loadHistory()
     connectWebSocket()
+    
+    // Đánh dấu đã đọc và xoá badge đỏ trên giao diện
+    if (initialUnreadRef.current > 0) {
+      window.dispatchEvent(new CustomEvent('chatBadgeUpdate', { 
+        detail: { classId, unreadCount: 0 } 
+      }))
+    }
+
     return () => {
       if (stompClientRef.current) {
         stompClientRef.current.deactivate()
@@ -48,7 +56,7 @@ export const ClassChatBox: React.FC<ClassChatBoxProps> = ({ classId, unreadCount
   }, [messages])
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }
 
   const loadHistory = async () => {
@@ -119,9 +127,9 @@ export const ClassChatBox: React.FC<ClassChatBoxProps> = ({ classId, unreadCount
   }
 
   return (
-    <div className="flex flex-col bg-white border-4 border-slate-900 rounded-2xl shadow-[8px_8px_0px_#0f172a] h-[600px] overflow-hidden">
+    <div className="flex flex-col bg-white border-2 border-slate-200 rounded-3xl shadow-sm h-[600px] overflow-hidden">
       {/* Header */}
-      <div className="bg-neo-blue text-white p-4 border-b-4 border-slate-900 flex items-center justify-between z-10">
+      <div className="bg-neo-blue text-white p-4 border-b-2 border-slate-100 flex items-center justify-between z-10">
         <h3 className="text-xl font-black flex items-center gap-2">
           <MessageCircle /> Thảo luận lớp học
         </h3>
@@ -156,8 +164,8 @@ export const ClassChatBox: React.FC<ClassChatBoxProps> = ({ classId, unreadCount
               <div className="text-[10px] font-bold text-slate-500 mb-1 px-1">
                 {msg.senderName} {isTeacher && <span className="bg-neo-yellow text-slate-900 px-1.5 py-0.5 rounded text-[8px] ml-1">GIÁO VIÊN</span>}
               </div>
-              <div className={`px-4 py-2.5 rounded-2xl max-w-[85%] border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] font-bold text-sm leading-relaxed ${
-                isTeacher ? 'bg-white text-slate-900 rounded-tl-none' : 'bg-neo-green text-white rounded-tr-none'
+              <div className={`px-4 py-2.5 rounded-2xl max-w-[85%] border-2 border-slate-100 shadow-sm font-bold text-sm leading-relaxed ${
+                isTeacher ? 'bg-white text-slate-900 rounded-tl-none' : 'bg-neo-green text-white rounded-tr-none border-neo-green'
               }`}>
                 {msg.content}
               </div>
@@ -172,7 +180,7 @@ export const ClassChatBox: React.FC<ClassChatBoxProps> = ({ classId, unreadCount
       </div>
 
       {/* Input */}
-      <div className="p-4 bg-white border-t-4 border-slate-900">
+      <div className="p-4 bg-white border-t-2 border-slate-100">
         <form onSubmit={handleSendMessage} className="flex gap-2">
           <input
             type="text"
@@ -180,12 +188,12 @@ export const ClassChatBox: React.FC<ClassChatBoxProps> = ({ classId, unreadCount
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Nhập tin nhắn..."
             disabled={!isConnected}
-            className="flex-1 border-2 border-slate-900 rounded-xl px-4 py-3 font-bold focus:outline-none focus:bg-slate-50 disabled:bg-slate-100"
+            className="flex-1 border-2 border-slate-200 rounded-xl px-4 py-3 font-bold focus:outline-none focus:border-neo-blue disabled:bg-slate-50 transition-colors"
           />
           <button
             type="submit"
             disabled={!isConnected || !inputValue.trim()}
-            className="bg-neo-purple text-white p-3 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] hover:bg-purple-600 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0f172a] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-neo-blue text-white p-3 rounded-xl border-2 border-neo-blue shadow-sm hover:bg-blue-600 hover:-translate-y-0.5 hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send size={20} />
           </button>

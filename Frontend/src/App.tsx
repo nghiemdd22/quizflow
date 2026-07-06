@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
+import { PageWrapper } from './components/PageWrapper'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { BookOpen } from 'lucide-react'
 import { Navbar } from './components/Navbar'
@@ -137,50 +139,52 @@ function App() {
 
       <main className="flex-1 w-full flex flex-col">
         <div className="animate-page-enter flex-1 flex flex-col">
-          <Routes>
-            <Route path="/" element={<LandingPage isLoggedIn={isLoggedIn} onOpenLogin={() => { setAuthMode('login'); setIsAuthOpen(true) }} onOpenSignup={() => { setAuthMode('signup'); setIsAuthOpen(true) }} onCourseRegister={handleCourseRegister} />} />
-            
-            {/* Student Routes */}
-            <Route path="/join-class" element={<ProtectedRoute allowedRoles={['STUDENT']}><JoinExamPage /></ProtectedRoute>} />
-            <Route path="/exam-room" element={<ProtectedRoute allowedRoles={['STUDENT']}><ExamRoom /></ProtectedRoute>} />
-            <Route path="/exam-history" element={<ProtectedRoute allowedRoles={['STUDENT']}><ExamHistoryPage /></ProtectedRoute>} />
-            <Route path="/exam-review/:submissionId" element={<ProtectedRoute allowedRoles={['STUDENT']}><ExamReviewPage /></ProtectedRoute>} />
-            
-            {/* Teacher Routes */}
-            <Route path="/teacher-dashboard" element={<ProtectedRoute allowedRoles={['TEACHER']}><TeacherDashboard /></ProtectedRoute>} />
-            <Route 
-              path="/classes" 
-              element={
-                <ProtectedRoute allowedRoles={['TEACHER', 'STUDENT']}>
-                  <ClassroomsPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/classes/:classId" 
-              element={
-                <ProtectedRoute allowedRoles={['TEACHER', 'STUDENT']}>
-                  <ClassDetailPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/question-bank" element={<ProtectedRoute allowedRoles={['TEACHER']}><QuestionBankPage /></ProtectedRoute>} />
-            <Route path="/teacher/exams" element={<ProtectedRoute allowedRoles={['TEACHER']}><ExamSessionsPage /></ProtectedRoute>} />
-            <Route path="/teacher/reports" element={<ProtectedRoute allowedRoles={['TEACHER']}><ReportsPage /></ProtectedRoute>} />
-            <Route path="/teacher/exam-sessions/:sessionId/proctor" element={<ProtectedRoute allowedRoles={['TEACHER']}><ProctoringPage /></ProtectedRoute>} />
+          <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
+              <Route path="/" element={<PageWrapper><LandingPage isLoggedIn={isLoggedIn} onOpenLogin={() => { setAuthMode('login'); setIsAuthOpen(true) }} onOpenSignup={() => { setAuthMode('signup'); setIsAuthOpen(true) }} onCourseRegister={handleCourseRegister} /></PageWrapper>} />
+              
+              {/* Student Routes */}
+              <Route path="/join-class" element={<ProtectedRoute allowedRoles={['STUDENT']}><PageWrapper><JoinExamPage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/exam-room" element={<ProtectedRoute allowedRoles={['STUDENT']}><PageWrapper><ExamRoom /></PageWrapper></ProtectedRoute>} />
+              <Route path="/exam-history" element={<ProtectedRoute allowedRoles={['STUDENT']}><PageWrapper><ExamHistoryPage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/exam-review/:submissionId" element={<ProtectedRoute allowedRoles={['STUDENT']}><PageWrapper><ExamReviewPage /></PageWrapper></ProtectedRoute>} />
+              
+              {/* Teacher Routes */}
+              <Route path="/teacher-dashboard" element={<ProtectedRoute allowedRoles={['TEACHER']}><PageWrapper><TeacherDashboard /></PageWrapper></ProtectedRoute>} />
+              <Route 
+                path="/classes" 
+                element={
+                  <ProtectedRoute allowedRoles={['TEACHER', 'STUDENT']}>
+                    <PageWrapper><ClassroomsPage /></PageWrapper>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/classes/:classId" 
+                element={
+                  <ProtectedRoute allowedRoles={['TEACHER', 'STUDENT']}>
+                    <PageWrapper><ClassDetailPage /></PageWrapper>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/question-bank" element={<ProtectedRoute allowedRoles={['TEACHER']}><PageWrapper><QuestionBankPage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/teacher/exams" element={<ProtectedRoute allowedRoles={['TEACHER']}><PageWrapper><ExamSessionsPage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/teacher/reports" element={<ProtectedRoute allowedRoles={['TEACHER']}><PageWrapper><ReportsPage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/teacher/exam-sessions/:sessionId/proctor" element={<ProtectedRoute allowedRoles={['TEACHER']}><PageWrapper><ProctoringPage /></PageWrapper></ProtectedRoute>} />
 
-            {/* Common Routes */}
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-            <Route path="/forum" element={<ForumPage />} />
-            <Route path="/forum/create" element={<ProtectedRoute><CreatePostPage /></ProtectedRoute>} />
-            <Route path="/forum/:id" element={<PostDetailPage />} />
+              {/* Common Routes */}
+              <Route path="/about" element={<PageWrapper><AboutPage /></PageWrapper>} />
+              <Route path="/profile" element={<ProtectedRoute><PageWrapper><ProfilePage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><PageWrapper><SettingsPage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/forum" element={<PageWrapper><ForumPage /></PageWrapper>} />
+              <Route path="/forum/create" element={<ProtectedRoute><PageWrapper><CreatePostPage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/forum/:id" element={<PageWrapper><PostDetailPage /></PageWrapper>} />
 
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+              {/* Fallback */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </AnimatePresence>
         </div>
       </main>
 

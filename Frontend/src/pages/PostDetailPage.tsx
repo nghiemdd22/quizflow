@@ -99,11 +99,11 @@ export function PostDetailPage() {
   if (!post) return <div className="p-8 text-center font-bold">Đang tải...</div>
 
   return (
-    <div className="pt-24 pb-12 px-4 max-w-6xl mx-auto space-y-6">
-      <div className="bg-white border border-slate-300 rounded-lg shadow-sm flex flex-col overflow-hidden">
+    <div className="pt-24 pb-12 px-4 w-full max-w-6xl mx-auto space-y-6">
+      <div className="bg-white border-2 border-slate-100 rounded-3xl shadow-sm flex flex-col overflow-hidden">
         {/* Post Content */}
         <div className="p-6 lg:p-8 flex-1">
-          <h1 className="text-2xl font-semibold text-slate-900 mb-4">{post.title}</h1>
+          <h1 className="text-3xl font-black text-slate-900 mb-4">{post.title}</h1>
 
           <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
             <span className="text-blue-600 font-medium">u/{post.authorName}</span>
@@ -115,7 +115,7 @@ export function PostDetailPage() {
 
         <div className="flex gap-2 mb-6">
           {post.tags?.map((tag: any) => (
-            <span key={tag.id} className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">
+            <span key={tag.id} className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold">
               {tag.name}
             </span>
           ))}
@@ -126,8 +126,8 @@ export function PostDetailPage() {
         </div>
 
         {post.attachments?.length > 0 && (
-          <div className="mt-6 border-t border-slate-200 pt-4">
-            <h3 className="font-semibold text-slate-700 mb-3 text-sm">Tài liệu đính kèm</h3>
+          <div className="mt-8 border-t-2 border-dashed border-slate-100 pt-6">
+            <h3 className="font-bold text-slate-900 mb-4 text-sm uppercase tracking-wider">Tài liệu đính kèm</h3>
             <div className="grid sm:grid-cols-2 gap-3">
               {post.attachments.map((file: any) => (
                 <a
@@ -135,14 +135,14 @@ export function PostDetailPage() {
                   href={file.fileUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-md hover:bg-slate-100 transition-colors group"
+                  className="flex items-center gap-3 p-3 bg-white border-2 border-slate-100 rounded-xl hover:border-neo-blue hover:shadow-md transition-all group"
                 >
-                  <div className="w-8 h-8 bg-white border border-slate-200 rounded flex items-center justify-center text-slate-500 group-hover:text-blue-500 transition-colors">
-                    <Download className="w-4 h-4" />
+                  <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 group-hover:text-neo-blue transition-colors shrink-0">
+                    <Download className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-slate-700 truncate">{file.fileName}</p>
-                    <p className="text-xs text-slate-500 uppercase">{file.fileType}</p>
+                    <p className="font-bold text-sm text-slate-800 truncate group-hover:text-neo-blue transition-colors">{file.fileName}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase">{file.fileType}</p>
                   </div>
                 </a>
               ))}
@@ -183,8 +183,8 @@ export function PostDetailPage() {
       </div>
 
       {/* KHU VỰC BÌNH LUẬN */}
-      <div className="bg-white border border-slate-300 rounded-lg shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">{comments.length} Bình luận</h2>
+      <div className="bg-white border-2 border-slate-100 rounded-3xl shadow-sm p-6 lg:p-8">
+        <h2 className="text-xl font-black text-slate-900 mb-6">{comments.length} Bình luận</h2>
 
         {isLoggedIn ? (
           <form onSubmit={handleAddComment} className="mb-8">
@@ -192,12 +192,12 @@ export function PostDetailPage() {
               value={newComment}
               onChange={e => setNewComment(e.target.value)}
               rows={3}
-              className="w-full p-3 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all mb-3 bg-slate-50 hover:bg-white focus:bg-white"
+              className="w-full p-4 border-2 border-slate-200 rounded-2xl text-sm font-medium focus:outline-none focus:border-neo-blue transition-colors mb-4 bg-slate-50 hover:bg-white focus:bg-white resize-y"
               placeholder="Viết câu trả lời của bạn..."
             />
             <button
               type="submit"
-              className="px-6 py-2 bg-blue-600 text-white font-medium rounded-full text-sm hover:bg-blue-700 transition-colors"
+              className="px-6 py-2.5 bg-neo-blue text-white font-black rounded-full text-sm hover:bg-blue-700 transition-all hover:-translate-y-0.5 shadow-sm hover:shadow-md"
             >
               Gửi bình luận
             </button>
@@ -212,7 +212,7 @@ export function PostDetailPage() {
           {comments.map(comment => (
             <div
               key={comment.id}
-              className={`flex border border-slate-200 rounded-md overflow-hidden transition-all ${comment.isAccepted ? 'bg-green-50 border-green-200' : 'bg-white hover:border-slate-300'}`}
+              className={`flex border-2 rounded-2xl overflow-hidden transition-all shadow-sm ${comment.isAccepted ? 'bg-[#f0fdf4] border-neo-green' : 'bg-white border-slate-100 hover:shadow-md'}`}
             >
               {/* Content Column */}
               <div className="flex-1 p-4 relative flex flex-col">
@@ -226,7 +226,7 @@ export function PostDetailPage() {
                   {isLoggedIn && post.authorId === userId && (
                     <button
                       onClick={() => handleAccept(comment.id)}
-                      className={`text-xs px-3 py-1 rounded-full border transition-colors ${comment.isAccepted ? 'bg-green-100 border-green-200 text-green-700' : 'bg-white border-slate-300 text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
+                      className={`text-xs px-4 py-1.5 rounded-full font-bold transition-all border-2 ${comment.isAccepted ? 'bg-neo-green border-neo-green text-white shadow-md' : 'bg-white border-slate-200 text-slate-500 hover:bg-neo-green hover:text-white hover:border-neo-green'}`}
                     >
                       {comment.isAccepted ? 'Đã duyệt' : 'Duyệt'}
                     </button>
@@ -249,9 +249,9 @@ export function PostDetailPage() {
                   </div>
                   
                   {comment.isAccepted && (
-                    <div className="flex items-center gap-1.5 bg-green-50 text-green-700 rounded-full px-3 py-1.5 border border-green-200" title="Câu trả lời hay nhất">
+                    <div className="flex items-center gap-1.5 bg-neo-green text-white rounded-full px-4 py-1.5 font-bold shadow-sm" title="Câu trả lời hay nhất">
                       <CheckCircle className="w-4 h-4" />
-                      <span>Câu trả lời hay nhất</span>
+                      <span>Câu trả lời xuất sắc</span>
                     </div>
                   )}
                 </div>

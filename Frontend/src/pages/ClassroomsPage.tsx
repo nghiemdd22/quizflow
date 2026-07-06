@@ -131,33 +131,39 @@ export const ClassroomsPage: React.FC = () => {
               <div 
                 key={c.id} 
                 onClick={() => navigate(`/classes/${c.id}`)}
-                className="bg-white border-2 border-slate-900 rounded-xl p-6 shadow-[4px_4px_0px_#0f172a] hover:-translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0px_#0f172a] transition-all cursor-pointer group flex flex-col justify-between h-48"
+                className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col justify-between min-h-[220px] cursor-pointer group relative"
               >
                 <div>
-                  <h3 className="text-xl font-black text-slate-900 line-clamp-2 mb-2 group-hover:text-neo-blue transition-colors flex items-center justify-between">
-                    <span>{c.name}</span>
-                    {(c.unreadMessageCount && c.unreadMessageCount > 0) ? (
-                      <span className="shrink-0 ml-2 min-w-[24px] h-6 px-1.5 flex items-center justify-center bg-red-500 text-white text-xs font-black rounded-full border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] animate-bounce">
-                        {c.unreadMessageCount > 99 ? '99+' : c.unreadMessageCount}
-                      </span>
-                    ) : null}
+                  <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mb-4">
+                    <BookOpen size={24} strokeWidth={2.5} />
+                  </div>
+                  
+                  <h3 className="font-extrabold text-lg text-slate-900 line-clamp-2 mb-2 group-hover:text-neo-blue transition-colors pr-8">
+                    {c.name}
                   </h3>
-                  <p className="text-sm font-bold text-slate-500 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs text-slate-700 border-2 border-slate-900">
+                  
+                  <p className="text-xs text-slate-500 font-bold leading-relaxed flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[10px] text-slate-700 font-black">
                       {c.teacherName.charAt(0)}
                     </span>
                     {c.teacherName}
                   </p>
                 </div>
                 
-                <div className="flex items-center justify-between mt-4 pt-4 border-t-2 border-dashed border-slate-200">
-                  <div className="flex items-center gap-1.5 text-slate-600 font-bold text-sm bg-slate-100 px-3 py-1 rounded-lg border-2 border-slate-900">
-                    <Hash size={14} /> {c.code}
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100 w-full">
+                  <div className="flex items-center gap-1.5 text-slate-600 font-bold text-xs bg-slate-50 px-2.5 py-1 rounded-lg">
+                    <Hash size={12} /> {c.code}
                   </div>
-                  <div className="flex items-center gap-1.5 text-slate-600 font-bold text-sm">
-                    <Users size={16} /> {c.memberCount}
+                  <div className="flex items-center gap-1.5 text-slate-500 font-bold text-xs">
+                    <Users size={14} /> {c.memberCount} members
                   </div>
                 </div>
+
+                {(c.unreadMessageCount && c.unreadMessageCount > 0) ? (
+                  <div className="absolute top-6 right-6 min-w-[20px] h-5 px-1.5 flex items-center justify-center bg-red-500 text-white text-[10px] font-black rounded-full shadow-sm animate-bounce">
+                    {c.unreadMessageCount > 99 ? '99+' : c.unreadMessageCount}
+                  </div>
+                ) : null}
               </div>
             ))}
           </div>

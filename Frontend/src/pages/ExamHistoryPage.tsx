@@ -120,7 +120,7 @@ export const ExamHistoryPage: React.FC = () => {
       <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="flex flex-wrap items-center gap-4">
           <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Exam History</h1>
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#dbeafe] border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] text-blue-800 text-xs font-black">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#dbeafe] rounded-xl text-blue-800 text-xs font-black">
             <Activity size={14} /> Academic Profile
           </div>
         </div>
@@ -130,7 +130,7 @@ export const ExamHistoryPage: React.FC = () => {
       {!isLoading && !error && history.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-white neo-card p-4 flex items-center gap-4 group hover:-translate-y-1 hover:shadow-[6px_6px_0px_#0f172a] transition-all cursor-default">
-            <div className="w-12 h-12 rounded-2xl bg-sky-100 text-sky-600 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] flex items-center justify-center shrink-0 group-hover:bg-neo-blue group-hover:text-white transition-colors">
+            <div className="w-12 h-12 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center shrink-0 group-hover:bg-neo-blue group-hover:text-white transition-colors">
               <Target size={24} />
             </div>
             <div>
@@ -139,7 +139,7 @@ export const ExamHistoryPage: React.FC = () => {
             </div>
           </div>
           <div className="bg-white neo-card p-4 flex items-center gap-4 group hover:-translate-y-1 hover:shadow-[6px_6px_0px_#0f172a] transition-all cursor-default">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] flex items-center justify-center shrink-0 group-hover:bg-neo-blue group-hover:text-white transition-colors">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 group-hover:bg-neo-blue group-hover:text-white transition-colors">
               <CheckCircle2 size={24} />
             </div>
             <div>
@@ -148,7 +148,7 @@ export const ExamHistoryPage: React.FC = () => {
             </div>
           </div>
           <div className="bg-white neo-card p-4 flex items-center gap-4 group hover:-translate-y-1 hover:shadow-[6px_6px_0px_#0f172a] transition-all cursor-default">
-            <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] flex items-center justify-center shrink-0 group-hover:bg-neo-blue group-hover:text-white transition-colors">
+            <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 group-hover:bg-neo-blue group-hover:text-white transition-colors">
               <Activity size={24} />
             </div>
             <div>
@@ -227,12 +227,8 @@ export const ExamHistoryPage: React.FC = () => {
               <div
                 key={exam.id}
                 onClick={() => navigate('/exam-review/' + exam.id)}
-                className="flex items-center gap-4 p-4 rounded-xl border-2 border-slate-200 bg-slate-50 hover:border-slate-900 hover:shadow-[4px_4px_0px_#0f172a] hover:-translate-y-1 transition-all cursor-pointer group"
+                className="flex items-center gap-4 p-6 rounded-3xl border-2 border-slate-100 bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
               >
-                <div className="w-12 h-12 bg-white rounded-lg border-2 border-slate-900 flex items-center justify-center text-slate-900 shrink-0">
-                  <Activity size={24} strokeWidth={2.5} />
-                </div>
-
                 <div className="flex-1 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-0.5">

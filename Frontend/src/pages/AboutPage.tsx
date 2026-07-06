@@ -1,5 +1,5 @@
 import React from 'react'
-import { BookOpen, ShieldCheck, Zap, Mail, Phone, MapPin, Code } from 'lucide-react'
+import { BookOpen, ShieldCheck, Zap, Mail, Phone, MapPin, Code, Users, MessageSquare, Globe } from 'lucide-react'
 
 export const AboutPage: React.FC = () => {
   return (
@@ -32,7 +32,7 @@ export const AboutPage: React.FC = () => {
           </div>
           <div className="grid grid-rows-2 gap-6">
             <div className="bg-white neo-card p-6 flex items-center gap-5">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] shrink-0">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
                 <Zap size={28} />
               </div>
               <div>
@@ -41,7 +41,7 @@ export const AboutPage: React.FC = () => {
               </div>
             </div>
             <div className="bg-white neo-card p-6 flex items-center gap-5">
-              <div className="w-14 h-14 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] shrink-0">
+              <div className="w-14 h-14 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
                 <ShieldCheck size={28} />
               </div>
               <div>
@@ -59,7 +59,7 @@ export const AboutPage: React.FC = () => {
         <div className="grid md:grid-cols-2 gap-6 text-left">
           {/* Teacher Role */}
           <div className="bg-[#fff7ed] neo-card p-6 border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:-translate-y-1 hover:shadow-[6px_6px_0px_#0f172a] transition-all">
-            <div className="w-14 h-14 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-5">
+            <div className="w-14 h-14 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center mb-5">
               <BookOpen size={28} />
             </div>
             <h3 className="text-xl font-black text-slate-900 mb-2">Teachers</h3>
@@ -70,12 +70,49 @@ export const AboutPage: React.FC = () => {
           
           {/* Student Role */}
           <div className="bg-[#f0fdf4] neo-card p-6 border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:-translate-y-1 hover:shadow-[6px_6px_0px_#0f172a] transition-all">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-5">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-5">
               <Zap size={28} />
             </div>
             <h3 className="text-xl font-black text-slate-900 mb-2">Students</h3>
             <p className="text-slate-700 font-bold leading-relaxed text-sm">
               Students get a distraction-free, ultra-fast interface to <span className="text-neo-green font-black">take exams and view results</span>. Just enter a PIN to join a room, submit answers seamlessly, and instantly review your detailed performance history.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Beyond Just Testing Section */}
+      <section className="w-full max-w-5xl mx-auto mb-16">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-3">More Than Just Exams</h2>
+          <p className="text-slate-500 font-bold">A complete ecosystem for collaborative learning and resource sharing.</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
+            <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mb-5 shrink-0">
+              <Users size={24} />
+            </div>
+            <h3 className="font-extrabold text-lg text-slate-900 mb-2">Classroom Hubs</h3>
+            <p className="text-xs text-slate-500 font-medium leading-relaxed">
+              Students can easily join classes via invite codes. Once inside, teachers can upload study materials, and students can access them anytime to prepare for upcoming tests.
+            </p>
+          </div>
+          <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
+            <div className="w-12 h-12 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center mb-5 shrink-0">
+              <MessageSquare size={24} />
+            </div>
+            <h3 className="font-extrabold text-lg text-slate-900 mb-2">Real-time Class Chat</h3>
+            <p className="text-xs text-slate-500 font-medium leading-relaxed">
+              Stay connected with your peers and educators. Every classroom features a real-time chat for instant Q&A, important announcements, and group discussions.
+            </p>
+          </div>
+          <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
+            <div className="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-5 shrink-0">
+              <Globe size={24} />
+            </div>
+            <h3 className="font-extrabold text-lg text-slate-900 mb-2">Knowledge Forum</h3>
+            <p className="text-xs text-slate-500 font-medium leading-relaxed">
+              A vibrant public community where users across the platform can create posts, share study guides, discuss solutions, and upvote the most helpful resources.
             </p>
           </div>
         </div>

@@ -1,7 +1,23 @@
 import React from 'react'
 import { Target, Clock, ShieldCheck, Zap, BarChart, Users, Server, MonitorPlay, Activity, FileCheck, Star } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { motion, type Variants } from 'framer-motion'
 import type { Course } from '../types'
+
+const fadeUpVariant: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+}
+
+const staggerContainer: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+}
 
 interface LandingPageProps {
   isLoggedIn?: boolean
@@ -38,8 +54,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
   return (
     <>
       {/* HERO SECTION */}
-      <section className="w-full max-w-7xl mx-auto px-4 pt-12 pb-4 md:pt-20 md:pb-10 grid md:grid-cols-12 gap-12 items-center">
-        <div className="md:col-span-7 flex flex-col items-start text-left">
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={staggerContainer}
+        className="w-full max-w-7xl mx-auto px-4 pt-12 pb-4 md:pt-20 md:pb-10 grid md:grid-cols-12 gap-12 items-center"
+      >
+        <motion.div variants={fadeUpVariant} className="md:col-span-7 flex flex-col items-start text-left">
           <div className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-[#d1fae5] border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] text-emerald-800 text-xs font-extrabold mb-8">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
             <span>Version v2.0: Ultra-Fast Experience</span>
@@ -56,14 +78,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
           </p>
 
           <div className="flex flex-wrap gap-4 mb-8">
-            <button 
-              onClick={() => document.getElementById('why-choose-us')?.scrollIntoView({ behavior: 'smooth' })} 
+            <button
+              onClick={() => document.getElementById('why-choose-us')?.scrollIntoView({ behavior: 'smooth' })}
               className="px-6 py-4 bg-neo-yellow hover:bg-yellow-400 text-slate-900 neo-btn text-base gap-2 inline-flex items-center"
             >
               Why Choose Us <span>↓</span>
             </button>
-            <button 
-              onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} 
+            <button
+              onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
               className="px-6 py-4 bg-blue-50 hover:bg-blue-100 text-slate-900 neo-btn text-base border-blue-200"
             >
               Explore Features
@@ -84,9 +106,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
               <div className="text-xs text-slate-500 font-bold mt-1">Latency</div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="md:col-span-5 relative flex justify-center">
+        <motion.div variants={fadeUpVariant} className="md:col-span-5 relative flex justify-center">
           <div className="w-full max-w-md bg-white neo-card p-6 relative z-10 hover:rotate-1 transition-transform duration-300">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 rounded-xl bg-rose-100 flex items-center justify-center text-rose-500 font-bold">
@@ -119,25 +141,31 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
           <div className="absolute top-1/2 -right-8 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-amber-500 z-20 animate-pulse"><Zap size={18} strokeWidth={3} /></div>
           <div className="absolute -bottom-4 -right-2 w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-cyan-500 z-20"><Activity size={16} strokeWidth={3} /></div>
           <div className="absolute -bottom-6 -left-6 w-11 h-11 bg-indigo-100 flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-indigo-500 rounded-xl z-20 rotate-[-12deg]"><Server size={20} strokeWidth={3} /></div>
-        </div>
-      </section>
+        </motion.div>
+      </motion.section>
 
       {/* EXPLORE FEATURES SECTION */}
       <section id="features" className="w-full bg-white py-16 md:py-24">
-        <div className="w-full max-w-7xl mx-auto px-4 text-center">
-          <div className="inline-flex px-4 py-1.5 bg-[#e0f2fe] border-2 border-slate-900 rounded-xl text-sky-800 text-xs font-extrabold mb-4 shadow-[2px_2px_0px_#0f172a]">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={staggerContainer}
+          className="w-full max-w-7xl mx-auto px-4 text-center"
+        >
+          <motion.div variants={fadeUpVariant} className="inline-flex px-4 py-1.5 bg-[#e0f2fe] border-2 border-slate-900 rounded-xl text-sky-800 text-xs font-extrabold mb-4 shadow-[2px_2px_0px_#0f172a]">
             Core Features
-          </div>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-3 tracking-tight">
+          </motion.div>
+          <motion.h2 variants={fadeUpVariant} className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-3 tracking-tight">
             Cutting-Edge Testing Technology
-          </h2>
-          <p className="text-slate-500 font-bold mb-12 text-sm md:text-base">
+          </motion.h2>
+          <motion.p variants={fadeUpVariant} className="text-slate-500 font-bold mb-12 text-sm md:text-base">
             Solve scalability, speed, and cheating challenges in online testing.
-          </p>
+          </motion.p>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Feature 1 */}
-            <div className="bg-white neo-card p-8 flex flex-col text-left group hover:bg-slate-50 transition-colors">
+            <motion.div variants={fadeUpVariant} className="bg-white neo-card p-8 flex flex-col text-left group hover:bg-slate-50 transition-colors">
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-14 h-14 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-xl font-bold">
                   <ShieldCheck size={28} />
@@ -150,10 +178,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
               <p className="text-sm font-bold text-slate-600 leading-relaxed">
                 Automatically detects suspicious behavior like tab switching or screen sharing. The system instantly alerts and pauses the exam to prevent cheating.
               </p>
-            </div>
+            </motion.div>
 
             {/* Feature 2 */}
-            <div className="bg-white neo-card p-8 flex flex-col text-left group hover:bg-slate-50 transition-colors">
+            <motion.div variants={fadeUpVariant} className="bg-white neo-card p-8 flex flex-col text-left group hover:bg-slate-50 transition-colors">
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-14 h-14 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl font-bold">
                   <Server size={28} />
@@ -166,10 +194,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
               <p className="text-sm font-bold text-slate-600 leading-relaxed">
                 Built to handle thousands of students simultaneously without slowing down. Even if your internet connection drops, your answers are safely saved.
               </p>
-            </div>
+            </motion.div>
 
             {/* Feature 3 */}
-            <div className="bg-white neo-card p-8 flex flex-col text-left group hover:bg-slate-50 transition-colors">
+            <motion.div variants={fadeUpVariant} className="bg-white neo-card p-8 flex flex-col text-left group hover:bg-slate-50 transition-colors">
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-14 h-14 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl font-bold">
                   <BarChart size={28} />
@@ -182,10 +210,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
               <p className="text-sm font-bold text-slate-600 leading-relaxed">
                 Teachers can track the progress of the entire class in real time. Automatic score distribution reports render instantly after the exam.
               </p>
-            </div>
+            </motion.div>
 
             {/* Feature 4 */}
-            <div className="bg-white neo-card p-8 flex flex-col text-left group hover:bg-slate-50 transition-colors">
+            <motion.div variants={fadeUpVariant} className="bg-white neo-card p-8 flex flex-col text-left group hover:bg-slate-50 transition-colors">
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-14 h-14 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center text-xl font-bold">
                   <MonitorPlay size={28} />
@@ -198,9 +226,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
               <p className="text-sm font-bold text-slate-600 leading-relaxed">
                 Clean and intuitive design, helping candidates reduce psychological pressure and maximize focus during the exam.
               </p>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* WHY CHOOSE US SECTION */}
@@ -212,54 +240,66 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
           Why Choose Quizflow?
         </h2>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={staggerContainer}
+          className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6"
+        >
           {/* Card 1 */}
-          <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
+          <motion.div variants={fadeUpVariant} className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
             <div className="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center mb-5"><ShieldCheck size={24} strokeWidth={2.5} /></div>
             <h3 className="font-extrabold text-lg text-slate-900 mb-2">Absolute Security</h3>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
               All data connections are end-to-end encrypted. Students cannot inspect source code to find answers.
             </p>
-          </div>
+          </motion.div>
           {/* Card 2 */}
-          <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
+          <motion.div variants={fadeUpVariant} className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
             <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mb-5"><Zap size={24} strokeWidth={2.5} /></div>
             <h3 className="font-extrabold text-lg text-slate-900 mb-2">Lightning Fast</h3>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
               Built on a robust infrastructure capable of handling up to 10,000 concurrent students smoothly without bottlenecks.
             </p>
-          </div>
+          </motion.div>
           {/* Card 3 */}
-          <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
+          <motion.div variants={fadeUpVariant} className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
             <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center mb-5"><FileCheck size={24} strokeWidth={2.5} /></div>
             <h3 className="font-extrabold text-lg text-slate-900 mb-2">100% Accuracy</h3>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
               Smart automated grading system, supporting various complex multiple-choice question types instantly.
             </p>
-          </div>
+          </motion.div>
           {/* Card 4 */}
-          <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
+          <motion.div variants={fadeUpVariant} className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow text-left flex flex-col items-start">
             <div className="w-12 h-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center mb-5"><Users size={24} strokeWidth={2.5} /></div>
             <h3 className="font-extrabold text-lg text-slate-900 mb-2">Easy Management</h3>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
               Teachers can create question banks and manage exam sessions with just a few intuitive clicks.
             </p>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* TESTIMONIALS SECTION */}
       <section className="w-full bg-white py-16 md:py-24 text-center">
-        <div className="w-full max-w-7xl mx-auto px-4">
-          <div className="inline-flex px-4 py-1.5 bg-[#fef08a] border-2 border-slate-900 rounded-xl text-yellow-800 text-xs font-extrabold mb-4 shadow-[2px_2px_0px_#0f172a]">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={staggerContainer}
+          className="w-full max-w-7xl mx-auto px-4"
+        >
+          <motion.div variants={fadeUpVariant} className="inline-flex px-4 py-1.5 bg-[#fef08a] border-2 border-slate-900 rounded-xl text-yellow-800 text-xs font-extrabold mb-4 shadow-[2px_2px_0px_#0f172a]">
             Testimonials
-          </div>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-12 tracking-tight">
+          </motion.div>
+          <motion.h2 variants={fadeUpVariant} className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-12 tracking-tight">
             What Our Customers Say
-          </h2>
+          </motion.h2>
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {/* Review 1 */}
-            <div className="bg-white p-6 neo-card text-left flex flex-col justify-between">
+            <motion.div variants={fadeUpVariant} className="bg-white p-6 neo-card text-left flex flex-col justify-between">
               <div>
                 <div className="text-amber-500 flex gap-1 mb-4">
                   {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" strokeWidth={0} />)}
@@ -275,9 +315,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
                   <p className="text-[10px] text-slate-500 font-bold">High School Math Teacher</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
             {/* Review 2 */}
-            <div className="bg-white p-6 neo-card text-left flex flex-col justify-between">
+            <motion.div variants={fadeUpVariant} className="bg-white p-6 neo-card text-left flex flex-col justify-between">
               <div>
                 <div className="text-amber-500 flex gap-1 mb-4">
                   {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" strokeWidth={0} />)}
@@ -293,9 +333,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
                   <p className="text-[10px] text-slate-500 font-bold">IT Student</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
             {/* Review 3 */}
-            <div className="bg-white p-6 neo-card text-left flex flex-col justify-between">
+            <motion.div variants={fadeUpVariant} className="bg-white p-6 neo-card text-left flex flex-col justify-between">
               <div>
                 <div className="text-amber-500 flex gap-1 mb-4">
                   {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" strokeWidth={0} />)}
@@ -311,15 +351,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
                   <p className="text-[10px] text-slate-500 font-bold">Head of Department</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* CTA SECTION */}
       <section id="cta" className="w-full bg-[#bfdbfe] py-16 md:py-24">
         <div className="w-full max-w-4xl mx-auto px-4">
-          <div className="bg-white neo-card p-8 md:p-12 text-center">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeUpVariant}
+            className="bg-white neo-card p-8 md:p-12 text-center"
+          >
             <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">
               Ready to Elevate Your Exam Quality?
             </h2>
@@ -344,7 +390,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isLoggedIn, onOpenLogi
               <span>✓ No Credit Card Required</span>
               <span>✓ Free tier limits 50 candidates/session</span>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
     </>

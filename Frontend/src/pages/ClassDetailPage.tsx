@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Clock, Plus, Users, Hash, FileText, Download, Upload, File as FileIcon, Image as ImageIcon } from 'lucide-react'
+import { ArrowLeft, Clock, Plus, Users, Hash, FileText, Download, Upload, File as FileIcon, Image as ImageIcon, MessageSquare } from 'lucide-react'
 import { apiFetch, apiFetchMultipart } from '../utils/api'
 import { useAuthStore } from '../store/authStore'
 import { Navbar } from '../components/Navbar'
@@ -58,6 +58,7 @@ export const ClassDetailPage: React.FC = () => {
   const [endTime, setEndTime] = useState('')
   const [durationMinutes, setDurationMinutes] = useState(45)
   const [selectedExamId, setSelectedExamId] = useState<number>(0)
+  const [activeTab, setActiveTab] = useState<'exams' | 'chat'>('exams')
 
   const [sessionPage, setSessionPage] = useState(1)
   const sessionsPerPage = 4
@@ -69,6 +70,16 @@ export const ClassDetailPage: React.FC = () => {
     if (userRole === 'TEACHER') {
       loadExams()
     }
+
+    const handleBadgeUpdate = (e: any) => {
+      const { classId: eventClassId, unreadCount } = e.detail
+      if (Number(eventClassId) === Number(classId)) {
+        setClassroom(prev => prev ? { ...prev, unreadMessageCount: unreadCount } : prev)
+      }
+    }
+
+    window.addEventListener('chatBadgeUpdate', handleBadgeUpdate)
+    return () => window.removeEventListener('chatBadgeUpdate', handleBadgeUpdate)
   }, [classId])
 
   const loadClassroom = async () => {
@@ -228,26 +239,63 @@ export const ClassDetailPage: React.FC = () => {
         </button>
 
         {/* Header Lớp học */}
-        <div className="bg-neo-purple text-white rounded-2xl p-8 border-4 border-slate-900 shadow-[8px_8px_0px_#0f172a] mb-8 relative overflow-hidden">
-          <div className="relative z-10">
-            <h1 className="text-4xl font-black tracking-tight mb-4">{classroom.name}</h1>
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2 text-purple-100 font-bold">
-                <Users size={20} /> {classroom.memberCount} thành viên
-              </div>
-              <div className="flex items-center gap-2 text-purple-100 font-bold">
-                <Hash size={20} /> Mã lớp: <span className="bg-white/20 px-2 py-1 rounded text-white">{classroom.code}</span>
-              </div>
+        <div className="bg-neo-purple text-white rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow mb-6 relative overflow-hidden flex flex-wrap items-center justify-between gap-4">
+          <div className="relative z-10 flex-1 min-w-0">
+            <h1 className="text-3xl font-black tracking-tight truncate">{classroom.name}</h1>
+          </div>
+          <div className="relative z-10 flex flex-wrap items-center gap-6 text-sm shrink-0">
+            <div className="flex items-center gap-2 text-purple-100 font-bold">
+              <span className="opacity-80">GV:</span> {classroom.teacherName || 'N/A'}
+            </div>
+            <div className="flex items-center gap-2 text-purple-100 font-bold">
+              <Users size={18} /> {classroom.memberCount || 0} học sinh
+            </div>
+            <div className="flex items-center gap-2 text-purple-100 font-bold">
+              <Hash size={18} /> Mã: <span className="bg-white/20 px-2 py-1 rounded text-white">{classroom.code}</span>
             </div>
           </div>
-          <div className="absolute -bottom-10 -right-10 opacity-10">
-            <FileText size={200} />
+          <div className="absolute -bottom-10 -left-10 opacity-10 pointer-events-none">
+            <FileText size={150} />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Cột trái: Danh sách kỳ thi (60-70%) */}
-          <div className="lg:col-span-2">
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Tabs bên trái */}
+          <div className="w-full md:w-64 flex flex-col gap-3 shrink-0">
+            <button
+              onClick={() => setActiveTab('exams')}
+              className={`px-6 py-3.5 rounded-2xl border-2 transition-all text-sm font-black flex items-center gap-3 text-left ${
+                activeTab === 'exams'
+                  ? 'bg-neo-blue text-white border-neo-blue shadow-sm'
+                  : 'bg-white text-slate-500 border-slate-100 hover:border-neo-blue hover:text-neo-blue'
+              }`}
+            >
+              <FileText size={18} /> Danh sách kỳ thi
+            </button>
+            <button
+              onClick={() => setActiveTab('chat')}
+              className={`px-6 py-3.5 rounded-2xl border-2 transition-all text-sm font-black flex items-center justify-between gap-3 text-left ${
+                activeTab === 'chat'
+                  ? 'bg-neo-blue text-white border-neo-blue shadow-sm'
+                  : 'bg-white text-slate-500 border-slate-100 hover:border-neo-blue hover:text-neo-blue'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <MessageSquare size={18} /> Chat & Tài liệu
+              </div>
+              {(classroom.unreadMessageCount && classroom.unreadMessageCount > 0) ? (
+                <span className={`min-w-[20px] h-5 px-1 flex items-center justify-center text-[10px] font-black rounded-full shadow-sm ${activeTab === 'chat' ? 'bg-white text-neo-blue' : 'bg-neo-red text-white'}`}>
+                  {classroom.unreadMessageCount > 99 ? '99+' : classroom.unreadMessageCount}
+                </span>
+              ) : null}
+            </button>
+          </div>
+
+          {/* Nội dung bên phải */}
+          <div className="flex-1 min-w-0">
+
+        {activeTab === 'exams' && (
+          <div className="w-full">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-black text-slate-900">Danh sách Kỳ Thi</h2>
               {userRole === 'TEACHER' && (
@@ -334,59 +382,66 @@ export const ClassDetailPage: React.FC = () => {
                 )}
               </div>
             )}
+          </div>
+        )}
 
-            {/* Danh sách Tài liệu */}
-            <div className="flex justify-between items-center mt-12 mb-6">
-              <h2 className="text-2xl font-black text-slate-900">Tài Liệu Lớp Học</h2>
-              {userRole === 'TEACHER' && (
-                <button
-                  onClick={() => setIsUploadModalOpen(true)}
-                  className="flex items-center gap-2 bg-neo-yellow text-slate-900 px-5 py-2.5 rounded-xl font-black neo-btn"
-                >
-                  <Upload size={20} /> Tải tài liệu
-                </button>
+        {activeTab === 'chat' && (
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <div className="lg:col-span-2 flex flex-col gap-6">
+              <div className="flex justify-between items-center mb-2">
+                <h2 className="text-2xl font-black text-slate-900">Tài Liệu Lớp Học</h2>
+                {userRole === 'TEACHER' && (
+                  <button
+                    onClick={() => setIsUploadModalOpen(true)}
+                    className="flex items-center gap-2 bg-neo-yellow text-slate-900 px-5 py-2.5 rounded-xl font-black neo-btn"
+                  >
+                    <Upload size={20} /> Tải tài liệu
+                  </button>
+                )}
+              </div>
+
+              {documents.length === 0 ? (
+                <div className="bg-white border-2 border-slate-900 rounded-xl p-12 text-center shadow-[4px_4px_0px_#0f172a]">
+                  <FileText size={48} className="mx-auto mb-4 text-slate-300" />
+                  <h3 className="text-xl font-black text-slate-900 mb-2">Chưa có tài liệu nào</h3>
+                  <p className="text-slate-500 font-bold">
+                    {userRole === 'TEACHER' ? 'Hãy tải lên tài liệu học tập cho lớp.' : 'Lớp học hiện chưa có tài liệu.'}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4">
+                  {documents.map(doc => (
+                    <div key={doc.id} className="bg-white border-2 border-slate-900 rounded-xl p-4 shadow-[4px_4px_0px_#0f172a] flex items-start gap-4">
+                      <div className="bg-slate-100 p-3 rounded-xl border-2 border-slate-900">
+                        {getFileIcon(doc.format)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-black text-slate-900 truncate" title={doc.fileName}>{doc.fileName}</h3>
+                        <div className="text-xs font-bold text-slate-500 mt-1 flex flex-col gap-1">
+                          <span>{formatBytes(doc.sizeBytes)} • {doc.format?.toUpperCase()}</span>
+                          <span>Bởi {doc.uploaderName} • {new Date(doc.uploadedAt).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                      <a
+                        href={doc.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-neo-blue text-white p-2 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0f172a] transition-all"
+                      >
+                        <Download size={18} />
+                      </a>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
-
-            {documents.length === 0 ? (
-              <div className="bg-white border-2 border-slate-900 rounded-xl p-12 text-center shadow-[4px_4px_0px_#0f172a]">
-                <FileText size={48} className="mx-auto mb-4 text-slate-300" />
-                <h3 className="text-xl font-black text-slate-900 mb-2">Chưa có tài liệu nào</h3>
-                <p className="text-slate-500 font-bold">
-                  {userRole === 'TEACHER' ? 'Hãy tải lên tài liệu học tập cho lớp.' : 'Lớp học hiện chưa có tài liệu.'}
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {documents.map(doc => (
-                  <div key={doc.id} className="bg-white border-2 border-slate-900 rounded-xl p-4 shadow-[4px_4px_0px_#0f172a] flex items-start gap-4">
-                    <div className="bg-slate-100 p-3 rounded-xl border-2 border-slate-900">
-                      {getFileIcon(doc.format)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-black text-slate-900 truncate" title={doc.fileName}>{doc.fileName}</h3>
-                      <div className="text-xs font-bold text-slate-500 mt-1 flex flex-col gap-1">
-                        <span>{formatBytes(doc.sizeBytes)} • {doc.format?.toUpperCase()}</span>
-                        <span>Bởi {doc.uploaderName} • {new Date(doc.uploadedAt).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    <a
-                      href={doc.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-neo-blue text-white p-2 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0f172a] transition-all"
-                    >
-                      <Download size={18} />
-                    </a>
-                  </div>
-                ))}
-              </div>
-            )}
+            
+            <div className="lg:col-span-3 h-[600px]">
+              <ClassChatBox classId={Number(classId)} unreadCount={classroom.unreadMessageCount || 0} />
+            </div>
           </div>
+        )}
 
-          {/* Cột phải: Chatbox (30-40%) */}
-          <div className="lg:col-span-1">
-            <ClassChatBox classId={Number(classId)} unreadCount={classroom.unreadMessageCount || 0} />
           </div>
         </div>
 
