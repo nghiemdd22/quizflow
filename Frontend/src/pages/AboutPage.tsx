@@ -24,14 +24,14 @@ export const AboutPage: React.FC = () => {
       {/* Core Values / Mission */}
       <section className="w-full max-w-5xl mx-auto mb-16">
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-sky-100 text-sky-900 neo-card p-8 flex flex-col justify-center">
+          <div className="bg-sky-100 text-sky-900 rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow p-8 flex flex-col justify-center">
             <h2 className="text-2xl font-black mb-4">Our Mission</h2>
             <p className="text-sky-700 font-bold leading-relaxed text-base">
               To empower educators and institutions with a reliable, ultra-fast, and secure testing environment that guarantees fair play and eliminates the stress of technical failures during exams.
             </p>
           </div>
           <div className="grid grid-rows-2 gap-6">
-            <div className="bg-white neo-card p-6 flex items-center gap-5">
+            <div className="bg-white rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow p-6 flex items-center gap-5">
               <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
                 <Zap size={28} />
               </div>
@@ -40,7 +40,7 @@ export const AboutPage: React.FC = () => {
                 <p className="text-slate-600 font-bold mt-1 text-sm">Built to handle massive scale.</p>
               </div>
             </div>
-            <div className="bg-white neo-card p-6 flex items-center gap-5">
+            <div className="bg-white rounded-3xl border-2 border-slate-100 shadow-sm hover:shadow-md transition-shadow p-6 flex items-center gap-5">
               <div className="w-14 h-14 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
                 <ShieldCheck size={28} />
               </div>

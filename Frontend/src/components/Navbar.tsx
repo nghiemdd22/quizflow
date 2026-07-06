@@ -85,10 +85,22 @@ export const Navbar: React.FC<NavbarProps> = ({
               {role === 'TEACHER' ? (
                 <>
                   <Link to="/teacher-dashboard" data-text="Tổng quan" className={`nav-item transition-all ${location.pathname === '/teacher-dashboard' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Tổng quan</Link>
-                  <Link to="/question-bank" data-text="Ngân hàng câu hỏi" className={`nav-item transition-all ${location.pathname.startsWith('/question-bank') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Ngân hàng câu hỏi</Link>
                   <Link to="/classes" data-text="Lớp học" className={`nav-item transition-all ${location.pathname.startsWith('/classes') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Lớp học</Link>
-                  <Link to="/teacher/exams" data-text="Quản lý Đề thi" className={`nav-item transition-all ${location.pathname.startsWith('/teacher/exams') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Quản lý Đề thi</Link>
-                  <Link to="/teacher/reports" data-text="Báo cáo & Lịch sử" className={`nav-item transition-all ${location.pathname.startsWith('/teacher/reports') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Báo cáo & Lịch sử</Link>
+                  
+                  {/* Quản lý Thi cử Dropdown */}
+                  <div className="relative group/exams cursor-pointer flex items-center h-full">
+                    <span className={`nav-item flex items-center gap-1 transition-all ${['/question-bank', '/teacher/exams', '/teacher/reports'].some(p => location.pathname.startsWith(p)) ? 'text-slate-900 font-black' : 'text-slate-500 hover:text-slate-900 hover:font-black'}`}>
+                      Quản lý Thi ▾
+                    </span>
+                    <div className="absolute top-[100%] left-1/2 -translate-x-1/2 pt-4 w-52 opacity-0 invisible group-hover/exams:opacity-100 group-hover/exams:visible transition-all duration-200 z-50">
+                      <div className="bg-white border-2 border-slate-900 rounded-xl shadow-[4px_4px_0px_#0f172a] flex flex-col p-2">
+                        <Link to="/question-bank" className="px-4 py-3 hover:bg-slate-100 rounded-lg font-bold text-slate-700 hover:text-slate-900 text-sm transition-colors text-left">Ngân hàng câu hỏi</Link>
+                        <Link to="/teacher/exams" className="px-4 py-3 hover:bg-slate-100 rounded-lg font-bold text-slate-700 hover:text-slate-900 text-sm transition-colors text-left">Quản lý Đề thi</Link>
+                        <Link to="/teacher/reports" className="px-4 py-3 hover:bg-slate-100 rounded-lg font-bold text-slate-700 hover:text-slate-900 text-sm transition-colors text-left">Báo cáo & Lịch sử</Link>
+                      </div>
+                    </div>
+                  </div>
+
                   <Link to="/forum" data-text="Diễn đàn" className={`nav-item transition-all ${location.pathname.startsWith('/forum') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Diễn đàn</Link>
                   <Link to="/about" data-text="About" className={`nav-item transition-all ${location.pathname === '/about' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>About</Link>
                 </>

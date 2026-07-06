@@ -221,7 +221,7 @@ export const ExamSessionsPage: React.FC = () => {
       {!selectedExam ? (
         // EXAM LIST VIEW
         <>
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b-4 border-slate-900 pb-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
               <h1 className="text-4xl font-black text-slate-900 flex items-center gap-3">
                 <FileText className="w-10 h-10 text-neo-blue" strokeWidth={2.5} />
@@ -238,30 +238,29 @@ export const ExamSessionsPage: React.FC = () => {
             </button>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {exams.map(exam => (
-              <div key={exam.id} className="bg-white neo-card p-6 flex flex-col justify-between hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_#0f172a] transition-all">
+              <div key={exam.id} className="bg-white neo-card p-4 flex flex-col justify-between hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_#0f172a] transition-all">
                 <div>
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-xl font-extrabold line-clamp-2 pr-2">{exam.title}</h3>
-                    <span className={`shrink-0 text-[10px] font-black px-2 py-1 border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a] ${exam.status === 'DRAFT' ? 'bg-neo-yellow text-slate-900' : 'bg-neo-green text-white'}`}>
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white bg-neo-blue">
+                      <FileText className="w-5 h-5" strokeWidth={2.5} />
+                    </div>
+                    <span className={`shrink-0 text-[10px] font-black px-2 py-1 border-2 border-slate-900 rounded-lg shadow-[1px_1px_0px_#0f172a] ${exam.status === 'DRAFT' ? 'bg-neo-yellow text-slate-900' : 'bg-neo-green text-white'}`}>
                       {exam.status}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 mb-6">
-                    <span className="bg-slate-100 text-slate-600 font-bold text-xs px-2 py-1 rounded border-2 border-slate-900">
-                      Môn: {exam.subjectName}
-                    </span>
-                  </div>
+                  <h3 className="text-lg font-extrabold mb-1 line-clamp-1">{exam.title}</h3>
+                  <p className="text-xs font-bold text-slate-500 mb-4 line-clamp-1">Môn: {exam.subjectName}</p>
                 </div>
                 <button
                   onClick={() => {
                     setSelectedExam(exam)
                     loadSessions(exam.id)
                   }}
-                  className="w-full py-3 bg-neo-blue hover:bg-blue-600 text-white font-black rounded-xl border-2 border-slate-900 shadow-[3px_3px_0px_#0f172a] transition-all flex justify-center items-center gap-2"
+                  className="w-full py-2 text-sm bg-slate-100 border-2 border-slate-900 rounded-xl font-black hover:bg-slate-900 hover:text-white transition-colors flex justify-center items-center gap-2 group"
                 >
-                  <PlayCircle className="w-5 h-5" />
+                  <FileText className="w-4 h-4" />
                   Quản lý Đề thi
                 </button>
               </div>
@@ -284,7 +283,7 @@ export const ExamSessionsPage: React.FC = () => {
       ) : (
         // EXAM SESSION LIST VIEW
         <>
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 border-b-4 border-slate-900 pb-6 gap-4">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
             <div>
               <button onClick={() => setSelectedExam(null)} className="flex items-center text-slate-500 font-bold hover:text-neo-blue transition-colors mb-2">
                 <ArrowLeft className="w-4 h-4 mr-1" /> Quay lại danh sách đề thi

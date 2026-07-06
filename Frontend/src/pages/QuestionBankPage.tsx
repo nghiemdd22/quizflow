@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useReactToPrint } from 'react-to-print'
 import { apiFetch, apiFetchMultipart } from '../utils/api'
 import { useAuthStore } from '../store/authStore'
+import { useParams, useNavigate } from 'react-router-dom'
 import { PrintableExam } from '../components/PrintableExam'
 import { 
   FolderOpen, 
@@ -156,6 +157,9 @@ const SortableQuestion = ({ q, idx, isMultiple, meta }: { q: Question, idx: numb
 }
 
 export const QuestionBankPage: React.FC = () => {
+  const { bankId } = useParams()
+  const navigate = useNavigate()
+  
   const [banks, setBanks] = useState<QuestionBank[]>([])
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [selectedBank, setSelectedBank] = useState<QuestionBank | null>(null)
@@ -202,12 +206,7 @@ export const QuestionBankPage: React.FC = () => {
     }
   }, [])
 
-  useEffect(() => {
-    loadBanks()
-    loadSubjects()
-  }, [loadBanks, loadSubjects])
-
-  const loadQuestions = async (bankId: number) => {
+  const loadQuestions = React.useCallback(async (bankId: number) => {
     try {
       const res = await apiFetch(`/api/v1/questions/bank/${bankId}`)
       if (res.ok) {
@@ -217,7 +216,27 @@ export const QuestionBankPage: React.FC = () => {
     } catch {
       console.error('Error loading questions')
     }
-  }
+  }, [])
+
+  // Initialize state based on URL
+  useEffect(() => {
+    loadBanks()
+    loadSubjects()
+  }, [loadBanks, loadSubjects])
+
+  useEffect(() => {
+    if (bankId && banks.length > 0) {
+      const bank = banks.find(b => b.id === Number(bankId))
+      if (bank) {
+        setSelectedBank(bank)
+        loadQuestions(bank.id)
+      } else {
+        setSelectedBank(null)
+      }
+    } else if (!bankId) {
+      setSelectedBank(null)
+    }
+  }, [bankId, banks, loadQuestions])
 
   const handleCreateBank = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -414,7 +433,7 @@ export const QuestionBankPage: React.FC = () => {
       {!selectedBank ? (
         // VIEW 1: BANK LIST
         <>
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b-4 border-slate-900 pb-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
               <h1 className="text-4xl font-black text-slate-900 flex items-center gap-3">
                 <FolderOpen className="w-10 h-10 text-neo-purple" strokeWidth={2.5} />
@@ -444,31 +463,29 @@ export const QuestionBankPage: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {banks.map((bank, index) => {
-                const colors = ['bg-neo-blue', 'bg-neo-green', 'bg-neo-coral', 'bg-neo-purple', 'bg-neo-yellow']
-                const badgeColor = colors[index % colors.length]
+                const badgeColor = 'bg-neo-purple'
 
                 return (
-                  <div key={bank.id} className="bg-white neo-card p-6 flex flex-col justify-between hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_#0f172a] transition-all">
+                  <div key={bank.id} className="bg-white neo-card p-4 flex flex-col justify-between hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_#0f172a] transition-all">
                     <div>
-                      <div className="flex justify-between items-start mb-4">
-                        <div className={`w-12 h-12 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] flex items-center justify-center text-white ${badgeColor}`}>
-                          <FolderOpen className="w-6 h-6" strokeWidth={2.5} />
+                      <div className="flex justify-between items-start mb-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white ${badgeColor}`}>
+                          <FolderOpen className="w-5 h-5" strokeWidth={2.5} />
                         </div>
-                        <span className="text-xs font-black px-2 py-1 bg-slate-100 border-2 border-slate-900 rounded-lg shadow-[1px_1px_0px_#0f172a]">
+                        <span className="text-[10px] font-black px-2 py-1 bg-slate-100 border-2 border-slate-900 rounded-lg shadow-[1px_1px_0px_#0f172a]">
                           {getSubjectName(bank.subjectId)}
                         </span>
                       </div>
-                      <h3 className="text-xl font-extrabold mb-2 line-clamp-1">{bank.title}</h3>
-                      <p className="text-sm font-bold text-slate-500 mb-6 line-clamp-2">{bank.description}</p>
+                      <h3 className="text-lg font-extrabold mb-1 line-clamp-1">{bank.title}</h3>
+                      <p className="text-xs font-bold text-slate-500 mb-4 line-clamp-2">{bank.description}</p>
                     </div>
                     <button
                       onClick={() => {
-                        setSelectedBank(bank)
-                        loadQuestions(bank.id)
+                        navigate(`/question-bank/${bank.id}`)
                       }}
-                      className="w-full py-3 bg-slate-100 border-2 border-slate-900 rounded-xl font-black hover:bg-slate-900 hover:text-white transition-colors flex justify-center items-center gap-2 group"
+                      className="w-full py-2 text-sm bg-slate-100 border-2 border-slate-900 rounded-xl font-black hover:bg-slate-900 hover:text-white transition-colors flex justify-center items-center gap-2 group"
                     >
                       <FileText className="w-4 h-4" />
                       Mở Ngân hàng
@@ -482,10 +499,10 @@ export const QuestionBankPage: React.FC = () => {
       ) : (
         // VIEW 2: QUESTION LIST INSIDE A BANK
         <>
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 border-b-4 border-slate-900 pb-6 gap-4">
-            <div>
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
+            <div className="flex-1">
               <button 
-                onClick={() => setSelectedBank(null)}
+                onClick={() => navigate('/question-bank')}
                 className="flex items-center text-slate-500 font-bold hover:text-neo-blue transition-colors mb-2"
               >
                 <ArrowLeft className="w-4 h-4 mr-1" /> Quay lại danh sách
@@ -520,7 +537,7 @@ export const QuestionBankPage: React.FC = () => {
 
               <button
                 onClick={() => handlePrintPdf()}
-                className="flex-1 lg:flex-none px-4 py-2 bg-slate-900 text-white neo-btn text-sm flex items-center justify-center group"
+                className="flex-1 lg:flex-none px-4 py-2 bg-neo-coral hover:bg-red-500 text-white neo-btn text-sm flex items-center justify-center group"
                 title="In đề thi ra PDF"
               >
                 <Printer className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
@@ -536,15 +553,6 @@ export const QuestionBankPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex gap-4 mb-8">
-            <button
-              className="px-4 py-2 bg-slate-200 text-slate-400 neo-btn text-sm flex items-center cursor-not-allowed opacity-70"
-              disabled
-              title="Tính năng sẽ sớm ra mắt"
-            >
-              <FileText className="w-4 h-4 mr-2" /> In PDF (Coming Soon)
-            </button>
-          </div>
 
           <div className="flex flex-col gap-4">
             <DndContext 

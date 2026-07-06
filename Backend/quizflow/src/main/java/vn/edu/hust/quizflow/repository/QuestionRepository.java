@@ -21,4 +21,7 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
      */
     @org.springframework.data.jpa.repository.Query("SELECT COALESCE(MAX(q.orderIndex), 0) FROM Question q WHERE q.questionBank.id = :bankId")
     Integer findMaxOrderIndexByBankId(@org.springframework.data.repository.query.Param("bankId") Long bankId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(q) FROM Question q WHERE q.questionBank.teacher.id = :teacherId")
+    long countQuestionsByTeacherId(@org.springframework.data.repository.query.Param("teacherId") Long teacherId);
 }
