@@ -26,6 +26,11 @@ public class RabbitMQConfig {
     public static final String SUBMIT_EXAM_DLX = "quiz.submit.dlx";
     public static final String SUBMIT_EXAM_DLQ_ROUTING_KEY = "quiz.submit.dlq.routing.key";
 
+    // Khai báo Queue đồng bộ Meilisearch
+    public static final String MEILISEARCH_SYNC_QUEUE = "meilisearch.sync.queue";
+    public static final String MEILISEARCH_SYNC_EXCHANGE = "meilisearch.sync.exchange";
+    public static final String MEILISEARCH_SYNC_ROUTING_KEY = "meilisearch.sync.routing.key";
+
     // ==========================================
     // CẤU HÌNH LUỒNG NỘP BÀI CHÍNH (MAIN CONFIG)
     // ==========================================
@@ -87,6 +92,25 @@ public class RabbitMQConfig {
     @Bean
     public Binding deadLetterBinding(Queue deadLetterQueue, DirectExchange deadLetterExchange) {
         return BindingBuilder.bind(deadLetterQueue).to(deadLetterExchange).with(SUBMIT_EXAM_DLQ_ROUTING_KEY);
+    }
+
+    // ==========================================
+    // CẤU HÌNH LUỒNG ĐỒNG BỘ MEILISEARCH
+    // ==========================================
+
+    @Bean
+    public DirectExchange meilisearchSyncExchange() {
+        return new DirectExchange(MEILISEARCH_SYNC_EXCHANGE);
+    }
+
+    @Bean
+    public Queue meilisearchSyncQueue() {
+        return QueueBuilder.durable(MEILISEARCH_SYNC_QUEUE).build();
+    }
+
+    @Bean
+    public Binding meilisearchSyncBinding(Queue meilisearchSyncQueue, DirectExchange meilisearchSyncExchange) {
+        return BindingBuilder.bind(meilisearchSyncQueue).to(meilisearchSyncExchange).with(MEILISEARCH_SYNC_ROUTING_KEY);
     }
 
     // ==========================================

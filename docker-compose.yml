@@ -37,7 +37,20 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
 
+  meilisearch:
+    image: getmeili/meilisearch:v1.11
+    container_name: quizflow-meilisearch
+    restart: always
+    environment:
+      - MEILI_MASTER_KEY=masterKey123
+      - MEILI_ENV=development
+    ports:
+      - "7700:7700"
+    volumes:
+      - meilisearch_data:/meili_data
+
 volumes:
   mysql_data:
   redis_data:
   rabbitmq_data:
+  meilisearch_data:

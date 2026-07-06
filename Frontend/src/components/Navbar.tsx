@@ -60,6 +60,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <Link to="/classes" data-text="Lớp học" className={`nav-item transition-all ${location.pathname.startsWith('/classes') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Lớp học</Link>
                   <Link to="/teacher/exams" data-text="Quản lý Đề thi" className={`nav-item transition-all ${location.pathname.startsWith('/teacher/exams') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Quản lý Đề thi</Link>
                   <Link to="/teacher/reports" data-text="Báo cáo & Lịch sử" className={`nav-item transition-all ${location.pathname.startsWith('/teacher/reports') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Báo cáo & Lịch sử</Link>
+                  <Link to="/forum" data-text="Diễn đàn" className={`nav-item transition-all ${location.pathname.startsWith('/forum') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Diễn đàn</Link>
                   <Link to="/about" data-text="About" className={`nav-item transition-all ${location.pathname === '/about' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>About</Link>
                 </>
               ) : role === 'STUDENT' ? (
@@ -67,11 +68,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <Link to="/" data-text="Home" className={`nav-item transition-all ${location.pathname === '/' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Home</Link>
                   <Link to="/classes" data-text="My Classes" className={`nav-item transition-all ${location.pathname.startsWith('/classes') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>My Classes</Link>
                   <Link to="/exam-history" data-text="History" className={`nav-item transition-all ${location.pathname.startsWith('/exam-history') || location.pathname.startsWith('/exam-review') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>History</Link>
+                  <Link to="/forum" data-text="Diễn đàn" className={`nav-item transition-all ${location.pathname.startsWith('/forum') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Diễn đàn</Link>
                   <Link to="/about" data-text="About" className={`nav-item transition-all ${location.pathname === '/about' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>About</Link>
                 </>
               ) : (
                 <>
                   <Link to="/" data-text="Home" className={`nav-item transition-all ${location.pathname === '/' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Home</Link>
+                  <Link to="/forum" data-text="Diễn đàn" className={`nav-item transition-all ${location.pathname.startsWith('/forum') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Diễn đàn</Link>
                   <Link to="/about" data-text="About" className={`nav-item transition-all ${location.pathname === '/about' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>About</Link>
                 </>
               )}

@@ -20,6 +20,9 @@ import { ProctoringPage } from './pages/ProctoringPage'
 import { AboutPage } from './pages/AboutPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { SettingsPage } from './pages/SettingsPage'
+import { ForumPage } from './pages/ForumPage'
+import { CreatePostPage } from './pages/CreatePostPage'
+import { PostDetailPage } from './pages/PostDetailPage'
 import type { Course } from './types'
 import { useAuthStore } from './store/authStore'
 
@@ -171,6 +174,9 @@ function App() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+            <Route path="/forum" element={<ForumPage />} />
+            <Route path="/forum/create" element={<ProtectedRoute><CreatePostPage /></ProtectedRoute>} />
+            <Route path="/forum/:id" element={<PostDetailPage />} />
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />

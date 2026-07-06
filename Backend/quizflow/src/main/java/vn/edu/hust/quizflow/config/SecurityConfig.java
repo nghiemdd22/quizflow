@@ -46,6 +46,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Các endpoint API đăng nhập, đăng ký (/api/v1/auth/**) được phép truy cập tự do không cần token
                 .requestMatchers("/api/v1/auth/**").permitAll()
+                // Cho phép khách vãng lai đọc bài viết và xem thẻ trên diễn đàn
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/posts/**", "/api/v1/tags").permitAll()
                 // Cho phép truy cập tự do vào các metric giám sát hệ thống của Actuator
                 .requestMatchers("/actuator/**").permitAll()
                 // Cho phép WebSocket Upgrade request
