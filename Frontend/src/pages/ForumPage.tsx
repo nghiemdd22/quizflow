@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { MessageSquare, ArrowUp, ArrowDown, Paperclip, Search, Share2, Award, Shield, Info } from 'lucide-react'
+import { MessageSquare, ArrowUp, ArrowDown, Paperclip, Search, Share2, Award, Shield, Info, Plus } from 'lucide-react'
 import { apiFetch } from '../utils/api'
 import { useAuthStore } from '../store/authStore'
 import { formatDistanceToNow } from 'date-fns'
@@ -82,9 +82,9 @@ export function ForumPage() {
           <h1 className="text-3xl font-black text-slate-900">Diễn đàn Học tập</h1>
           <button 
             onClick={() => isLoggedIn ? navigate('/forum/create') : alert('Cần đăng nhập')}
-            className="px-6 py-2 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 bg-neo-blue text-white px-6 py-3 rounded-xl font-black neo-btn shrink-0"
           >
-            + Viết bài mới
+            <Plus size={20} strokeWidth={3} /> Viết bài mới
           </button>
         </div>
 

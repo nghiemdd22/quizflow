@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CheatLogDTO {
-    private String student;
-    private String time; // format HH:mm:ss
-    private String event;
-    private String severity; // WARNING, CRITICAL
+public class ScoreDistributionDTO {
+    private String range;
+    private int count;
 }

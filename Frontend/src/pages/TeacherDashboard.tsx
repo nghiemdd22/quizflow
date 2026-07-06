@@ -73,9 +73,9 @@ export const TeacherDashboard: React.FC = () => {
         </div>
         <button 
           onClick={() => {}}
-          className="px-6 py-3 bg-neo-green hover:bg-green-500 text-white text-lg font-bold rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all flex items-center shrink-0"
+          className="flex items-center gap-2 bg-neo-green text-white px-6 py-3 rounded-xl font-black neo-btn shrink-0"
         >
-          <BarChart3 className="w-6 h-6 mr-2" strokeWidth={2.5} />
+          <BarChart3 size={20} strokeWidth={3} />
           Xuất excel bảng điểm
         </button>
       </div>
@@ -99,12 +99,12 @@ export const TeacherDashboard: React.FC = () => {
           
           {/* Active Sessions */}
           <div className="bg-white border-2 border-slate-100 rounded-3xl shadow-sm overflow-hidden">
-            <div className="bg-slate-50 border-b-2 border-slate-100 px-6 py-4 flex justify-between items-center">
+            <div className="bg-neo-coral border-b-2 border-red-500 px-6 py-4 flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <Activity className="w-6 h-6 text-neo-green animate-pulse" />
-                <h2 className="text-xl font-black text-slate-900">Giám sát Ca thi đang diễn ra</h2>
+                <Activity className="w-6 h-6 text-white animate-pulse" />
+                <h2 className="text-xl font-black text-white">Giám sát Ca thi đang diễn ra</h2>
               </div>
-              <span className="bg-green-100 text-green-700 font-bold px-3 py-1 text-xs rounded-full">
+              <span className="bg-white text-neo-coral font-bold px-3 py-1 text-xs rounded-full shadow-sm">
                 {statsData.activeSessionsList?.length || 0} Active
               </span>
             </div>

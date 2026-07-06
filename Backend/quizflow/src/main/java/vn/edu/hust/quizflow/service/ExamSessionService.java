@@ -345,8 +345,9 @@ public class ExamSessionService {
             throw new IllegalArgumentException("Bài thi này đã được nộp hoặc đang được chấm điểm.");
         }
 
-        // Đổi trạng thái sang Đang Chấm Điểm (GRADING)
+        // Đổi trạng thái sang Đang Chấm Điểm (GRADING) và lưu thời gian nộp bài
         submission.setStatus(SubmissionStatus.GRADING);
+        submission.setSubmittedAt(LocalDateTime.now());
         examSubmissionRepository.save(submission);
 
         // Lấy "Nguồn chân lý" từ Redis (tất cả các cú click của học sinh trong thời

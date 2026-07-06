@@ -171,6 +171,7 @@ function App() {
               <Route path="/question-bank/:bankId" element={<ProtectedRoute allowedRoles={['TEACHER']}><PageWrapper><QuestionBankPage /></PageWrapper></ProtectedRoute>} />
               <Route path="/teacher/exams" element={<ProtectedRoute allowedRoles={['TEACHER']}><PageWrapper><ExamSessionsPage /></PageWrapper></ProtectedRoute>} />
               <Route path="/teacher/reports" element={<ProtectedRoute allowedRoles={['TEACHER']}><PageWrapper><ReportsPage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/teacher/reports/:sessionId" element={<ProtectedRoute allowedRoles={['TEACHER']}><PageWrapper><ReportsPage /></PageWrapper></ProtectedRoute>} />
               <Route path="/teacher/exam-sessions/:sessionId/proctor" element={<ProtectedRoute allowedRoles={['TEACHER']}><PageWrapper><ProctoringPage /></PageWrapper></ProtectedRoute>} />
 
               {/* Common Routes */}
