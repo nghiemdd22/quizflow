@@ -73,8 +73,28 @@ export const ReportsPage: React.FC = () => {
     }
   }, [sessionId])
 
-  const handleExportExcel = () => {
-    alert("Tính năng Xuất bảng điểm Excel đang được phát triển (Coming Soon)!")
+  const handleExportExcel = async () => {
+    if (!sessionId) return
+    try {
+      const res = await apiFetch(`/api/v1/reports/sessions/${sessionId}/export`)
+      if (res.ok) {
+        const blob = await res.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `bang_diem_${sessionId}.xlsx`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        window.URL.revokeObjectURL(url)
+      } else {
+        const errorText = await res.text()
+        alert("Lỗi xuất Excel: " + errorText)
+      }
+    } catch (err) {
+      console.error(err)
+      alert("Có lỗi xảy ra khi xuất file!")
+    }
   }
 
   return (

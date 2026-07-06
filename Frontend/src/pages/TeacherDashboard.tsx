@@ -72,7 +72,7 @@ export const TeacherDashboard: React.FC = () => {
           <span className="text-5xl md:text-6xl text-slate-900 font-black tracking-tighter">{year}</span>
         </div>
         <button 
-          onClick={() => {}}
+          onClick={() => navigate('/teacher/reports')}
           className="flex items-center gap-2 bg-neo-green text-white px-6 py-3 rounded-xl font-black neo-btn shrink-0"
         >
           <BarChart3 size={20} strokeWidth={3} />
@@ -222,7 +222,7 @@ export const TeacherDashboard: React.FC = () => {
               </button>
 
               <button 
-                onClick={() => {}}
+                onClick={() => navigate('/teacher/reports')}
                 className="w-full flex items-center justify-between p-4 bg-white border-2 border-slate-100 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all text-left group"
               >
                 <div className="flex items-center gap-3">

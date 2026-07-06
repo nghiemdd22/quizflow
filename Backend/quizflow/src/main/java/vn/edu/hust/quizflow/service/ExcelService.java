@@ -10,6 +10,8 @@ import vn.edu.hust.quizflow.entity.QuestionBank;
 import vn.edu.hust.quizflow.entity.QuestionType;
 import vn.edu.hust.quizflow.repository.QuestionBankRepository;
 import vn.edu.hust.quizflow.repository.QuestionRepository;
+import vn.edu.hust.quizflow.dto.ReportSessionDetailDTO;
+import vn.edu.hust.quizflow.dto.ScoreboardEntryDTO;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -296,6 +298,51 @@ public class ExcelService {
                 return String.valueOf(cell.getBooleanCellValue());
             default:
                 return ""; // Các trường hợp lỗi hoặc trống trả về chuỗi rỗng
+        }
+    }
+
+    /**
+     * Xuất bảng điểm của một ca thi ra file Excel.
+     */
+    public byte[] exportScoreboardToExcel(ReportSessionDetailDTO sessionDetail) throws IOException {
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = workbook.createSheet("Bảng Điểm");
+
+            // Tạo Header Row
+            Row headerRow = sheet.createRow(0);
+            String[] columns = {"Xếp hạng", "Họ và tên", "Bắt đầu", "Nộp bài", "Thời gian làm", "Trạng thái", "Điểm"};
+            
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+            
+            for (int i = 0; i < columns.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(columns[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // Ghi dữ liệu
+            int rowIdx = 1;
+            for (ScoreboardEntryDTO entry : sessionDetail.getScoreboard()) {
+                Row row = sheet.createRow(rowIdx++);
+                row.createCell(0).setCellValue(entry.getRank());
+                row.createCell(1).setCellValue(entry.getName());
+                row.createCell(2).setCellValue(entry.getStartedAt());
+                row.createCell(3).setCellValue(entry.getSubmittedAt());
+                row.createCell(4).setCellValue(entry.getTimeTaken());
+                row.createCell(5).setCellValue(entry.getCheatFlag());
+                row.createCell(6).setCellValue(entry.getScore());
+            }
+
+            // Auto-size các cột để vừa với nội dung
+            for (int i = 0; i < columns.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            return out.toByteArray();
         }
     }
 }
