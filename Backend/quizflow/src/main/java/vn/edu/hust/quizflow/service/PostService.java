@@ -136,7 +136,12 @@ public class PostService {
             com.meilisearch.sdk.model.Searchable result = index.search(new SearchRequest(query));
             return result;
         } catch (Exception e) {
-            throw new RuntimeException("Lỗi tìm kiếm: " + e.getMessage());
+            // Fallback to database search if Meilisearch is down
+            org.springframework.data.domain.Page<Post> dbResults = postRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(query, query, org.springframework.data.domain.PageRequest.of(0, 50));
+            return dbResults.map(post -> {
+                List<PostAttachment> attachments = postAttachmentRepository.findByPostId(post.getId());
+                return mapToResponse(post, attachments);
+            }).getContent();
         }
     }
 

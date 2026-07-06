@@ -9,4 +9,6 @@ import vn.edu.hust.quizflow.entity.Post;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
+    Page<Post> findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(String title, String content, Pageable pageable);
 }
