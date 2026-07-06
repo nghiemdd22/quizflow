@@ -80,49 +80,49 @@ export function PostDetailPage() {
   if (!post) return <div className="p-8 text-center font-bold">Đang tải...</div>
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+    <div className="pt-24 pb-12 px-4 max-w-6xl mx-auto space-y-6">
       {/* NỘI DUNG BÀI VIẾT */}
-      <div className="bg-white border-4 border-slate-900 rounded-2xl shadow-[8px_8px_0px_#0f172a] p-6 lg:p-8">
-        <h1 className="text-3xl font-black text-slate-900 mb-4">{post.title}</h1>
-        
-        <div className="flex items-center gap-2 text-sm font-bold text-slate-500 mb-6">
-          <span className="text-neo-blue">u/{post.authorName}</span>
+      <div className="bg-white border border-slate-300 rounded-lg shadow-sm p-6">
+        <h1 className="text-2xl font-semibold text-slate-900 mb-4">{post.title}</h1>
+
+        <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
+          <span className="text-blue-600 font-medium">u/{post.authorName}</span>
           <span>•</span>
           <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: vi })}</span>
           <span>•</span>
           <span>{post.viewsCount} lượt xem</span>
         </div>
-        
+
         <div className="flex gap-2 mb-6">
           {post.tags?.map((tag: any) => (
-            <span key={tag.id} className="px-3 py-1 bg-neo-yellow/20 text-neo-yellow-dark border-2 border-neo-yellow rounded-md font-bold">
+            <span key={tag.id} className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">
               {tag.name}
             </span>
           ))}
         </div>
 
-        <div className="prose max-w-none text-slate-800 font-medium whitespace-pre-wrap mb-8">
+        <div className="prose max-w-none text-slate-800 text-sm whitespace-pre-wrap mb-8">
           {post.content}
         </div>
 
         {post.attachments?.length > 0 && (
-          <div className="mt-8 border-t-4 border-slate-900 pt-6">
-            <h3 className="font-black text-slate-900 mb-4">Tài liệu đính kèm</h3>
-            <div className="grid sm:grid-cols-2 gap-4">
+          <div className="mt-6 border-t border-slate-200 pt-4">
+            <h3 className="font-semibold text-slate-700 mb-3 text-sm">Tài liệu đính kèm</h3>
+            <div className="grid sm:grid-cols-2 gap-3">
               {post.attachments.map((file: any) => (
-                <a 
-                  key={file.id} 
-                  href={file.fileUrl} 
-                  target="_blank" 
+                <a
+                  key={file.id}
+                  href={file.fileUrl}
+                  target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-3 p-3 bg-slate-50 border-2 border-slate-900 rounded-xl hover:bg-neo-green/10 hover:border-neo-green transition-all group"
+                  className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-md hover:bg-slate-100 transition-colors group"
                 >
-                  <div className="w-10 h-10 bg-white border-2 border-slate-900 rounded-lg flex items-center justify-center shadow-[2px_2px_0px_#0f172a] group-hover:shadow-none group-hover:translate-x-[2px] group-hover:translate-y-[2px] transition-all">
-                    <Download className="w-5 h-5 text-neo-green" />
+                  <div className="w-8 h-8 bg-white border border-slate-200 rounded flex items-center justify-center text-slate-500 group-hover:text-blue-500 transition-colors">
+                    <Download className="w-4 h-4" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-slate-900 truncate">{file.fileName}</p>
-                    <p className="text-xs font-bold text-slate-500 uppercase">{file.fileType}</p>
+                    <p className="font-medium text-sm text-slate-700 truncate">{file.fileName}</p>
+                    <p className="text-xs text-slate-500 uppercase">{file.fileType}</p>
                   </div>
                 </a>
               ))}
@@ -132,79 +132,79 @@ export function PostDetailPage() {
       </div>
 
       {/* KHU VỰC BÌNH LUẬN */}
-      <div>
-        <h2 className="text-2xl font-black text-slate-900 mb-6">{comments.length} Bình luận</h2>
-        
+      <div className="bg-white border border-slate-300 rounded-lg shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-slate-900 mb-4">{comments.length} Bình luận</h2>
+
         {isLoggedIn ? (
-          <form onSubmit={handleAddComment} className="mb-10">
-            <textarea 
+          <form onSubmit={handleAddComment} className="mb-8">
+            <textarea
               value={newComment}
               onChange={e => setNewComment(e.target.value)}
-              rows={4}
-              className="w-full p-4 border-4 border-slate-900 rounded-xl font-medium focus:outline-none focus:ring-4 focus:ring-neo-blue/50 transition-all mb-4"
+              rows={3}
+              className="w-full p-3 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all mb-3 bg-slate-50 hover:bg-white focus:bg-white"
               placeholder="Viết câu trả lời của bạn..."
             />
-            <button 
-              type="submit" 
-              className="px-8 py-3 bg-neo-blue text-white font-black rounded-xl border-4 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all"
+            <button
+              type="submit"
+              className="px-6 py-2 bg-blue-600 text-white font-medium rounded-full text-sm hover:bg-blue-700 transition-colors"
             >
               Gửi bình luận
             </button>
           </form>
         ) : (
-          <div className="bg-slate-100 border-4 border-slate-300 rounded-xl p-6 text-center mb-10 font-bold text-slate-500">
+          <div className="bg-slate-50 border border-slate-200 rounded-md p-4 text-center mb-8 text-sm text-slate-500">
             Vui lòng đăng nhập để bình luận.
           </div>
         )}
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {comments.map(comment => (
-            <div 
-              key={comment.id} 
-              className={`flex bg-white border-4 border-slate-900 rounded-2xl overflow-hidden shadow-[4px_4px_0px_#0f172a] transition-all ${comment.isAccepted ? 'border-neo-green bg-neo-green/5' : ''}`}
+            <div
+              key={comment.id}
+              className={`flex border border-slate-200 rounded-md overflow-hidden transition-all ${comment.isAccepted ? 'bg-green-50 border-green-200' : 'bg-white hover:border-slate-300'}`}
             >
               {/* Vote Column */}
-              <div className="w-16 sm:w-20 bg-slate-50 border-r-4 border-slate-900 p-2 sm:p-4 flex flex-col items-center gap-2">
-                <button 
-                  onClick={() => handleVote(comment.id, 'up')} 
-                  className={`p-1 rounded transition-colors ${comment.currentUserVote === 1 ? 'text-neo-red font-black' : 'text-slate-400 hover:text-neo-red'}`}
+              <div className="w-12 bg-slate-50 border-r border-slate-100 p-2 flex flex-col items-center gap-1">
+                <button
+                  onClick={() => handleVote(comment.id, 'up')}
+                  className={`p-1 rounded transition-colors ${comment.currentUserVote === 1 ? 'text-orange-500' : 'text-slate-400 hover:text-orange-500'}`}
                 >
-                  <ArrowUp className="w-8 h-8" />
+                  <ArrowUp className="w-5 h-5" />
                 </button>
-                <span className="font-black text-lg text-slate-900">{comment.upvoteCount - comment.downvoteCount}</span>
-                <button 
-                  onClick={() => handleVote(comment.id, 'down')} 
-                  className={`p-1 rounded transition-colors ${comment.currentUserVote === -1 ? 'text-neo-blue font-black' : 'text-slate-400 hover:text-neo-blue'}`}
+                <span className="font-bold text-sm text-slate-900">{comment.upvoteCount - comment.downvoteCount}</span>
+                <button
+                  onClick={() => handleVote(comment.id, 'down')}
+                  className={`p-1 rounded transition-colors ${comment.currentUserVote === -1 ? 'text-blue-500' : 'text-slate-400 hover:text-blue-500'}`}
                 >
-                  <ArrowDown className="w-8 h-8" />
+                  <ArrowDown className="w-5 h-5" />
                 </button>
 
                 {comment.isAccepted && (
-                  <div className="mt-4 text-neo-green" title="Câu trả lời hay nhất">
-                    <CheckCircle className="w-8 h-8" />
+                  <div className="mt-2 text-green-500" title="Câu trả lời hay nhất">
+                    <CheckCircle className="w-5 h-5" />
                   </div>
                 )}
               </div>
 
               {/* Content Column */}
-              <div className="flex-1 p-6 relative">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-3 text-sm">
-                    <span className="font-black text-slate-900">u/{comment.authorName}</span>
-                    <span className="text-slate-400 font-bold">•</span>
-                    <span className="text-slate-500 font-bold">{formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: vi })}</span>
+              <div className="flex-1 p-4 relative">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="font-medium text-slate-900">u/{comment.authorName}</span>
+                    <span className="text-slate-400">•</span>
+                    <span className="text-slate-500">{formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: vi })}</span>
                   </div>
-                  
+
                   {isLoggedIn && post.authorId === userId && (
-                    <button 
+                    <button
                       onClick={() => handleAccept(comment.id)}
-                      className={`text-sm font-black px-4 py-2 rounded-lg border-2 border-slate-900 transition-all ${comment.isAccepted ? 'bg-neo-green text-slate-900 shadow-[2px_2px_0px_#0f172a]' : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-900 shadow-[2px_2px_0px_#0f172a]'}`}
+                      className={`text-xs px-3 py-1 rounded-full border transition-colors ${comment.isAccepted ? 'bg-green-100 border-green-200 text-green-700' : 'bg-white border-slate-300 text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
                     >
                       {comment.isAccepted ? 'Đã duyệt' : 'Duyệt'}
                     </button>
                   )}
                 </div>
-                <div className="prose max-w-none text-slate-800 font-medium whitespace-pre-wrap">
+                <div className="prose max-w-none text-slate-800 text-sm whitespace-pre-wrap">
                   {comment.content}
                 </div>
               </div>

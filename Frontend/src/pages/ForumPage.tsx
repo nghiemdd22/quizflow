@@ -64,13 +64,13 @@ export function ForumPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 flex gap-6">
-      <div className="flex-1 space-y-6">
+    <div className="pt-24 pb-12 px-4 max-w-6xl mx-auto flex gap-6">
+      <div className="flex-1 space-y-4">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-black text-slate-900">Diễn đàn Học tập</h1>
           <button 
             onClick={() => isLoggedIn ? navigate('/forum/create') : alert('Cần đăng nhập')}
-            className="px-6 py-3 bg-neo-purple text-white font-bold rounded-xl border-4 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_#0f172a] transition-all"
+            className="px-6 py-2 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transition-colors"
           >
             + Viết bài mới
           </button>
@@ -82,10 +82,10 @@ export function ForumPage() {
             type="text" 
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full p-4 pl-12 border-4 border-slate-900 rounded-xl font-bold focus:outline-none focus:ring-4 focus:ring-neo-blue/50 shadow-[4px_4px_0px_#0f172a] transition-all"
-            placeholder="Tìm kiếm bài viết, tài liệu (Meilisearch Siêu Tốc)..."
+            className="w-full p-3 pl-12 border border-slate-300 rounded-lg bg-slate-50 hover:bg-white focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-sm"
+            placeholder="Tìm kiếm bài viết, tài liệu (Meilisearch)..."
           />
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-500 group-focus-within:text-neo-blue transition-colors" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
           <button type="submit" className="hidden">Search</button>
         </form>
 
@@ -100,29 +100,29 @@ export function ForumPage() {
 
         {/* MOCK REDDIT UI FOR SPRINT 1 */}
         {loading ? (
-          <div className="text-center font-bold py-10">Đang tải bài viết...</div>
+          <div className="text-center text-slate-500 py-10">Đang tải bài viết...</div>
         ) : (
           posts.map(post => (
-            <Link to={`/forum/${post.id}`} key={post.id} className="block group">
-              <div className="bg-white border-4 border-slate-900 rounded-xl flex overflow-hidden shadow-[4px_4px_0px_#0f172a] group-hover:-translate-y-1 group-hover:-translate-x-1 group-hover:shadow-[8px_8px_0px_#0f172a] transition-all">
+            <Link to={`/forum/${post.id}`} key={post.id} className="block group mb-3">
+              <div className="bg-white border border-slate-300 rounded-md flex overflow-hidden hover:border-slate-400 transition-colors">
                 {/* Cột Vote bên trái */}
-                <div className="w-16 bg-slate-50 border-r-4 border-slate-900 p-2 flex flex-col items-center gap-1">
-                  <button onClick={(e) => handleVote(e)} className="p-1 hover:bg-slate-200 rounded text-slate-500 hover:text-neo-red transition-colors">
-                    <ArrowUp className="w-6 h-6" />
+                <div className="w-12 bg-slate-50 border-r border-slate-100 p-2 flex flex-col items-center gap-1">
+                  <button onClick={(e) => handleVote(e)} className="p-1 hover:bg-slate-200 rounded text-slate-400 hover:text-orange-500 transition-colors">
+                    <ArrowUp className="w-5 h-5" />
                   </button>
-                  <span className="font-black text-slate-900">
+                  <span className="font-bold text-sm text-slate-900">
                     {/* Hỗ trợ dữ liệu từ Meilisearch (nó trả về JSON) hoặc DB */}
                     {post.upvotes !== undefined ? post.upvotes - (post.downvotes || 0) : 0}
                   </span>
-                  <button onClick={(e) => handleVote(e)} className="p-1 hover:bg-slate-200 rounded text-slate-500 hover:text-neo-blue transition-colors">
-                    <ArrowDown className="w-6 h-6" />
+                  <button onClick={(e) => handleVote(e)} className="p-1 hover:bg-slate-200 rounded text-slate-400 hover:text-blue-500 transition-colors">
+                    <ArrowDown className="w-5 h-5" />
                   </button>
                 </div>
                 
                 {/* Nội dung chính */}
-                <div className="p-4 flex-1">
-                  <div className="flex items-center gap-2 text-xs font-bold text-slate-500 mb-2">
-                    <span className="text-slate-900">u/{post.authorName}</span>
+                <div className="p-3 flex-1">
+                  <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
+                    <span className="text-slate-900 font-medium">u/{post.authorName}</span>
                     <span>•</span>
                     <span>{post.createdAt ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: vi }) : 'Vừa xong'}</span>
                     {!isSearching && (
@@ -133,31 +133,31 @@ export function ForumPage() {
                     )}
                   </div>
                   
-                  <h2 className="text-xl font-black text-slate-900 mb-2 group-hover:text-neo-blue transition-colors">
+                  <h2 className="text-lg font-semibold text-slate-900 mb-1">
                     {post.title}
                   </h2>
                   
-                  <div className="flex gap-2 mb-3">
+                  <div className="flex gap-1.5 mb-2">
                     {post.tags && post.tags.map((tag: any, idx: number) => (
-                      <span key={tag.id || idx} className="px-2 py-0.5 bg-neo-yellow/20 text-neo-yellow-dark border-2 border-neo-yellow rounded-md text-xs font-bold">
+                      <span key={tag.id || idx} className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">
                         {tag.name || tag}
                       </span>
                     ))}
                   </div>
 
-                  <p className="text-slate-600 font-medium line-clamp-2 mb-4">
+                  <p className="text-slate-700 text-sm line-clamp-3 mb-3">
                     {post.content}
                   </p>
                   
-                  <div className="flex gap-4 text-slate-500 font-bold text-sm">
-                    <div className="flex items-center gap-1 hover:text-neo-purple">
+                  <div className="flex gap-4 text-slate-500 text-xs font-bold">
+                    <div className="flex items-center gap-1.5 hover:bg-slate-100 p-1 rounded transition-colors">
                       <MessageSquare className="w-4 h-4" />
-                      <span>{post.commentsCount || 0} bình luận</span>
+                      <span>{post.commentsCount || 0} Comments</span>
                     </div>
                     {post.attachments && post.attachments.length > 0 && (
-                      <div className="flex items-center gap-1 text-neo-green">
+                      <div className="flex items-center gap-1.5 p-1">
                         <Paperclip className="w-4 h-4" />
-                        <span>{post.attachments.length} tài liệu đính kèm</span>
+                        <span>{post.attachments.length} files</span>
                       </div>
                     )}
                   </div>
@@ -168,21 +168,21 @@ export function ForumPage() {
         )}
       </div>
       
-      {/* Sidebar giả lập cho Sprint 4 */}
-      <div className="w-80 hidden lg:block space-y-6">
-        <div className="bg-neo-blue border-4 border-slate-900 rounded-xl p-6 shadow-[4px_4px_0px_#0f172a]">
-          <h3 className="font-black text-xl text-white mb-2">Về Diễn Đàn</h3>
-          <p className="text-white/90 font-medium mb-4">
+      {/* Sidebar */}
+      <div className="w-[312px] hidden lg:block space-y-4">
+        <div className="bg-white border border-slate-300 rounded-md p-4">
+          <h3 className="font-semibold text-slate-900 mb-2">Về Diễn Đàn</h3>
+          <p className="text-slate-600 text-sm mb-4">
             Nơi giao lưu, trao đổi kiến thức và chia sẻ tài liệu học tập của hệ thống QuizFlow.
           </p>
-          <div className="flex justify-between text-white font-bold border-t-2 border-white/20 pt-4">
+          <div className="flex justify-between text-slate-900 pt-4 border-t border-slate-200">
             <div className="text-center">
-              <div className="text-2xl">{posts.length}</div>
-              <div className="text-xs uppercase">Bài viết</div>
+              <div className="text-xl font-bold">{posts.length}</div>
+              <div className="text-xs text-slate-500 uppercase">Bài viết</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl">--</div>
-              <div className="text-xs uppercase">Thành viên</div>
+              <div className="text-xl font-bold">--</div>
+              <div className="text-xs text-slate-500 uppercase">Thành viên</div>
             </div>
           </div>
         </div>

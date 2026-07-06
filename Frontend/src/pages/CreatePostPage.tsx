@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Upload, X, File as FileIcon } from 'lucide-react'
-import { apiFetch } from '../utils/api'
+import { apiFetch, apiFetchMultipart } from '../utils/api'
 
 export function CreatePostPage() {
   const [title, setTitle] = useState('')
@@ -65,12 +65,8 @@ export function CreatePostPage() {
       files.forEach(file => formData.append('files', file))
 
       // Upload with multipart
-      const token = localStorage.getItem('token')
-      const res = await fetch('/api/v1/posts', {
+      const res = await apiFetchMultipart('/api/v1/posts', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
         body: formData
       })
       if (!res.ok) throw new Error("Lỗi đăng bài")
