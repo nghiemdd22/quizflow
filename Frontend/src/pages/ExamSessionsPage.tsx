@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { apiFetch } from '../utils/api'
 import { useAuthStore } from '../store/authStore'
 import { 
@@ -12,7 +13,10 @@ import {
   X,
   BookOpen,
   Trash2,
-  Edit2
+  Edit2,
+  Users,
+  BarChart,
+  ShieldAlert
 } from 'lucide-react'
 
 interface Subject {
@@ -51,6 +55,9 @@ interface Question {
 }
 
 export const ExamSessionsPage: React.FC = () => {
+  const { examId } = useParams()
+  const navigate = useNavigate()
+  
   const userId = useAuthStore(state => state.userId)
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [banks, setBanks] = useState<QuestionBank[]>([])
@@ -135,6 +142,20 @@ export const ExamSessionsPage: React.FC = () => {
     loadDependencies()
     loadExams()
   }, [loadDependencies])
+
+  useEffect(() => {
+    if (examId && exams.length > 0) {
+      const exam = exams.find(e => e.id === Number(examId))
+      if (exam) {
+        setSelectedExam(exam)
+        loadSessions(exam.id)
+      } else {
+        setSelectedExam(null)
+      }
+    } else if (!examId) {
+      setSelectedExam(null)
+    }
+  }, [examId, exams])
 
   useEffect(() => {
     if (isAddQuestionsModalOpen && selectedBankId) {
@@ -325,10 +346,7 @@ export const ExamSessionsPage: React.FC = () => {
                 </div>
 
                 <button
-                  onClick={() => {
-                    setSelectedExam(exam)
-                    loadSessions(exam.id)
-                  }}
+                  onClick={() => navigate(`/teacher/exams/${exam.id}`)}
                   className="w-full py-2 text-sm bg-slate-100 border-2 border-slate-900 rounded-xl font-black hover:bg-slate-900 hover:text-white transition-colors flex justify-center items-center gap-2 group"
                 >
                   <FileText className="w-4 h-4" />
@@ -352,64 +370,90 @@ export const ExamSessionsPage: React.FC = () => {
           </div>
         </>
       ) : (
-        // EXAM SESSION LIST VIEW
+        // EXAM SESSION LIST VIEW (REDESIGNED)
         <>
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
             <div>
-              <button onClick={() => setSelectedExam(null)} className="flex items-center text-slate-500 font-bold hover:text-neo-blue transition-colors mb-2">
+              <button 
+                onClick={() => navigate('/teacher/exams')} 
+                className="flex items-center text-slate-500 font-bold hover:text-neo-blue transition-colors mb-2"
+              >
                 <ArrowLeft className="w-4 h-4 mr-1" /> Quay lại danh sách đề thi
               </button>
-              <h2 className="text-3xl font-black flex items-center gap-2">
-                <span className="text-neo-blue">{selectedExam.title}</span>
+              <h2 className="text-4xl font-black flex items-center gap-3">
+                <FileText className="w-10 h-10 text-neo-blue" strokeWidth={2.5} />
+                {selectedExam.title}
               </h2>
-            </div>
-            <div className="flex flex-wrap gap-3 w-full lg:w-auto">
-              <button
-                onClick={() => setIsAddQuestionsModalOpen(true)}
-                className="flex-1 lg:flex-none px-4 py-3 bg-white hover:bg-slate-50 text-slate-900 neo-btn text-sm flex items-center justify-center font-black"
-              >
-                <Plus className="w-5 h-5 mr-1" /> Thêm câu hỏi
-              </button>
+              <p className="text-slate-500 font-bold mt-2 flex items-center gap-2">
+                <span className="px-2 py-1 bg-slate-100 border-2 border-slate-900 rounded-md text-xs uppercase shadow-[1px_1px_0px_#0f172a]">Môn: {selectedExam.subjectName}</span>
+                <span className={`px-2 py-1 border-2 border-slate-900 rounded-md text-xs uppercase shadow-[1px_1px_0px_#0f172a] ${selectedExam.status === 'DRAFT' ? 'bg-neo-yellow text-slate-900' : 'bg-neo-green text-white'}`}>Trạng thái: {selectedExam.status}</span>
+              </p>
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {sessions.map(session => (
-              <div key={session.id} className="bg-neo-yellow border-4 border-slate-900 shadow-[8px_8px_0px_#0f172a] rounded-2xl p-6 relative overflow-hidden transition-transform hover:-translate-y-1">
-                <div className="absolute -right-8 -top-8 w-24 h-24 bg-neo-green rounded-full border-4 border-slate-900 flex items-center justify-center transform rotate-12 shadow-[2px_2px_0px_#0f172a]">
-                  <span className="text-white font-black text-xl mt-4 -ml-2">{session.durationMinutes}p</span>
-                </div>
-                
-                <h3 className="text-2xl font-black mb-2 pr-12 text-slate-900">{session.title}</h3>
-                
-                <div className="flex items-center gap-2 text-sm font-bold text-slate-800 bg-white/50 w-fit px-3 py-1 rounded-lg border-2 border-slate-900 mb-6">
-                  <Clock className="w-4 h-4" />
-                  {new Date(session.startTime).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })} - {new Date(session.endTime).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
-                </div>
+          <div className="mb-6">
+            <h3 className="text-2xl font-black text-slate-800 mb-4 flex items-center gap-2">
+              <Clock className="text-neo-coral" /> Các Phiên Thi ({sessions.length})
+            </h3>
+            
+            <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
+              {sessions.map(session => (
+                <div key={session.id} className="bg-white border-[3px] border-slate-900 shadow-[4px_4px_0px_#0f172a] rounded-xl p-4 flex flex-col justify-between hover:-translate-y-1 hover:shadow-[6px_6px_0px_#0f172a] transition-all">
+                  <div>
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="font-black text-slate-900 text-sm">{session.durationMinutes} Phút</span>
+                      <span className={`px-2 py-0.5 border-2 border-slate-900 rounded-md text-[10px] uppercase font-black shadow-[1px_1px_0px_#0f172a] ${session.status === 'ACTIVE' ? 'bg-neo-green text-white animate-pulse' : 'bg-slate-200 text-slate-500'}`}>
+                        {session.status}
+                      </span>
+                    </div>
+                    
+                    <h4 className="text-lg font-black text-slate-900 mb-2 line-clamp-1" title={session.title}>{session.title}</h4>
+                    
+                    <div className="space-y-1 mb-4">
+                      <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                        Bắt đầu: {new Date(session.startTime).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                        Kết thúc: {new Date(session.endTime).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
+                      </div>
+                    </div>
+                  </div>
 
-                <div className="bg-white border-4 border-slate-900 rounded-xl p-4 flex flex-col items-center justify-center relative shadow-[4px_4px_0px_#0f172a]">
-                  <span className="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">MÃ PIN PHÒNG THI</span>
-                  <div className="flex items-center gap-4">
-                    <span className="text-5xl font-black tracking-[0.2em] text-neo-blue ml-2">{session.pinCode}</span>
-                    <button 
-                      onClick={() => copyToClipboard(session.pinCode)}
-                      className={`p-2 rounded-lg border-2 border-slate-900 transition-colors ${copiedPin === session.pinCode ? 'bg-neo-green text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}`}
-                      title="Sao chép mã PIN"
-                    >
-                      {copiedPin === session.pinCode ? <CheckCircle2 className="w-6 h-6" /> : <Copy className="w-6 h-6" />}
-                    </button>
+                  <div className="mt-auto">
+                    <div className="grid grid-cols-2 gap-2">
+                      <button 
+                        onClick={() => navigate(`/teacher/reports/${session.id}`)}
+                        className="py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-black rounded-lg flex items-center justify-center gap-1 transition-colors"
+                      >
+                        <BarChart className="w-3 h-3" /> Báo cáo
+                      </button>
+                      <button 
+                        onClick={() => navigate(`/teacher/exam-sessions/${session.id}/proctor`)}
+                        className="py-1.5 bg-neo-coral hover:bg-red-500 text-white text-xs font-black rounded-lg flex items-center justify-center gap-1 transition-colors"
+                      >
+                        <ShieldAlert className="w-3 h-3" /> Giám sát
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-            
-            {sessions.length === 0 && (
-              <div className="col-span-full text-center py-20 border-4 border-dashed border-slate-300 rounded-2xl bg-white shadow-[8px_8px_0px_rgba(0,0,0,0.05)]">
-                <PlayCircle className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-2xl font-black text-slate-800 mb-2">Đề thi này chưa có ca thi nào</h3>
-                <p className="text-slate-500 font-bold mb-6">Hãy tạo một ca thi và nhận mã PIN để học sinh bắt đầu làm bài.</p>
-              </div>
-            )}
+              ))}
+              
+              {sessions.length === 0 && (
+                <div className="col-span-full text-center py-16 border-4 border-dashed border-slate-300 rounded-2xl bg-white shadow-[8px_8px_0px_rgba(0,0,0,0.05)]">
+                  <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <PlayCircle className="w-10 h-10 text-slate-400" />
+                  </div>
+                  <h3 className="text-2xl font-black text-slate-800 mb-2">Chưa có phiên thi nào</h3>
+                  <p className="text-slate-500 font-bold mb-6 max-w-md mx-auto">Hãy mở một phiên thi mới và gửi mã PIN cho học sinh để các em có thể bắt đầu làm bài kiểm tra.</p>
+                  <button
+                    onClick={() => setIsNewSessionModalOpen(true)}
+                    className="px-6 py-3 bg-neo-blue text-white font-black rounded-xl hover:bg-blue-600 transition-colors border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_#0f172a]"
+                  >
+                    Mở Phiên thi đầu tiên
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </>
       )}

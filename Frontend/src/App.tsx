@@ -65,7 +65,7 @@ function App() {
               navigate('/teacher-dashboard', { replace: true })
             }
           }
-        } catch (e) {
+        } catch (_) {
           // Bỏ qua lỗi (chưa đăng nhập hoặc cookie hết hạn)
         }
       }
@@ -102,8 +102,8 @@ function App() {
       await fetch('/api/v1/auth/logout', {
         method: 'POST'
       })
-    } catch (e) {
-      console.error('Logout failed:', e)
+    } catch (_) {
+      console.error('Logout failed')
     }
   }
 
@@ -173,6 +173,7 @@ function App() {
               <Route path="/question-bank" element={<ProtectedRoute allowedRoles={['TEACHER']}><PageWrapper><QuestionBankPage /></PageWrapper></ProtectedRoute>} />
               <Route path="/question-bank/:bankId" element={<ProtectedRoute allowedRoles={['TEACHER']}><PageWrapper><QuestionBankPage /></PageWrapper></ProtectedRoute>} />
               <Route path="/teacher/exams" element={<ProtectedRoute allowedRoles={['TEACHER']}><PageWrapper><ExamSessionsPage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/teacher/exams/:examId" element={<ProtectedRoute allowedRoles={['TEACHER']}><PageWrapper><ExamSessionsPage /></PageWrapper></ProtectedRoute>} />
               <Route path="/teacher/reports" element={<ProtectedRoute allowedRoles={['TEACHER']}><PageWrapper><ReportsPage /></PageWrapper></ProtectedRoute>} />
               <Route path="/teacher/reports/:sessionId" element={<ProtectedRoute allowedRoles={['TEACHER']}><PageWrapper><ReportsPage /></PageWrapper></ProtectedRoute>} />
               <Route path="/teacher/exam-sessions/:sessionId/proctor" element={<ProtectedRoute allowedRoles={['TEACHER']}><PageWrapper><ProctoringPage /></PageWrapper></ProtectedRoute>} />
