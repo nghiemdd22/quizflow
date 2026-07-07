@@ -54,6 +54,8 @@ public class SecurityConfig {
                 .requestMatchers("/ws/**").permitAll()
                 // Cho phép truy cập tự do vào Swagger UI và OpenAPI docs
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                // Bảo vệ các endpoint của admin
+                .requestMatchers("/api/v1/admin/**").hasAuthority("ROLE_ADMIN")
                 // Tất cả các request còn lại bắt buộc phải xác thực (phải đăng nhập)
                 .anyRequest().authenticated()
             )

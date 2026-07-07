@@ -10,7 +10,9 @@ import vn.edu.hust.quizflow.dto.AuthResponse;
 import vn.edu.hust.quizflow.dto.LoginRequest;
 import vn.edu.hust.quizflow.dto.RegisterRequest;
 import vn.edu.hust.quizflow.entity.User;
+import vn.edu.hust.quizflow.entity.TeacherPin;
 import vn.edu.hust.quizflow.repository.UserRepository;
+import vn.edu.hust.quizflow.repository.TeacherPinRepository;
 import vn.edu.hust.quizflow.security.JwtUtils;
 
 /**
@@ -24,17 +26,20 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
     private final vn.edu.hust.quizflow.repository.RefreshTokenRepository refreshTokenRepository;
+    private final TeacherPinRepository teacherPinRepository;
 
     public AuthService(UserRepository userRepository, 
                        PasswordEncoder passwordEncoder,
                        AuthenticationManager authenticationManager, 
                        JwtUtils jwtUtils,
-                       vn.edu.hust.quizflow.repository.RefreshTokenRepository refreshTokenRepository) {
+                       vn.edu.hust.quizflow.repository.RefreshTokenRepository refreshTokenRepository,
+                       TeacherPinRepository teacherPinRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.teacherPinRepository = teacherPinRepository;
     }
 
     /**
@@ -53,12 +58,23 @@ public class AuthService {
 
         // Xử lý gán Role dựa trên Invite Code
         vn.edu.hust.quizflow.entity.UserRole finalRole = vn.edu.hust.quizflow.entity.UserRole.STUDENT;
+        TeacherPin validPin = null;
+
         if (request.getInviteCode() != null && !request.getInviteCode().trim().isEmpty()) {
-            if ("SCHOOL-TEACHER-2026".equals(request.getInviteCode().trim())) {
-                finalRole = vn.edu.hust.quizflow.entity.UserRole.TEACHER;
-            } else {
-                throw new IllegalArgumentException("Mã lời mời (Invite Code) không hợp lệ!");
+            String code = request.getInviteCode().trim();
+            validPin = teacherPinRepository.findByPinCode(code).orElse(null);
+            
+            if (validPin == null) {
+                throw new IllegalArgumentException("Mã lời mời (Invite Code) không tồn tại!");
             }
+            if (!validPin.isActive()) {
+                throw new IllegalArgumentException("Mã lời mời đã bị vô hiệu hóa!");
+            }
+            if (validPin.isUsed()) {
+                throw new IllegalArgumentException("Mã lời mời này đã được sử dụng!");
+            }
+            
+            finalRole = vn.edu.hust.quizflow.entity.UserRole.TEACHER;
         }
 
         // Tạo đối tượng thực thể User mới
@@ -73,7 +89,17 @@ public class AuthService {
                 .phoneEncrypted(request.getPhone())
                 .build();
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        // Đánh dấu PIN đã sử dụng nếu có
+        if (validPin != null) {
+            validPin.setUsed(true);
+            validPin.setUsedAt(java.time.LocalDateTime.now());
+            validPin.setUsedBy(savedUser);
+            teacherPinRepository.save(validPin);
+        }
+
+        return savedUser;
     }
 
     /**

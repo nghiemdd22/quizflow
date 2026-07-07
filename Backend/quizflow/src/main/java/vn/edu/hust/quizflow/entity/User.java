@@ -40,6 +40,10 @@ public class User {
     @Column(name = "phone_encrypted")
     private String phoneEncrypted;
 
+    @Column(name = "is_active")
+    @Builder.Default
+    private boolean isActive = true;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

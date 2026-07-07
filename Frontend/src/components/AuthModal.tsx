@@ -16,11 +16,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
   const [identityCard, setIdentityCard] = useState('')
   const [isTeacher, setIsTeacher] = useState(false)
   const [inviteCode, setInviteCode] = useState('')
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   React.useEffect(() => {
     if (isOpen) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setAuthMode(initialMode)
+      setError('')
+      setSuccess('')
     }
   }, [isOpen, initialMode])
 
@@ -28,9 +32,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
 
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
+    setSuccess('')
     
     if (authMode === 'login') {
-      if (!email || !password) return alert('Vui lòng điền đầy đủ thông tin!')
+      if (!email || !password) return setError('Vui lòng điền đầy đủ thông tin!')
       try {
         const res = await fetch('/api/v1/auth/login', {
           method: 'POST',
@@ -45,13 +51,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
           setPassword('')
           onClose()
         } else {
-          alert(data.error || 'Tên đăng nhập hoặc mật khẩu không chính xác!')
+          setError(data.error || 'Tên đăng nhập hoặc mật khẩu không chính xác!')
         }
       } catch {
-        alert('Có lỗi xảy ra khi kết nối server')
+        setError('Có lỗi xảy ra khi kết nối server')
       }
     } else {
-      if (!email || !password || !fullName || !phone || !identityCard) return alert('Vui lòng điền đầy đủ thông tin!')
+      if (!email || !password || !fullName || !phone || !identityCard) return setError('Vui lòng điền đầy đủ thông tin!')
       try {
         const res = await fetch('/api/v1/auth/register', {
           method: 'POST',
@@ -67,14 +73,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
         })
         
         if (res.ok) {
-          alert('Đăng ký tài khoản thành công! Vui lòng đăng nhập.')
+          setSuccess('Đăng ký tài khoản thành công! Vui lòng đăng nhập.')
           setAuthMode('login')
+          // Xóa form đăng ký để không kẹt data cũ
+          setFullName('')
+          setPhone('')
+          setIdentityCard('')
+          setInviteCode('')
+          setIsTeacher(false)
         } else {
           const data = await res.json()
-          alert(data.error || 'Đăng ký thất bại!')
+          setError(data.error || 'Đăng ký thất bại!')
         }
       } catch {
-        alert('Có lỗi xảy ra khi kết nối server')
+        setError('Có lỗi xảy ra khi kết nối server')
       }
     }
   }
@@ -98,6 +110,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
         <h3 className="text-2xl font-black text-slate-900 mb-6 text-left">
           {authMode === 'login' ? 'Đăng Nhập QuizFlow' : 'Đăng Ký Tài Khoản'}
         </h3>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border-l-4 border-neo-coral text-neo-coral font-bold text-sm rounded-r-md">
+            {error}
+          </div>
+        )}
+        
+        {success && (
+          <div className="mb-4 p-3 bg-green-100 border-l-4 border-neo-green text-green-700 font-bold text-sm rounded-r-md">
+            {success}
+          </div>
+        )}
 
         <form onSubmit={handleAuthSubmit} className="flex flex-col gap-4 text-left">
           <div>
@@ -204,7 +228,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
             {authMode === 'login' ? 'Chưa có tài khoản QuizFlow?' : 'Đã có tài khoản?'}
             <button
               type="button"
-              onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
+              onClick={() => {
+                setAuthMode(authMode === 'login' ? 'signup' : 'login')
+                setError('')
+                setSuccess('')
+              }}
               className="text-neo-blue underline hover:text-blue-700 font-black cursor-pointer"
             >
               {authMode === 'login' ? 'Đăng ký ngay' : 'Đăng nhập ở đây'}

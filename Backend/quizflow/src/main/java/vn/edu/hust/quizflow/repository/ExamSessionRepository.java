@@ -22,4 +22,6 @@ public interface ExamSessionRepository extends JpaRepository<ExamSession, Long> 
     List<ExamSession> findByExamTeacherIdAndStatusOrderByStartTimeDesc(Long teacherId, vn.edu.hust.quizflow.entity.SessionStatus status);
 
     List<ExamSession> findTop5ByExamTeacherIdAndStatusOrderByEndTimeDesc(Long teacherId, vn.edu.hust.quizflow.entity.SessionStatus status);
+    
+    long countByStatus(vn.edu.hust.quizflow.entity.SessionStatus status);
 }

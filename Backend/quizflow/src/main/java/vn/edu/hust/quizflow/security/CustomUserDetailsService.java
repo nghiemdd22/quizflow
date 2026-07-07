@@ -36,10 +36,14 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng với username: " + username));
 
-        // Ánh xạ vai trò (role) của User sang định dạng quyền Spring Security (ROLE_STUDENT, ROLE_TEACHER)
+        // Ánh xạ vai trò (role) của User sang định dạng quyền Spring Security (ROLE_STUDENT, ROLE_TEACHER, ROLE_ADMIN)
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPasswordHash(),
+                user.isActive(), // enabled
+                true, // accountNonExpired
+                true, // credentialsNonExpired
+                true, // accountNonLocked
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
         );
     }

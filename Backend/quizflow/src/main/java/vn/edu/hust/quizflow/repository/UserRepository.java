@@ -3,6 +3,7 @@ package vn.edu.hust.quizflow.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import vn.edu.hust.quizflow.entity.User;
+import vn.edu.hust.quizflow.entity.UserRole;
 
 import java.util.Optional;
 
@@ -20,4 +21,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return Optional chứa đối tượng User nếu tìm thấy, ngược lại là rỗng
      */
     Optional<User> findByUsername(String username);
+    
+    long countByRole(UserRole role);
 }

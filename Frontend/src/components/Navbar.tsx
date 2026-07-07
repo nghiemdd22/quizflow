@@ -82,7 +82,13 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Navigation Links (Desktop) */}
           <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-10 font-bold text-base whitespace-nowrap">
-              {role === 'TEACHER' ? (
+              {role === 'ADMIN' ? (
+                <>
+                  <Link to="/admin" data-text="Dashboard" className={`nav-item transition-all ${location.pathname === '/admin' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Dashboard</Link>
+                  <Link to="/admin/users" data-text="Người dùng" className={`nav-item transition-all ${location.pathname === '/admin/users' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Người dùng</Link>
+                  <Link to="/admin/pins" data-text="Mã Đăng ký" className={`nav-item transition-all ${location.pathname === '/admin/pins' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Mã Đăng ký</Link>
+                </>
+              ) : role === 'TEACHER' ? (
                 <>
                   <Link to="/teacher-dashboard" data-text="Tổng quan" className={`nav-item transition-all ${location.pathname === '/teacher-dashboard' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Tổng quan</Link>
                   <Link to="/classes" data-text="Lớp học" className={`nav-item transition-all ${location.pathname.startsWith('/classes') ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Lớp học</Link>
