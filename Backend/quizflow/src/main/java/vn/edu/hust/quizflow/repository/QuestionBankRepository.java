@@ -12,13 +12,15 @@ import java.util.List;
 @Repository
 public interface QuestionBankRepository extends JpaRepository<QuestionBank, Long> {
 
+    List<QuestionBank> findAllByIsArchivedFalse();
+
     /**
      * Tìm danh sách các ngân hàng câu hỏi do một giáo viên cụ thể tạo ra.
      *
      * @param teacherId ID của giáo viên sở hữu
      * @return Danh sách các ngân hàng câu hỏi của giáo viên đó
      */
-    List<QuestionBank> findByTeacherId(Long teacherId);
+    List<QuestionBank> findByTeacherIdAndIsArchivedFalse(Long teacherId);
 
     /**
      * Tìm danh sách các ngân hàng câu hỏi thuộc về một môn học cụ thể.
@@ -26,5 +28,5 @@ public interface QuestionBankRepository extends JpaRepository<QuestionBank, Long
      * @param subjectId ID của môn học
      * @return Danh sách các ngân hàng câu hỏi thuộc môn học đó
      */
-    List<QuestionBank> findBySubjectId(Long subjectId);
+    List<QuestionBank> findBySubjectIdAndIsArchivedFalse(Long subjectId);
 }

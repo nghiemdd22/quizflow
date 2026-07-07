@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.hust.quizflow.dto.request.ClassroomCreateRequest;
+import vn.edu.hust.quizflow.dto.request.ClassroomUpdateRequest;
 import vn.edu.hust.quizflow.dto.request.ClassroomJoinRequest;
 import vn.edu.hust.quizflow.dto.response.ClassroomResponse;
 import vn.edu.hust.quizflow.dto.ExamSessionDTO;
@@ -40,6 +41,22 @@ public class ClassroomController {
     public ResponseEntity<List<ClassroomResponse>> getMyClassrooms(
             Principal principal) {
         return ResponseEntity.ok(classroomService.getMyClassrooms(principal.getName()));
+    }
+
+    @PutMapping("/{classId}")
+    public ResponseEntity<ClassroomResponse> updateClassroom(
+            @PathVariable Long classId,
+            @Valid @RequestBody ClassroomUpdateRequest request,
+            Principal principal) {
+        return ResponseEntity.ok(classroomService.updateClass(classId, request, principal.getName()));
+    }
+
+    @DeleteMapping("/{classId}")
+    public ResponseEntity<Void> deleteClassroom(
+            @PathVariable Long classId,
+            Principal principal) {
+        classroomService.deleteClass(classId, principal.getName());
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{classId}/sessions")

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.hust.quizflow.dto.request.ClassroomCreateRequest;
+import vn.edu.hust.quizflow.dto.request.ClassroomUpdateRequest;
 import vn.edu.hust.quizflow.dto.response.ClassroomResponse;
 import vn.edu.hust.quizflow.entity.ClassMember;
 import vn.edu.hust.quizflow.entity.Classroom;
@@ -78,6 +79,7 @@ public class ClassroomService {
 
         if (user.getRole() == UserRole.TEACHER) {
             return classroomRepository.findByTeacherId(user.getId()).stream()
+                    .filter(c -> c.getStatus() != vn.edu.hust.quizflow.entity.ClassroomStatus.ARCHIVED)
                     .map(c -> {
                         int unread = classChatStateRepository.findByUserIdAndClassroomId(user.getId(), c.getId())
                                 .map(vn.edu.hust.quizflow.entity.ClassChatState::getUnreadCount)
@@ -88,6 +90,7 @@ public class ClassroomService {
         } else {
             return classMemberRepository.findByStudentId(user.getId()).stream()
                     .map(ClassMember::getClassroom)
+                    .filter(c -> c.getStatus() != vn.edu.hust.quizflow.entity.ClassroomStatus.ARCHIVED)
                     .map(c -> {
                         int unread = classChatStateRepository.findByUserIdAndClassroomId(user.getId(), c.getId())
                                 .map(vn.edu.hust.quizflow.entity.ClassChatState::getUnreadCount)
@@ -96,6 +99,45 @@ public class ClassroomService {
                     })
                     .collect(Collectors.toList());
         }
+    }
+
+    @Transactional
+    public ClassroomResponse updateClass(Long classId, ClassroomUpdateRequest request, String username) {
+        User teacher = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy giáo viên"));
+
+        Classroom classroom = classroomRepository.findById(classId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lớp học"));
+
+        if (!classroom.getTeacher().getId().equals(teacher.getId())) {
+            throw new IllegalArgumentException("Bạn không có quyền sửa lớp này");
+        }
+
+        if (classroom.getStatus() == vn.edu.hust.quizflow.entity.ClassroomStatus.ARCHIVED) {
+            throw new IllegalArgumentException("Không thể sửa lớp học đã bị xóa/lưu trữ");
+        }
+
+        classroom.setName(request.getName());
+        Classroom saved = classroomRepository.save(classroom);
+        
+        long count = classMemberRepository.findByClassroomId(classroom.getId()).size();
+        return mapToResponse(saved, count, 0); // Assuming no unread messages needed when updating
+    }
+
+    @Transactional
+    public void deleteClass(Long classId, String username) {
+        User teacher = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy giáo viên"));
+
+        Classroom classroom = classroomRepository.findById(classId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lớp học"));
+
+        if (!classroom.getTeacher().getId().equals(teacher.getId())) {
+            throw new IllegalArgumentException("Bạn không có quyền xóa lớp này");
+        }
+
+        classroom.setStatus(vn.edu.hust.quizflow.entity.ClassroomStatus.ARCHIVED);
+        classroomRepository.save(classroom);
     }
 
     private String generateRandomCode(int length) {

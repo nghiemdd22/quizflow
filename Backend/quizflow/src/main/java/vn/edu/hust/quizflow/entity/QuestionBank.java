@@ -35,4 +35,7 @@ public class QuestionBank {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "is_archived", columnDefinition = "boolean default false")
+    private boolean isArchived = false;
 }

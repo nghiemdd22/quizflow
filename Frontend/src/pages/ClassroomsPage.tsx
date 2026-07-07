@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Plus, Users, Hash, BookOpen } from 'lucide-react'
+import { Plus, Users, Hash, BookOpen, Trash2, Edit2 } from 'lucide-react'
 import { apiFetch } from '../utils/api'
 import { useAuthStore } from '../store/authStore'
 import { Navbar } from '../components/Navbar'
@@ -24,6 +24,10 @@ export const ClassroomsPage: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [newClassName, setNewClassName] = useState('')
   const [isCreating, setIsCreating] = useState(false)
+
+  const [editingClass, setEditingClass] = useState<Classroom | null>(null)
+  const [editClassName, setEditClassName] = useState('')
+  const [isUpdating, setIsUpdating] = useState(false)
 
   const fetchClassrooms = async () => {
     try {
@@ -75,6 +79,47 @@ export const ClassroomsPage: React.FC = () => {
       setError('An error occurred connecting to the server')
     } finally {
       setIsCreating(false)
+    }
+  }
+
+  const handleUpdateClass = async () => {
+    if (!editingClass || !editClassName.trim()) return
+    setIsUpdating(true)
+    try {
+      const response = await apiFetch(`/api/v1/classes/${editingClass.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ name: editClassName })
+      })
+      if (response.ok) {
+        setEditingClass(null)
+        setEditClassName('')
+        fetchClassrooms()
+      } else {
+        const data = await response.json()
+        setError(data.error || 'Failed to update classroom')
+      }
+    } catch (err) {
+      setError('An error occurred connecting to the server')
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleDeleteClass = async (e: React.MouseEvent, classId: number) => {
+    e.stopPropagation() // Prevent clicking the card
+    if (!window.confirm("Bạn có chắc chắn muốn xóa lớp học này không? Hành động này sẽ đưa lớp học vào trạng thái lưu trữ.")) return
+    
+    try {
+      const response = await apiFetch(`/api/v1/classes/${classId}`, {
+        method: 'DELETE'
+      })
+      if (response.ok) {
+        fetchClassrooms()
+      } else {
+        setError('Failed to delete classroom')
+      }
+    } catch (err) {
+      setError('An error occurred connecting to the server')
     }
   }
 
@@ -164,6 +209,29 @@ export const ClassroomsPage: React.FC = () => {
                     {c.unreadMessageCount > 99 ? '99+' : c.unreadMessageCount}
                   </div>
                 ) : null}
+
+                {userRole === 'TEACHER' && (
+                  <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setEditingClass(c)
+                        setEditClassName(c.name)
+                      }}
+                      className="p-2 bg-white border-2 border-slate-900 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-neo-blue neo-btn"
+                      title="Sửa lớp học"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    <button
+                      onClick={(e) => handleDeleteClass(e, c.id)}
+                      className="p-2 bg-white border-2 border-slate-900 rounded-lg hover:bg-red-50 text-slate-700 hover:text-neo-coral neo-btn"
+                      title="Lưu trữ lớp học"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -200,6 +268,43 @@ export const ClassroomsPage: React.FC = () => {
                   {isCreating ? (
                     <div className="w-5 h-5 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
                   ) : 'Create'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Edit Classroom */}
+        {editingClass && (
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white border-4 border-slate-900 rounded-2xl p-6 max-w-md w-full shadow-[8px_8px_0px_#0f172a] animate-scale-up">
+              <h2 className="text-2xl font-black text-slate-900 mb-2">Chỉnh sửa Lớp học</h2>
+              <p className="text-slate-500 font-bold text-sm mb-6">Thay đổi tên lớp học của bạn.</p>
+              
+              <input
+                type="text"
+                value={editClassName}
+                onChange={(e) => setEditClassName(e.target.value)}
+                placeholder="e.g. Advanced Physics 101"
+                className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-900 rounded-xl font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:shadow-[4px_4px_0px_#0f172a] transition-all mb-6"
+                autoFocus
+              />
+
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setEditingClass(null)}
+                  className="flex-1 py-3 font-black text-slate-700 bg-slate-100 border-2 border-slate-900 rounded-xl hover:bg-slate-200 transition-colors"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={handleUpdateClass}
+                  disabled={!editClassName.trim() || isUpdating}
+                  className="flex-1 py-3 font-black text-white bg-neo-blue border-2 border-slate-900 rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50 flex justify-center items-center h-[52px]"
+                >
+                  {isUpdating ? (
+                    <div className="w-5 h-5 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : 'Cập nhật'}
                 </button>
               </div>
             </div>

@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface ExamRepository extends JpaRepository<Exam, Long> {
-    List<Exam> findByTeacherId(Long teacherId);
+    List<Exam> findByTeacherIdAndStatusNot(Long teacherId, vn.edu.hust.quizflow.entity.ExamStatus status);
 }

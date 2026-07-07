@@ -58,7 +58,7 @@ public class ExamService {
         User teacher = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy giáo viên"));
 
-        return examRepository.findByTeacherId(teacher.getId())
+        return examRepository.findByTeacherIdAndStatusNot(teacher.getId(), ExamStatus.ARCHIVED)
                 .stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
@@ -106,6 +106,51 @@ public class ExamService {
 
             examQuestionRepository.save(eq);
         }
+    }
+
+    @Transactional
+    public ExamDTO updateExam(Long id, CreateExamRequest request, String username) {
+        User teacher = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy giáo viên"));
+
+        Exam exam = examRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đề thi"));
+
+        if (!exam.getTeacher().getUsername().equals(username)) {
+            throw new IllegalArgumentException("Bạn không có quyền sửa đề thi này");
+        }
+
+        if (exam.getStatus() == ExamStatus.ARCHIVED) {
+            throw new IllegalArgumentException("Không thể sửa đề thi đã bị xóa/lưu trữ");
+        }
+
+        if (!exam.getSubject().getId().equals(request.getSubjectId())) {
+            Subject subject = subjectRepository.findById(request.getSubjectId())
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy môn học mới"));
+            exam.setSubject(subject);
+        }
+
+        exam.setTitle(request.getTitle());
+        exam.setDescription(request.getDescription());
+        Exam savedExam = examRepository.save(exam);
+        
+        return mapToDTO(savedExam);
+    }
+
+    @Transactional
+    public void deleteExam(Long id, String username) {
+        User teacher = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy giáo viên"));
+
+        Exam exam = examRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đề thi"));
+
+        if (!exam.getTeacher().getUsername().equals(username)) {
+            throw new IllegalArgumentException("Bạn không có quyền xóa đề thi này");
+        }
+
+        exam.setStatus(ExamStatus.ARCHIVED);
+        examRepository.save(exam);
     }
 
     private ExamDTO mapToDTO(Exam exam) {

@@ -83,6 +83,10 @@ public class QuestionBankService {
             throw new AccessDeniedException("Bạn không có quyền sửa đổi ngân hàng câu hỏi này!");
         }
 
+        if (questionBank.isArchived()) {
+            throw new IllegalArgumentException("Ngân hàng câu hỏi này đã bị xóa/lưu trữ!");
+        }
+
         // Cập nhật môn học nếu có sự thay đổi
         if (!questionBank.getSubject().getId().equals(dto.getSubjectId())) {
             Subject newSubject = subjectRepository.findById(dto.getSubjectId())
@@ -116,7 +120,8 @@ public class QuestionBankService {
             throw new AccessDeniedException("Bạn không có quyền xóa ngân hàng câu hỏi này!");
         }
 
-        questionBankRepository.delete(questionBank);
+        questionBank.setArchived(true);
+        questionBankRepository.save(questionBank);
     }
 
     /**
@@ -139,7 +144,7 @@ public class QuestionBankService {
      */
     @Transactional(readOnly = true)
     public List<QuestionBankDTO> getAllQuestionBanks() {
-        return questionBankRepository.findAll().stream()
+        return questionBankRepository.findAllByIsArchivedFalse().stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
@@ -152,7 +157,7 @@ public class QuestionBankService {
      */
     @Transactional(readOnly = true)
     public List<QuestionBankDTO> getQuestionBanksByTeacher(Long teacherId) {
-        return questionBankRepository.findByTeacherId(teacherId).stream()
+        return questionBankRepository.findByTeacherIdAndIsArchivedFalse(teacherId).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
@@ -165,7 +170,7 @@ public class QuestionBankService {
      */
     @Transactional(readOnly = true)
     public List<QuestionBankDTO> getQuestionBanksBySubject(Long subjectId) {
-        return questionBankRepository.findBySubjectId(subjectId).stream()
+        return questionBankRepository.findBySubjectIdAndIsArchivedFalse(subjectId).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }

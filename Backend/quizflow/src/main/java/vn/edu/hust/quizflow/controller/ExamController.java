@@ -48,6 +48,25 @@ public class ExamController {
     }
 
     /**
+     * API cập nhật đề thi.
+     */
+    @PreAuthorize("hasRole('TEACHER')")
+    @PutMapping("/{id}")
+    public ResponseEntity<ExamDTO> updateExam(@PathVariable Long id, @Valid @RequestBody CreateExamRequest request, Principal principal) {
+        return ResponseEntity.ok(examService.updateExam(id, request, principal.getName()));
+    }
+
+    /**
+     * API xóa mềm đề thi.
+     */
+    @PreAuthorize("hasRole('TEACHER')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteExam(@PathVariable Long id, Principal principal) {
+        examService.deleteExam(id, principal.getName());
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
      * API thêm một danh sách câu hỏi vào một đề thi cụ thể.
      * Chỉ cho phép thực hiện khi đề thi đang ở trạng thái DRAFT (Nháp).
      * @param examId ID của đề thi trên đường dẫn (Path Variable)

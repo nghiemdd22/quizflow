@@ -16,7 +16,9 @@ import {
   X,
   PlusCircle,
   GripVertical,
-  Printer
+  Printer,
+  Trash2,
+  Edit2
 } from 'lucide-react'
 import {
   DndContext,
@@ -172,6 +174,11 @@ export const QuestionBankPage: React.FC = () => {
   const [newBankDesc, setNewBankDesc] = useState('')
   const [newBankSubject, setNewBankSubject] = useState<number>(0)
 
+  const [editingBank, setEditingBank] = useState<QuestionBank | null>(null)
+  const [editBankName, setEditBankName] = useState('')
+  const [editBankDesc, setEditBankDesc] = useState('')
+  const [editBankSubject, setEditBankSubject] = useState<number>(0)
+
   const [isNewQuestionModalOpen, setIsNewQuestionModalOpen] = useState(false)
   const [newQContent, setNewQContent] = useState('')
   const [newQType, setNewQType] = useState('SINGLE')
@@ -259,6 +266,49 @@ export const QuestionBankPage: React.FC = () => {
       } else {
         const data = await res.json()
         alert(data.error || 'Lỗi tạo ngân hàng')
+      }
+    } catch {
+      alert('Có lỗi xảy ra')
+    }
+  }
+
+  const handleUpdateBank = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingBank || !editBankSubject) return
+
+    try {
+      const res = await apiFetch(`/api/v1/question-banks/${editingBank.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: editBankName,
+          description: editBankDesc,
+          subjectId: editBankSubject
+        })
+      })
+      if (res.ok) {
+        setEditingBank(null)
+        loadBanks()
+      } else {
+        const data = await res.json()
+        alert(data.error || 'Lỗi cập nhật ngân hàng')
+      }
+    } catch {
+      alert('Có lỗi xảy ra')
+    }
+  }
+
+  const handleDeleteBank = async (e: React.MouseEvent, bankId: number) => {
+    e.stopPropagation()
+    if (!window.confirm("Bạn có chắc chắn muốn xóa ngân hàng câu hỏi này? Hành động này sẽ lưu trữ ngân hàng và không hiển thị nữa.")) return
+    
+    try {
+      const res = await apiFetch(`/api/v1/question-banks/${bankId}`, {
+        method: 'DELETE'
+      })
+      if (res.ok) {
+        loadBanks()
+      } else {
+        alert('Lỗi xóa ngân hàng')
       }
     } catch {
       alert('Có lỗi xảy ra')
@@ -468,7 +518,7 @@ export const QuestionBankPage: React.FC = () => {
                 const badgeColor = 'bg-neo-purple'
 
                 return (
-                  <div key={bank.id} className="bg-white neo-card p-4 flex flex-col justify-between hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_#0f172a] transition-all">
+                  <div key={bank.id} className="bg-white neo-card p-4 flex flex-col justify-between hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_#0f172a] transition-all relative group">
                     <div>
                       <div className="flex justify-between items-start mb-3">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white ${badgeColor}`}>
@@ -481,6 +531,30 @@ export const QuestionBankPage: React.FC = () => {
                       <h3 className="text-lg font-extrabold mb-1 line-clamp-1">{bank.title}</h3>
                       <p className="text-xs font-bold text-slate-500 mb-4 line-clamp-2">{bank.description}</p>
                     </div>
+
+                    <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEditingBank(bank)
+                          setEditBankName(bank.title)
+                          setEditBankDesc(bank.description)
+                          setEditBankSubject(bank.subjectId)
+                        }}
+                        className="p-1.5 bg-white border-2 border-slate-900 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-neo-blue shadow-[2px_2px_0px_#0f172a]"
+                        title="Sửa ngân hàng"
+                      >
+                        <Edit2 size={14} strokeWidth={2.5} />
+                      </button>
+                      <button
+                        onClick={(e) => handleDeleteBank(e, bank.id)}
+                        className="p-1.5 bg-white border-2 border-slate-900 rounded-lg hover:bg-red-50 text-slate-700 hover:text-neo-coral shadow-[2px_2px_0px_#0f172a]"
+                        title="Lưu trữ ngân hàng"
+                      >
+                        <Trash2 size={14} strokeWidth={2.5} />
+                      </button>
+                    </div>
+
                     <button
                       onClick={() => {
                         navigate(`/question-bank/${bank.id}`)
@@ -649,6 +723,58 @@ export const QuestionBankPage: React.FC = () => {
                 />
               </div>
               <button type="submit" className="w-full mt-2 py-4 bg-neo-green hover:bg-neo-green-hover text-white text-lg neo-btn">Tạo mới</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT BANK MODAL */}
+      {editingBank && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-page-enter">
+          <div className="bg-white neo-card p-6 md:p-8 max-w-md w-full relative">
+            <button
+              onClick={() => setEditingBank(null)}
+              className="absolute right-4 top-4 w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-100 hover:bg-neo-coral hover:text-white flex items-center justify-center font-bold transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <h3 className="text-2xl font-black mb-6 flex items-center gap-2">
+              <FolderOpen className="text-neo-purple" /> Sửa Ngân hàng
+            </h3>
+            <form onSubmit={handleUpdateBank} className="flex flex-col gap-5">
+              <div>
+                <label className="block text-xs font-black text-slate-800 mb-2">MÔN HỌC</label>
+                <select
+                  value={editBankSubject}
+                  onChange={e => setEditBankSubject(Number(e.target.value))}
+                  className="w-full px-4 py-3 text-sm border-2 border-slate-900 rounded-xl shadow-[3px_3px_0px_#0f172a] focus:translate-y-[1px] focus:translate-x-[1px] focus:shadow-[2px_2px_0px_#0f172a] font-bold outline-none transition-all appearance-none"
+                >
+                  <option value={0}>-- Chọn môn học --</option>
+                  {subjects.map(sub => (
+                    <option key={sub.id} value={sub.id}>{sub.name} ({sub.code})</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-black text-slate-800 mb-2">TÊN NGÂN HÀNG</label>
+                <input
+                  required
+                  value={editBankName}
+                  onChange={e => setEditBankName(e.target.value)}
+                  placeholder="VD: Kiểm tra cuối kỳ Hóa..."
+                  className="w-full px-4 py-3 text-sm border-2 border-slate-900 rounded-xl shadow-[3px_3px_0px_#0f172a] focus:translate-y-[1px] focus:translate-x-[1px] focus:shadow-[2px_2px_0px_#0f172a] font-bold outline-none transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-black text-slate-800 mb-2">MÔ TẢ</label>
+                <textarea
+                  value={editBankDesc}
+                  onChange={e => setEditBankDesc(e.target.value)}
+                  placeholder="Tóm tắt về bộ đề này..."
+                  className="w-full px-4 py-3 text-sm border-2 border-slate-900 rounded-xl shadow-[3px_3px_0px_#0f172a] focus:translate-y-[1px] focus:translate-x-[1px] focus:shadow-[2px_2px_0px_#0f172a] font-bold outline-none transition-all h-24 resize-none"
+                />
+              </div>
+              <button type="submit" className="w-full mt-2 py-4 bg-neo-blue hover:bg-blue-600 text-white text-lg neo-btn">Cập nhật</button>
             </form>
           </div>
         </div>

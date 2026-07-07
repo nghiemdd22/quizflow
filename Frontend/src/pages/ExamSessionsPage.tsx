@@ -10,7 +10,9 @@ import {
   Clock, 
   ArrowLeft,
   X,
-  BookOpen
+  BookOpen,
+  Trash2,
+  Edit2
 } from 'lucide-react'
 
 interface Subject {
@@ -70,6 +72,11 @@ export const ExamSessionsPage: React.FC = () => {
   const [selectedBankId, setSelectedBankId] = useState<number>(0)
   const [bankQuestions, setBankQuestions] = useState<Question[]>([])
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<number[]>([])
+
+  const [editingExam, setEditingExam] = useState<Exam | null>(null)
+  const [editExamTitle, setEditExamTitle] = useState('')
+  const [editExamDesc, setEditExamDesc] = useState('')
+  const [editExamSubject, setEditExamSubject] = useState(0)
 
   const [isNewSessionModalOpen, setIsNewSessionModalOpen] = useState(false)
   const [sessionTitle, setSessionTitle] = useState('')
@@ -160,6 +167,46 @@ export const ExamSessionsPage: React.FC = () => {
     }
   }
 
+  const handleUpdateExam = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editExamSubject || !editingExam) return alert('Vui lòng chọn môn học')
+    try {
+      const res = await apiFetch(`/api/v1/exams/${editingExam.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: editExamTitle,
+          description: editExamDesc,
+          subjectId: editExamSubject
+        })
+      })
+      if (res.ok) {
+        setEditingExam(null)
+        loadExams()
+      } else {
+        alert('Lỗi cập nhật đề thi')
+      }
+    } catch {
+      alert('Có lỗi xảy ra')
+    }
+  }
+
+  const handleDeleteExam = async (e: React.MouseEvent, examId: number) => {
+    e.stopPropagation()
+    if (!window.confirm("Bạn có chắc chắn muốn xóa đề thi này không? Hành động này sẽ chuyển trạng thái đề thi sang lưu trữ.")) return
+    try {
+      const res = await apiFetch(`/api/v1/exams/${examId}`, {
+        method: 'DELETE'
+      })
+      if (res.ok) {
+        loadExams()
+      } else {
+        alert('Lỗi xóa đề thi')
+      }
+    } catch {
+      alert('Có lỗi xảy ra')
+    }
+  }
+
   const handleAddQuestions = async () => {
     if (!selectedExam || selectedQuestionIds.length === 0) return alert('Chưa chọn câu hỏi')
     try {
@@ -240,7 +287,7 @@ export const ExamSessionsPage: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {exams.map(exam => (
-              <div key={exam.id} className="bg-white neo-card p-4 flex flex-col justify-between hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_#0f172a] transition-all">
+              <div key={exam.id} className="bg-white neo-card p-4 flex flex-col justify-between hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_#0f172a] transition-all relative group">
                 <div>
                   <div className="flex justify-between items-start mb-3">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white bg-neo-blue">
@@ -253,6 +300,30 @@ export const ExamSessionsPage: React.FC = () => {
                   <h3 className="text-lg font-extrabold mb-1 line-clamp-1">{exam.title}</h3>
                   <p className="text-xs font-bold text-slate-500 mb-4 line-clamp-1">Môn: {exam.subjectName}</p>
                 </div>
+                
+                <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setEditingExam(exam)
+                      setEditExamTitle(exam.title)
+                      setEditExamSubject(exam.subjectId)
+                      setEditExamDesc('') // Optional description
+                    }}
+                    className="p-1.5 bg-white border-2 border-slate-900 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-neo-blue shadow-[2px_2px_0px_#0f172a]"
+                    title="Sửa đề thi"
+                  >
+                    <Edit2 size={14} strokeWidth={2.5} />
+                  </button>
+                  <button
+                    onClick={(e) => handleDeleteExam(e, exam.id)}
+                    className="p-1.5 bg-white border-2 border-slate-900 rounded-lg hover:bg-red-50 text-slate-700 hover:text-neo-coral shadow-[2px_2px_0px_#0f172a]"
+                    title="Lưu trữ đề thi"
+                  >
+                    <Trash2 size={14} strokeWidth={2.5} />
+                  </button>
+                </div>
+
                 <button
                   onClick={() => {
                     setSelectedExam(exam)
@@ -361,6 +432,29 @@ export const ExamSessionsPage: React.FC = () => {
                 <input required value={newExamTitle} onChange={e => setNewExamTitle(e.target.value)} placeholder="Nhập tên đề thi..." className="w-full px-4 py-3 text-sm border-2 border-slate-900 rounded-xl shadow-[3px_3px_0px_#0f172a] font-bold outline-none focus:translate-y-[1px] focus:translate-x-[1px] focus:shadow-[2px_2px_0px_#0f172a] transition-all" />
               </div>
               <button type="submit" className="w-full mt-2 py-4 bg-neo-green hover:bg-neo-green-hover text-white text-lg neo-btn">Tạo mới</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL SỬA ĐỀ THI */}
+      {editingExam && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-page-enter">
+          <div className="bg-white neo-card p-6 md:p-8 max-w-md w-full relative">
+            <button onClick={() => setEditingExam(null)} className="absolute right-4 top-4 w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-100 hover:bg-neo-coral hover:text-white flex items-center justify-center font-bold transition-colors"><X className="w-4 h-4" /></button>
+            <h3 className="text-2xl font-black mb-6 flex items-center gap-2 text-slate-900"><FileText className="text-neo-blue" /> Sửa Đề thi</h3>
+            <form onSubmit={handleUpdateExam} className="flex flex-col gap-5">
+              <div>
+                <label className="block text-xs font-black text-slate-800 mb-2">MÔN HỌC</label>
+                <select value={editExamSubject} onChange={e => setEditExamSubject(Number(e.target.value))} className="w-full px-4 py-3 text-sm border-2 border-slate-900 rounded-xl shadow-[3px_3px_0px_#0f172a] font-bold outline-none focus:translate-y-[1px] focus:translate-x-[1px] focus:shadow-[2px_2px_0px_#0f172a] transition-all">
+                  {subjects.map(sub => <option key={sub.id} value={sub.id}>{sub.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-black text-slate-800 mb-2">TIÊU ĐỀ</label>
+                <input required value={editExamTitle} onChange={e => setEditExamTitle(e.target.value)} placeholder="Nhập tên đề thi..." className="w-full px-4 py-3 text-sm border-2 border-slate-900 rounded-xl shadow-[3px_3px_0px_#0f172a] font-bold outline-none focus:translate-y-[1px] focus:translate-x-[1px] focus:shadow-[2px_2px_0px_#0f172a] transition-all" />
+              </div>
+              <button type="submit" className="w-full mt-2 py-4 bg-neo-blue hover:bg-blue-600 text-white text-lg neo-btn">Cập nhật</button>
             </form>
           </div>
         </div>
