@@ -39,6 +39,14 @@ spring:
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USER:guest}
     password: ${RABBITMQ_PASSWORD:guest}
+    listener:
+      simple:
+        default-requeue-rejected: false # CỰC KỲ QUAN TRỌNG: Thất bại thì KHÔNG lặp lại vô tận, mà ném vào DLQ
+        retry:
+          enabled: true # Bật tính năng tự động thử lại
+          initial-interval: 1000 # Đợi 1s ở lần thử đầu tiên
+          max-retries: 3 # Thử tối đa 3 lần
+          multiplier: 2.0 # Thời gian đợi gấp đôi sau mỗi lần thử (1s -> 2s -> 4s)
 
 encryption:
   secret-key: ${ENCRYPTION_SECRET_KEY:vdtprojectsecretkeyquizflow12345}

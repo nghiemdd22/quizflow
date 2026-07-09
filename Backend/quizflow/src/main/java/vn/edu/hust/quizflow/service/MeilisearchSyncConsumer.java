@@ -6,6 +6,7 @@ import com.meilisearch.sdk.Index;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.stereotype.Service;
 import vn.edu.hust.quizflow.config.RabbitMQConfig;
 import vn.edu.hust.quizflow.dto.message.PostSyncMessage;
@@ -31,6 +32,7 @@ public class MeilisearchSyncConsumer {
             log.info("Successfully synced post {} to Meilisearch", message.getId());
         } catch (Exception e) {
             log.error("Failed to sync post {} to Meilisearch: {}", message.getId(), e.getMessage());
+            throw new AmqpRejectAndDontRequeueException("Meilisearch sync failed for post " + message.getId(), e);
         }
     }
 }

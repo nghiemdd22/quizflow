@@ -31,6 +31,11 @@ public class RabbitMQConfig {
     public static final String MEILISEARCH_SYNC_EXCHANGE = "meilisearch.sync.exchange";
     public static final String MEILISEARCH_SYNC_ROUTING_KEY = "meilisearch.sync.routing.key";
 
+    // Khai báo tên cho các thành phần DLQ của luồng Meilisearch
+    public static final String MEILISEARCH_SYNC_DLQ = "meilisearch.sync.dlq";
+    public static final String MEILISEARCH_SYNC_DLX = "meilisearch.sync.dlx";
+    public static final String MEILISEARCH_SYNC_DLQ_ROUTING_KEY = "meilisearch.sync.dlq.routing.key";
+
     // ==========================================
     // CẤU HÌNH LUỒNG NỘP BÀI CHÍNH (MAIN CONFIG)
     // ==========================================
@@ -105,13 +110,31 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue meilisearchSyncQueue() {
-        return QueueBuilder.durable(MEILISEARCH_SYNC_QUEUE).build();
+        return QueueBuilder.durable(MEILISEARCH_SYNC_QUEUE)
+                .withArgument("x-dead-letter-exchange", MEILISEARCH_SYNC_DLX)
+                .withArgument("x-dead-letter-routing-key", MEILISEARCH_SYNC_DLQ_ROUTING_KEY)
+                .build();
     }
 
     @Bean
     public Binding meilisearchSyncBinding(Queue meilisearchSyncQueue, DirectExchange meilisearchSyncExchange) {
         return BindingBuilder.bind(meilisearchSyncQueue).to(meilisearchSyncExchange).with(MEILISEARCH_SYNC_ROUTING_KEY);
     }
+    @Bean
+    public DirectExchange meilisearchSyncDeadLetterExchange() {
+        return new DirectExchange(MEILISEARCH_SYNC_DLX);
+    }
+
+    @Bean
+    public Queue meilisearchSyncDeadLetterQueue() {
+        return QueueBuilder.durable(MEILISEARCH_SYNC_DLQ).build();
+    }
+
+    @Bean
+    public Binding meilisearchSyncDeadLetterBinding(Queue meilisearchSyncDeadLetterQueue, DirectExchange meilisearchSyncDeadLetterExchange) {
+        return BindingBuilder.bind(meilisearchSyncDeadLetterQueue).to(meilisearchSyncDeadLetterExchange).with(MEILISEARCH_SYNC_DLQ_ROUTING_KEY);
+    }
+
 
     // ==========================================
     // CẤU HÌNH BỘ CHUYỂN ĐỔI DỮ LIỆU (MESSAGE CONVERTER)
