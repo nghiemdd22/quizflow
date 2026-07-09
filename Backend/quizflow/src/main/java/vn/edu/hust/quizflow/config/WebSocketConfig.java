@@ -1,6 +1,7 @@
 package vn.edu.hust.quizflow.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -32,15 +33,30 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final JwtUtils jwtUtils;
 
+    @Value("${spring.rabbitmq.host:localhost}")
+    private String rabbitHost;
+
+    @Value("${spring.rabbitmq.username:guest}")
+    private String rabbitUser;
+
+    @Value("${spring.rabbitmq.password:guest}")
+    private String rabbitPass;
+
     /**
      * Cấu hình Message Broker - Nơi định tuyến các tin nhắn.
      */
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        // Kích hoạt một in-memory message broker (trạm trung chuyển tin nhắn lưu ngay trong bộ nhớ RAM).
+        // Kích hoạt Stomp Broker Relay để sử dụng RabbitMQ làm Message Broker (thay vì in-memory).
         // Các tin nhắn gửi từ Server xuống Client sẽ mang tiền tố là "/topic" (ví dụ: "/topic/room/1") hoặc "/queue".
         // Frontend sẽ "subscribe" (đăng ký theo dõi) vào các đường dẫn bắt đầu bằng "/topic" hoặc "/user/queue" này để nhận tin nhắn.
-        config.enableSimpleBroker("/topic", "/queue");
+        config.enableStompBrokerRelay("/topic", "/queue")
+                .setRelayHost(rabbitHost)
+                .setRelayPort(61613) // Cổng STOMP mặc định của RabbitMQ
+                .setClientLogin(rabbitUser)
+                .setClientPasscode(rabbitPass)
+                .setSystemLogin(rabbitUser)
+                .setSystemPasscode(rabbitPass);
         
         // Đặt tiền tố cho các tin nhắn từ Client gửi ngược lên Server.
         // Những tin nhắn có tiền tố "/app" sẽ được tự động chuyển tới các phương thức được gắn @MessageMapping trong Controller để xử lý.

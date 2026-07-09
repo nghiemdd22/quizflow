@@ -284,7 +284,7 @@ export const ClassDetailPage: React.FC = () => {
                 <MessageSquare size={18} /> Chat & Tài liệu
               </div>
               {(classroom.unreadMessageCount && classroom.unreadMessageCount > 0) ? (
-                <span className={`min-w-[20px] h-5 px-1 flex items-center justify-center text-[10px] font-black rounded-full shadow-sm ${activeTab === 'chat' ? 'bg-white text-neo-blue' : 'bg-neo-red text-white'}`}>
+                <span className="min-w-[20px] h-5 px-1 flex items-center justify-center text-[10px] font-black rounded-full shadow-sm bg-red-500 text-white animate-pulse">
                   {classroom.unreadMessageCount > 99 ? '99+' : classroom.unreadMessageCount}
                 </span>
               ) : null}

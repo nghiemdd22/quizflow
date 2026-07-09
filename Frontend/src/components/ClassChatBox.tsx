@@ -90,7 +90,7 @@ export const ClassChatBox: React.FC<ClassChatBoxProps> = ({ classId, unreadCount
       },
       onConnect: () => {
         setIsConnected(true)
-        client.subscribe(`/topic/class/${classId}`, (msg) => {
+        client.subscribe(`/topic/class-${classId}`, (msg) => {
           if (msg.body) {
             const newMsg: ChatMessageDTO = JSON.parse(msg.body)
             setMessages(prev => [...prev, newMsg])

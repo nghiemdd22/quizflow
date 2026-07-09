@@ -30,7 +30,7 @@ public class ChatController {
 
     // STOMP Endpoint: Nhận tin nhắn chat từ STOMP client gửi tới /app/chat/{classId}
     @MessageMapping("/chat/{classId}")
-    @SendTo("/topic/class/{classId}")
+    @SendTo("/topic/class-{classId}")
     public ChatMessageDTO sendMessage(
             @DestinationVariable Long classId,
             @Payload ChatMessageRequest request,

@@ -34,8 +34,10 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+      - "61613:61613" # Cổng STOMP phục vụ tính năng Chat/WebSocket
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq_enabled_plugins:/etc/rabbitmq/enabled_plugins
 
   meilisearch:
     image: getmeili/meilisearch:v1.11

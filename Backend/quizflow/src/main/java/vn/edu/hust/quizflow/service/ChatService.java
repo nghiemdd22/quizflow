@@ -74,18 +74,25 @@ public class ChatService {
 
         chatMessage = chatMessageRepository.save(chatMessage);
         
-        // Cập nhật biến đếm unread_count cho giáo viên
-        if (!user.getId().equals(classroom.getTeacher().getId())) {
-            incrementUnreadCountAndNotify(classroom, classroom.getTeacher());
-        }
+        // Chạy ngầm việc đếm số tin nhắn chưa đọc và thông báo (không block luồng chính)
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                // Cập nhật biến đếm unread_count cho giáo viên
+                if (!user.getId().equals(classroom.getTeacher().getId())) {
+                    incrementUnreadCountAndNotify(classroom, classroom.getTeacher());
+                }
 
-        // Cập nhật biến đếm unread_count cho học sinh
-        List<ClassMember> members = classMemberRepository.findByClassroomId(classroom.getId());
-        for (ClassMember member : members) {
-            if (!member.getStudent().getId().equals(user.getId())) {
-                incrementUnreadCountAndNotify(classroom, member.getStudent());
+                // Cập nhật biến đếm unread_count cho học sinh
+                List<ClassMember> members = classMemberRepository.findByClassroomId(classroom.getId());
+                for (ClassMember member : members) {
+                    if (!member.getStudent().getId().equals(user.getId())) {
+                        incrementUnreadCountAndNotify(classroom, member.getStudent());
+                    }
+                }
+            } catch (Exception e) {
+                // Ignore background errors to keep chat alive
             }
-        }
+        });
 
         return mapToDTO(chatMessage);
     }
