@@ -49,6 +49,34 @@ services:
     volumes:
       - meilisearch_data:/meili_data
 
+  backend:
+    build:
+      context: ./Backend/quizflow
+      dockerfile: Dockerfile
+    container_name: quizflow-backend
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=db
+      - REDIS_HOST=cache
+      - RABBITMQ_HOST=mq
+    depends_on:
+      - db
+      - cache
+      - mq
+
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: quizflow-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
 volumes:
   mysql_data:
   redis_data:

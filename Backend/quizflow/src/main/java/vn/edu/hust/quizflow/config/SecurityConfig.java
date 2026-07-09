@@ -44,8 +44,8 @@ public class SecurityConfig {
             
             // Định cấu hình phân quyền các request HTTP gửi đến
             .authorizeHttpRequests(auth -> auth
-                // Các endpoint API đăng nhập, đăng ký (/api/v1/auth/**) được phép truy cập tự do không cần token
-                .requestMatchers("/api/v1/auth/**").permitAll()
+                // Các endpoint API đăng nhập, đăng ký (/api/v1/auth/**) và load test được phép truy cập tự do không cần token
+                .requestMatchers("/api/v1/auth/**", "/api/v1/test-load/**").permitAll()
                 // Cho phép khách vãng lai đọc bài viết và xem thẻ trên diễn đàn
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/posts/**", "/api/v1/tags").permitAll()
                 // Cho phép truy cập tự do vào các metric giám sát hệ thống của Actuator
