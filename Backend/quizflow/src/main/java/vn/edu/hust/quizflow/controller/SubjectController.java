@@ -57,7 +57,7 @@ public class SubjectController {
      * URL: POST http://localhost:8080/api/v1/subjects
      */
     @PostMapping
-    @PreAuthorize("hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createSubject(@Valid @RequestBody SubjectDTO dto) {
         try {
             SubjectDTO createdSubject = subjectService.createSubject(dto);
@@ -73,7 +73,7 @@ public class SubjectController {
      * URL: PUT http://localhost:8080/api/v1/subjects/{id}
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateSubject(@PathVariable Long id, @Valid @RequestBody SubjectDTO dto) {
         try {
             SubjectDTO updatedSubject = subjectService.updateSubject(id, dto);
@@ -89,7 +89,7 @@ public class SubjectController {
      * URL: DELETE http://localhost:8080/api/v1/subjects/{id}
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteSubject(@PathVariable Long id) {
         try {
             subjectService.deleteSubject(id);

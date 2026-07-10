@@ -12,6 +12,7 @@ public class CommentResponse {
     private String content;
     private Long authorId;
     private String authorName;
+    @com.fasterxml.jackson.annotation.JsonProperty("isAccepted")
     private boolean isAccepted;
     private int upvoteCount;
     private int downvoteCount;

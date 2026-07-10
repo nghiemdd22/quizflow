@@ -34,7 +34,7 @@ public class ChatService {
     private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
 
     @Transactional
-    public List<ChatMessageDTO> getChatHistory(Long classId, String username) {
+    public List<ChatMessageDTO> getChatHistory(Long classId, int page, int size, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy user"));
 
@@ -43,8 +43,8 @@ public class ChatService {
 
         checkAccess(classroom, user);
 
-        // Lấy 50 tin nhắn gần nhất
-        List<ChatMessage> messages = chatMessageRepository.findByClassroomIdOrderByCreatedAtDesc(classId, PageRequest.of(0, 50));
+        // Lấy danh sách tin nhắn theo phân trang
+        List<ChatMessage> messages = chatMessageRepository.findByClassroomIdOrderByCreatedAtDesc(classId, PageRequest.of(page, size));
         
         // Đảo ngược lại để tin cũ xếp trên, tin mới xếp dưới (như chat app thông thường)
         Collections.reverse(messages);

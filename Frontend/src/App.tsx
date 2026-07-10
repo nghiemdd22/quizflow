@@ -28,6 +28,7 @@ import { PostDetailPage } from './pages/PostDetailPage'
 import { AdminDashboard } from './pages/AdminDashboard'
 import { AdminUserManagement } from './pages/AdminUserManagement'
 import { AdminPinManagement } from './pages/AdminPinManagement'
+import { AdminSubjectManagement } from './pages/AdminSubjectManagement'
 import type { Course } from './types'
 import { useAuthStore } from './store/authStore'
 
@@ -179,9 +180,10 @@ function App() {
               <Route path="/teacher/exam-sessions/:sessionId/proctor" element={<ProtectedRoute allowedRoles={['TEACHER']}><PageWrapper><ProctoringPage /></PageWrapper></ProtectedRoute>} />
 
               {/* Admin Routes */}
-              <Route path="/admin" element={<ProtectedRoute allowedRoles={['ADMIN']}><PageWrapper><AdminDashboard /></PageWrapper></ProtectedRoute>} />
-              <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['ADMIN']}><PageWrapper><AdminUserManagement /></PageWrapper></ProtectedRoute>} />
-              <Route path="/admin/pins" element={<ProtectedRoute allowedRoles={['ADMIN']}><PageWrapper><AdminPinManagement /></PageWrapper></ProtectedRoute>} />
+              <Route path="admin" element={<ProtectedRoute allowedRoles={['ADMIN']}><PageWrapper><AdminDashboard /></PageWrapper></ProtectedRoute>} />
+              <Route path="admin/users" element={<ProtectedRoute allowedRoles={['ADMIN']}><PageWrapper><AdminUserManagement /></PageWrapper></ProtectedRoute>} />
+              <Route path="admin/pins" element={<ProtectedRoute allowedRoles={['ADMIN']}><PageWrapper><AdminPinManagement /></PageWrapper></ProtectedRoute>} />
+              <Route path="admin/subjects" element={<ProtectedRoute allowedRoles={['ADMIN']}><PageWrapper><AdminSubjectManagement /></PageWrapper></ProtectedRoute>} />
 
               {/* Common Routes */}
               <Route path="/about" element={<PageWrapper><AboutPage /></PageWrapper>} />

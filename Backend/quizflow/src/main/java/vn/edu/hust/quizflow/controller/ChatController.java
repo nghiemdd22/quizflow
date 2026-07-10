@@ -24,8 +24,10 @@ public class ChatController {
     @GetMapping("/api/v1/classes/{classId}/chat/history")
     public ResponseEntity<List<ChatMessageDTO>> getChatHistory(
             @PathVariable Long classId,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "0") int page,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "20") int size,
             Principal principal) {
-        return ResponseEntity.ok(chatService.getChatHistory(classId, principal.getName()));
+        return ResponseEntity.ok(chatService.getChatHistory(classId, page, size, principal.getName()));
     }
 
     // STOMP Endpoint: Nhận tin nhắn chat từ STOMP client gửi tới /app/chat/{classId}

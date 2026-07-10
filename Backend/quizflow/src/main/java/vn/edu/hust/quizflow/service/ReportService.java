@@ -19,6 +19,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service xử lý các nghiệp vụ liên quan đến Báo cáo thống kê (Report).
+ * Cung cấp dữ liệu để vẽ biểu đồ và hiển thị bảng điểm, lịch sử gian lận của các ca thi đã kết thúc.
+ */
 @Service
 @RequiredArgsConstructor
 public class ReportService {
@@ -30,6 +34,14 @@ public class ReportService {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss");
 
+    /**
+     * Lấy danh sách tổng quan các ca thi ĐÃ KẾT THÚC của một giáo viên cụ thể.
+     * Hàm này tính toán nhanh các chỉ số cơ bản (điểm trung bình, tổng số người tham gia, tổng số lượt gian lận)
+     * để hiển thị ở trang chủ Dashboard (dạng danh sách thẻ/table).
+     *
+     * @param teacherId ID của giáo viên
+     * @return Danh sách DTO chứa tóm tắt thống kê của từng ca thi
+     */
     public List<ReportSessionSummaryDTO> getClosedSessionsForTeacher(Long teacherId) {
         List<ExamSession> closedSessions = examSessionRepository.findByExamTeacherIdAndStatusOrderByStartTimeDesc(teacherId, SessionStatus.CLOSED);
         return closedSessions.stream().map(session -> {
@@ -52,13 +64,25 @@ public class ReportService {
         }).collect(Collectors.toList());
     }
 
+    /**
+     * Lấy báo cáo chi tiết cực kỳ chuyên sâu của một ca thi cụ thể.
+     * Được gọi khi giáo viên bấm vào xem chi tiết một ca thi trên Dashboard.
+     * Bao gồm:
+     * 1. Bảng điểm (Scoreboard) có xếp hạng, thời gian làm bài, cảnh báo gian lận.
+     * 2. Phổ điểm (Score Distribution) chia làm 4 dải: 0-4, 4-6, 6-8, 8-10 để vẽ biểu đồ.
+     * 3. Nhật ký gian lận (Cheat Logs) ghi lại từng hành vi vi phạm của học sinh.
+     *
+     * @param sessionId ID của ca thi cần xem báo cáo
+     * @return DTO chứa toàn bộ dữ liệu thống kê khổng lồ để vẽ giao diện chi tiết
+     */
     public ReportSessionDetailDTO getSessionDetail(Long sessionId) {
         ExamSession session = examSessionRepository.findById(sessionId).orElseThrow();
         List<ExamSubmission> subs = examSubmissionRepository.findByExamSessionId(sessionId);
         
         double sum = 0;
         int cheatAttempts = 0;
-        int[] ranges = new int[4]; // 0-4, 4-6, 6-8, 8-10
+        // Mảng 4 phần tử dùng để chia phổ điểm vẽ biểu đồ cột: [0-4], [4-6], [6-8], [8-10]
+        int[] ranges = new int[4];
 
         List<ScoreboardEntryDTO> scoreboard = new ArrayList<>();
         
@@ -84,13 +108,16 @@ public class ReportService {
                 submitStr = sub.getSubmittedAt().format(TIME_FORMAT);
             }
             
+            // Tính toán thời gian làm bài thực tế của học sinh (phút:giây)
             if (sub.getStartedAt() != null && sub.getSubmittedAt() != null) {
+                // Trường hợp nộp bài bình thường
                 Duration d = Duration.between(sub.getStartedAt(), sub.getSubmittedAt());
                 long mm = d.toMinutes();
                 long ss = d.toSecondsPart();
                 timeTaken = String.format("%02d:%02d", mm, ss);
             } else if (sub.getStartedAt() != null) {
-                // If they never submitted, time taken is the duration from start to session end
+                // Trường hợp học sinh bỏ dở (treo máy) không ấn nộp bài, 
+                // thời gian làm bài = thời gian bắt đầu đến lúc đóng ca thi
                 Duration d = Duration.between(sub.getStartedAt(), session.getEndTime());
                 if (!d.isNegative()) {
                     long mm = d.toMinutes();
@@ -113,7 +140,8 @@ public class ReportService {
                 .build());
         }
         
-        // Sort scoreboard by score descending
+        // Xếp hạng học sinh: Sắp xếp bảng điểm theo thứ tự điểm giảm dần, 
+        // sau đó gán Hạng (Rank) lần lượt từ 1, 2, 3...
         scoreboard.sort((a, b) -> Double.compare(b.getScore(), a.getScore()));
         for (int i = 0; i < scoreboard.size(); i++) {
             scoreboard.get(i).setRank(i + 1);

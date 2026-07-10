@@ -87,6 +87,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <Link to="/admin" data-text="Dashboard" className={`nav-item transition-all ${location.pathname === '/admin' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Dashboard</Link>
                   <Link to="/admin/users" data-text="Người dùng" className={`nav-item transition-all ${location.pathname === '/admin/users' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Người dùng</Link>
                   <Link to="/admin/pins" data-text="Mã Đăng ký" className={`nav-item transition-all ${location.pathname === '/admin/pins' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Mã Đăng ký</Link>
+                  <Link to="/admin/subjects" data-text="Môn học" className={`nav-item transition-all ${location.pathname === '/admin/subjects' ? 'text-slate-900 font-black' : 'hover:font-black text-slate-500'}`}>Môn học</Link>
                 </>
               ) : role === 'TEACHER' ? (
                 <>

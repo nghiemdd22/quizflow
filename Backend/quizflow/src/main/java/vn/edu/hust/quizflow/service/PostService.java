@@ -29,6 +29,10 @@ import vn.edu.hust.quizflow.dto.message.PostSyncMessage;
 import java.time.ZoneOffset;
 import java.util.stream.Collectors;
 
+/**
+ * Service xử lý các nghiệp vụ cốt lõi liên quan đến Bài viết (Post) trên Diễn đàn hỏi đáp.
+ * Bao gồm: tạo bài viết, tải tài liệu đính kèm, tìm kiếm (Full-text Search), xem chi tiết và Vote.
+ */
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -44,6 +48,17 @@ public class PostService {
     private final Client meilisearchClient;
     private final EntityManager entityManager;
 
+    /**
+     * Tạo một bài viết mới trên diễn đàn.
+     * Quy trình:
+     * 1. Lưu bài viết vào Database (MySQL).
+     * 2. Upload các file đính kèm (nếu có) lên máy chủ Cloudinary để lấy link URL, rồi lưu lại.
+     * 3. Gửi thông tin bài viết sang RabbitMQ để đẩy qua Meilisearch phục vụ tìm kiếm tốc độ cao.
+     *
+     * @param username Tên đăng nhập của sinh viên/người dùng tạo bài viết
+     * @param request Payload chứa tiêu đề, nội dung, danh sách file, và các tag
+     * @return DTO mang thông tin bài viết vừa được tạo
+     */
     @Transactional
     public PostResponse createPost(String username, CreatePostRequest request) {
         User author = userRepository.findByUsername(username)
@@ -102,6 +117,14 @@ public class PostService {
         return mapToResponse(savedPost, attachments, 0);
     }
 
+    /**
+     * Lấy danh sách bài viết trên diễn đàn, phân trang và sắp xếp bài mới nhất lên trên.
+     * Đồng thời, nhúng kèm thông tin để biết người đang xem hiện tại đã vote bài nào chưa.
+     *
+     * @param pageable Cấu hình phân trang (số trang, số phần tử trên trang)
+     * @param username Tên của người dùng đang xem (tùy chọn, để xem trạng thái vote)
+     * @return Danh sách phân trang bài viết
+     */
     public Page<PostResponse> getPosts(Pageable pageable, String username) {
         User user = null;
         if (username != null && !username.isEmpty()) {
@@ -121,6 +144,14 @@ public class PostService {
                 });
     }
 
+    /**
+     * Xem chi tiết một bài viết cụ thể dựa vào ID.
+     * Tự động tăng lượt xem (View Count) nếu người này chưa từng xem bài viết này trước đây.
+     *
+     * @param postId ID của bài viết cần đọc
+     * @param username Tên đăng nhập của người đang xem
+     * @return Thông tin toàn diện về bài viết (nội dung, file, số lượt upvote/downvote)
+     */
     @Transactional
     public PostResponse getPostDetail(Long postId, String username) {
         Post post = postRepository.findById(postId)
@@ -148,6 +179,15 @@ public class PostService {
         return mapToResponse(post, attachments, currentUserVote);
     }
 
+    /**
+     * Chức năng tìm kiếm toàn văn bản (Full-text Search).
+     * Sử dụng Meilisearch (cực nhanh, hỗ trợ gõ sai chính tả).
+     * Có cơ chế hạ cấp (Fallback) thông minh: Nếu Meilisearch sập thì tự động chạy tìm kiếm bằng SQL để tránh làm web ngừng hoạt động.
+     *
+     * @param query Từ khóa tìm kiếm
+     * @param username Người tìm kiếm
+     * @return Kết quả có thể đến từ Meilisearch (nhanh) hoặc Database (chậm hơn)
+     */
     public Object searchPosts(String query, String username) {
         User user = null;
         if (username != null && !username.isEmpty()) {
@@ -159,7 +199,8 @@ public class PostService {
             com.meilisearch.sdk.model.Searchable result = index.search(new SearchRequest(query));
             return result;
         } catch (Exception e) {
-            // Fallback to database search if Meilisearch is down
+            // Cơ chế Fallback an toàn:
+            // Nếu Meilisearch lỗi (Server sập hoặc chưa bật), thì quay xe dùng truy vấn LIKE trên Database
             org.springframework.data.domain.Page<Post> dbResults = postRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(query, query, org.springframework.data.domain.PageRequest.of(0, 50));
             return dbResults.map(post -> {
                 List<PostAttachment> attachments = postAttachmentRepository.findByPostId(post.getId());
@@ -173,6 +214,17 @@ public class PostService {
         }
     }
 
+    /**
+     * Xử lý hành động Vote cho một bài viết (Upvote, Downvote hoặc Hủy vote).
+     * Logic Toggle:
+     * - Bấm Upvote khi đang Upvote -> Hủy.
+     * - Bấm Upvote khi đang Downvote -> Đổi thành Upvote.
+     *
+     * @param postId ID bài viết bị vote
+     * @param username Tên người thực hiện
+     * @param voteType 1 (Up), -1 (Down), 0 (Bỏ vote)
+     * @return Trạng thái bài viết sau khi được cập nhật số liệu
+     */
     @Transactional
     public PostResponse votePost(Long postId, String username, int voteType) {
         User user = userRepository.findByUsername(username)
@@ -205,7 +257,9 @@ public class PostService {
             }
         }
 
-        // Must flush or re-fetch for @Formula to recalculate
+        // Ép Hibernate xả dữ liệu thay đổi xuống Database ngay lập tức (flush)
+        // và yêu cầu load lại Entity bài viết (refresh).
+        // Mục đích: Tính toán lại tức thì số lượng Upvote/Downvote ở cột ảo (@Formula) trong entity Post
         postVoteRepository.flush();
         entityManager.refresh(post);
         List<PostAttachment> attachments = postAttachmentRepository.findByPostId(postId);

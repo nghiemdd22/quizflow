@@ -26,15 +26,21 @@ export const ClassChatBox: React.FC<ClassChatBoxProps> = ({ classId, unreadCount
   
   const stompClientRef = useRef<Client | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const chatContainerRef = useRef<HTMLDivElement>(null)
+  const isLoadingOldRef = useRef(false)
   const initialUnreadRef = useRef(unreadCount)
   const [dividerIndex, setDividerIndex] = useState<number>(-1)
+  const [page, setPage] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
   const { userEmail, userRole } = useAuthStore()
   
   // Custom hook to get user ID is not available directly, but we can match by role and name for simple styling
   // Actually authStore has `userId`, let's check if it does. If not, we can rely on `senderName` or just styling.
   
   useEffect(() => {
-    loadHistory()
+    setPage(0)
+    setHasMore(true)
+    loadHistory(0)
     connectWebSocket()
     
     // Đánh dấu đã đọc và xoá badge đỏ trên giao diện
@@ -52,31 +58,65 @@ export const ClassChatBox: React.FC<ClassChatBoxProps> = ({ classId, unreadCount
   }, [classId])
   
   useEffect(() => {
-    scrollToBottom()
+    if (!isLoadingOldRef.current) {
+      scrollToBottom()
+    }
   }, [messages])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }
 
-  const loadHistory = async () => {
+  const loadHistory = async (pageNumber: number) => {
     try {
-      const res = await apiFetch(`/api/v1/classes/${classId}/chat/history`)
+      const res = await apiFetch(`/api/v1/classes/${classId}/chat/history?page=${pageNumber}&size=20`)
       if (res.ok) {
         const data = await res.json()
-        setMessages(data)
+        if (data.length < 20) {
+          setHasMore(false)
+        }
         
-        // Tính toán vị trí divider cố định
-        if (initialUnreadRef.current > 0) {
-          if (initialUnreadRef.current >= data.length) {
-            setDividerIndex(0)
-          } else {
-            setDividerIndex(data.length - initialUnreadRef.current)
+        if (pageNumber === 0) {
+          setMessages(data)
+          // Tính toán vị trí divider cố định
+          if (initialUnreadRef.current > 0) {
+            if (initialUnreadRef.current >= data.length) {
+              setDividerIndex(0)
+            } else {
+              setDividerIndex(data.length - initialUnreadRef.current)
+            }
+          }
+        } else {
+          // Tải thêm tin nhắn cũ
+          if (chatContainerRef.current) {
+            const container = chatContainerRef.current;
+            const scrollHeightBefore = container.scrollHeight;
+            const scrollTopBefore = container.scrollTop;
+            
+            setMessages(prev => [...data, ...prev]);
+            
+            setTimeout(() => {
+              if (chatContainerRef.current) {
+                const newScrollHeight = chatContainerRef.current.scrollHeight;
+                chatContainerRef.current.scrollTop = scrollTopBefore + (newScrollHeight - scrollHeightBefore);
+              }
+            }, 0);
           }
         }
       }
     } catch (e) {
       console.error('Failed to load chat history', e)
+    }
+  }
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (e.currentTarget.scrollTop === 0 && hasMore && !isLoadingOldRef.current) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      isLoadingOldRef.current = true;
+      loadHistory(nextPage).finally(() => {
+        isLoadingOldRef.current = false;
+      });
     }
   }
 
@@ -140,7 +180,16 @@ export const ClassChatBox: React.FC<ClassChatBoxProps> = ({ classId, unreadCount
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 bg-slate-50 flex flex-col gap-3 custom-scrollbar">
+      <div 
+        ref={chatContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto p-4 bg-slate-50 flex flex-col gap-3 custom-scrollbar"
+      >
+        {isLoadingOldRef.current && (
+          <div className="text-center py-2 text-xs font-bold text-slate-400">
+            Đang tải thêm...
+          </div>
+        )}
         {messages.map((msg, index) => {
           // A bit hacky: if it's the current user's role (Wait, could be multiple students).
           // Ideally we check ID. We'll assume the current user has the role and email matches, or just check role for Teachers.
