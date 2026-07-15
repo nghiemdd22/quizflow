@@ -63,6 +63,7 @@ services:
       - DB_HOST=db
       - REDIS_HOST=cache
       - RABBITMQ_HOST=mq
+      - TZ=Asia/Ho_Chi_Minh
     depends_on:
       - db
       - cache
