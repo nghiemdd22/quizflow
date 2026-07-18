@@ -1,6 +1,8 @@
 spring:
   application:
     name: quizflow
+  config:
+    import: optional:file:../../.env
   servlet:
     multipart:
       max-file-size: 50MB

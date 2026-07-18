@@ -11,3 +11,4 @@ jmeter-test-plan.jmx
 Report.docx
 tokens.csv
 TestLoadController.java
+.env
