@@ -57,6 +57,6 @@ jwt:
   expiration-ms: ${JWT_EXPIRATION_MS:86400000}
 
 cloudinary:
-  cloud-name: avgccvua
-  api-key: 798122979194662
-  api-secret: hImbOTtMacwUsD71ussbxO0vxyc
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:avgccvua}
+  api-key: ${CLOUDINARY_API_KEY:798122979194662}
+  api-secret: ${CLOUDINARY_API_SECRET:your_api_secret_here}
