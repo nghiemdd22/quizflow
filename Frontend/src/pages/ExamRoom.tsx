@@ -33,7 +33,7 @@ export const ExamRoom: React.FC = () => {
     const token = useAuthStore.getState().accessToken || ''
 
     const client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws/exam'),
+      webSocketFactory: () => new SockJS(`http://${window.location.hostname}:8080/ws/exam`),
       connectHeaders: {
         Authorization: `Bearer ${token}`
       },
