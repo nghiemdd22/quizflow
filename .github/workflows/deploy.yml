@@ -8,7 +8,11 @@ name: CI/CD Enterprise Pipeline
 on:
   push:
     branches:
-      - main # Kịch bản này CHỈ chạy khi có ai đó Push code lên nhánh 'main'
+      - main
+    paths-ignore:
+      - '*.md'
+      - '.gitignore'
+      - 'docs/**' # Kịch bản này CHỈ chạy khi có ai đó Push code lên nhánh 'main'
 
 # PHẦN 2: CÁC NHIỆM VỤ (JOBS)
 jobs:
