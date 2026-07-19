@@ -1,0 +1,85 @@
+# =========================================================================
+# KỊCH BẢN TỰ ĐỘNG HÓA CI/CD BẰNG GITHUB ACTIONS
+# Nhiệm vụ: Xây dựng (Build) mã nguồn và Triển khai (Deploy) lên máy chủ
+# =========================================================================
+name: CI/CD Enterprise Pipeline
+
+# PHẦN 1: ĐIỀU KIỆN KÍCH HOẠT (TRIGGER)
+on:
+  push:
+    branches:
+      - main # Kịch bản này CHỈ chạy khi có ai đó Push code lên nhánh 'main'
+
+# PHẦN 2: CÁC NHIỆM VỤ (JOBS)
+jobs:
+  # -----------------------------------------------------------------------
+  # NHIỆM VỤ 1: Làm "Thợ Xây" (Build code thành Image và cất vào kho)
+  # -----------------------------------------------------------------------
+  build-and-push:
+    runs-on: ubuntu-latest # Mượn tạm 1 máy ảo hệ điều hành Ubuntu của GitHub
+    steps:
+      - name: Bước 1 - Tải mã nguồn về máy ảo Github
+        uses: actions/checkout@v3
+
+      - name: Bước 2 - Đăng nhập vào kho lưu trữ Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }} # Đọc biến bảo mật từ Github Settings
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Bước 3 - Đóng gói (Build) và Gửi (Push) khối Backend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./Backend/quizflow # Đứng ở thư mục này để Build
+          push: true                  # Có đẩy lên mạng không? Có.
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/quizflow-backend:latest # Dán nhãn là bản mới nhất
+
+      - name: Bước 4 - Đóng gói (Build) và Gửi (Push) khối Frontend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./Frontend
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/quizflow-frontend:latest
+
+  # -----------------------------------------------------------------------
+  # NHIỆM VỤ 2: Làm "Người đưa tin" (Báo cho máy chủ tự cập nhật bản mới)
+  # -----------------------------------------------------------------------
+  deploy-to-vps:
+    needs: build-and-push # Cực kỳ quan trọng: Phải đợi Nhiệm vụ 1 làm xong mới được chạy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tải mã nguồn về máy ảo Github
+        uses: actions/checkout@v3
+
+      - name: Bước 5 - Copy file cấu hình sang máy chủ VPS thông qua SCP
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.VPS_IP }}             # IP máy chủ của bạn
+          username: ${{ secrets.VPS_USERNAME }}   # Tên đăng nhập
+          key: ${{ secrets.VPS_SSH_KEY }}         # Chìa khóa riêng tư để lén vào nhà không cần Pass
+          source: "docker-compose.prod.yml,rabbitmq_enabled_plugins" # Chỉ copy đúng 2 thứ này
+          target: "~/quizflow"                    # Đích đến trên máy chủ
+
+      - name: Bước 6 - Ra lệnh cho máy chủ qua giao thức SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_IP }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            # --- Các lệnh bên dưới sẽ được gõ thực tế trên máy chủ VPS của bạn ---
+            
+            # Di chuyển vào thư mục chứa dự án
+            cd ~/quizflow
+            
+            # Đổi tên file docker-compose.prod.yml thành docker-compose.yml (Để gõ lệnh cho ngắn)
+            mv docker-compose.prod.yml docker-compose.yml
+            
+            # Tiêm (Inject) biến tên đăng nhập vào hệ thống để file docker-compose biết cần tải Image của ai
+            export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
+            
+            # Kéo (Pull) toàn bộ ruột mới nhất từ Docker Hub về
+            sudo docker compose pull
+            
+            # Tự động thay thế Container cũ bằng Container mới. Quá trình nâng cấp (Deploy) diễn ra chớp nhoáng!
+            sudo docker compose up -d

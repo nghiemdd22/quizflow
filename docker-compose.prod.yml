@@ -1,0 +1,90 @@
+# =========================================================================
+# FILE CẤU HÌNH DOCKER CHO MÔI TRƯỜNG MÁY CHỦ (PRODUCTION)
+# File này KHÔNG tự Build code từ mã nguồn. Nó sẽ lên mạng (Docker Hub) 
+# kéo các Image (bản đóng gói sẵn) về chạy. Giúp máy chủ đỡ bị đơ/lag.
+# =========================================================================
+services:
+  db:
+    image: mysql:8.0 # Tải hệ quản trị CSDL MySQL bản 8.0 từ Docker Hub
+    container_name: quizflow-mysql # Tên định danh cho dễ nhìn trong danh sách
+    restart: always # Tự động bật lại nếu bị lỗi sập hoặc VPS khởi động lại
+    environment:
+      # Hút mật khẩu từ file .env (nếu không có .env thì lấy chữ 'password')
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-password}
+      MYSQL_DATABASE: quizflow # Tạo sẵn database rỗng tên là 'quizflow'
+      MYSQL_USER: ${DB_USER:-root} # Tài khoản để Backend dùng đăng nhập
+      MYSQL_PASSWORD: ${DB_PASSWORD:-password} 
+    ports:
+      - "3306:3306" # Mở cổng 3306 để có thể dùng DBeaver/Navicat kết nối vào
+    volumes:
+      - mysql_data:/var/lib/mysql # Ánh xạ dữ liệu ra ổ cứng ngoài để không bị mất khi xóa Container
+
+  cache:
+    image: redis:7.2-alpine # Dùng bản alpine cho siêu nhẹ
+    container_name: quizflow-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  mq:
+    image: rabbitmq:3.13-management-alpine # Kèm chữ management để có giao diện web quản lý
+    container_name: quizflow-rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    ports:
+      - "5672:5672"   # Cổng giao tiếp nội bộ cho hệ thống
+      - "15672:15672" # Cổng giao diện Web quản lý RabbitMQ
+      - "61613:61613" # Cổng STOMP đặc biệt để phục vụ tính năng Chat/WebSocket (rất quan trọng)
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq_enabled_plugins:/etc/rabbitmq/enabled_plugins # Kích hoạt plugin STOMP
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.11 # Cỗ máy tìm kiếm toàn văn bản (siêu nhanh)
+    container_name: quizflow-meilisearch
+    restart: always
+    environment:
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-masterKey123}
+      - MEILI_ENV=production
+    ports:
+      - "7700:7700"
+    volumes:
+      - meilisearch_data:/meili_data
+
+  backend:
+    # Lấy Image mà GitHub Actions vừa xây xong và gửi lên Docker Hub
+    image: ${DOCKERHUB_USERNAME}/quizflow-backend:latest
+    container_name: quizflow-backend
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=db       # Trỏ sang tên service 'db' ở dòng 2
+      - REDIS_HOST=cache # Trỏ sang tên service 'cache' ở dòng 16
+      - RABBITMQ_HOST=mq # Trỏ sang tên service 'mq' ở dòng 25
+      - TZ=Asia/Ho_Chi_Minh # Cấu hình múi giờ chuẩn VN để không bị lệch giờ thi
+    depends_on:
+      - db     # Bắt buộc DB phải chạy xong thì Backend mới được phép khởi động
+      - cache
+      - mq
+
+  frontend:
+    # Lấy Image chứa mã nguồn React + Nginx từ Docker Hub
+    image: ${DOCKERHUB_USERNAME}/quizflow-frontend:latest
+    container_name: quizflow-frontend
+    restart: always
+    ports:
+      - "80:80" # Mở cổng 80 chuẩn của Website ra thế giới
+    depends_on:
+      - backend # Đợi Backend chạy xong thì mới bật Web lên
+
+# Khai báo các "Ổ cứng ảo" để dữ liệu không bị bay hơi mỗi lần cập nhật code
+volumes:
+  mysql_data:
+  redis_data:
+  rabbitmq_data:
+  meilisearch_data:
