@@ -62,6 +62,8 @@ services:
     restart: always
     ports:
       - "8080:8080"
+    env_file: 
+      - .env
     environment:
       - DB_HOST=db       # Trỏ sang tên service 'db' ở dòng 2
       - REDIS_HOST=cache # Trỏ sang tên service 'cache' ở dòng 16

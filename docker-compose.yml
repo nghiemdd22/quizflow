@@ -59,6 +59,8 @@ services:
     restart: always
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
       - DB_HOST=db
       - REDIS_HOST=cache
