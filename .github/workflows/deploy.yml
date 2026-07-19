@@ -79,7 +79,7 @@ jobs:
             export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
             
             # Kéo (Pull) toàn bộ ruột mới nhất từ Docker Hub về
-            sudo docker compose pull
+            docker compose pull
             
             # Tự động thay thế Container cũ bằng Container mới. Quá trình nâng cấp (Deploy) diễn ra chớp nhoáng!
-            sudo docker compose up -d
+            docker compose up -d
