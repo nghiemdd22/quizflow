@@ -54,7 +54,7 @@ export const ProctoringPage: React.FC = () => {
     if (!token) return
 
     const client = new Client({
-      webSocketFactory: () => new SockJS(`http://${window.location.hostname}:8080/ws/exam`),
+      webSocketFactory: () => new SockJS(`${window.location.origin}/ws/exam`),
       connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 5000,
     })
