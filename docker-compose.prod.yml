@@ -14,8 +14,6 @@ services:
       MYSQL_DATABASE: quizflow # Tạo sẵn database rỗng tên là 'quizflow'
       MYSQL_USER: ${DB_USER:-root} # Tài khoản để Backend dùng đăng nhập
       MYSQL_PASSWORD: ${DB_PASSWORD:-password} 
-    ports:
-      - "3306:3306" # Mở cổng 3306 để có thể dùng DBeaver/Navicat kết nối vào
     volumes:
       - mysql_data:/var/lib/mysql # Ánh xạ dữ liệu ra ổ cứng ngoài để không bị mất khi xóa Container
 
@@ -23,8 +21,6 @@ services:
     image: redis:7.2-alpine # Dùng bản alpine cho siêu nhẹ
     container_name: quizflow-redis
     restart: always
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
 
@@ -35,10 +31,6 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
-    ports:
-      - "5672:5672"   # Cổng giao tiếp nội bộ cho hệ thống
-      - "15672:15672" # Cổng giao diện Web quản lý RabbitMQ
-      - "61613:61613" # Cổng STOMP đặc biệt để phục vụ tính năng Chat/WebSocket (rất quan trọng)
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
       - ./rabbitmq_enabled_plugins:/etc/rabbitmq/enabled_plugins # Kích hoạt plugin STOMP
@@ -50,8 +42,6 @@ services:
     environment:
       - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-masterKey123}
       - MEILI_ENV=production
-    ports:
-      - "7700:7700"
     volumes:
       - meilisearch_data:/meili_data
 
@@ -60,8 +50,6 @@ services:
     image: ${DOCKERHUB_USERNAME}/quizflow-backend:latest
     container_name: quizflow-backend
     restart: always
-    ports:
-      - "8080:8080"
     env_file: 
       - .env
     environment:
