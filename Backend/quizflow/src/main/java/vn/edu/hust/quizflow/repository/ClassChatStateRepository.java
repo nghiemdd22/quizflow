@@ -7,12 +7,15 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import vn.edu.hust.quizflow.entity.ClassChatState;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ClassChatStateRepository extends JpaRepository<ClassChatState, Long> {
 
     Optional<ClassChatState> findByUserIdAndClassroomId(Long userId, Long classroomId);
+    
+    List<ClassChatState> findByUserIdAndClassroomIdIn(Long userId, java.util.List<Long> classroomIds);
 
     @Modifying
     @Query("UPDATE ClassChatState c SET c.unreadCount = c.unreadCount + 1 WHERE c.classroom.id = :classroomId AND c.user.id != :senderId")

@@ -77,28 +77,59 @@ public class ClassroomService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng"));
 
+        List<Classroom> classrooms;
+
         if (user.getRole() == UserRole.TEACHER) {
-            return classroomRepository.findByTeacherId(user.getId()).stream()
+            // [CÁCH MỚI - Tối ưu 1]: Dùng JOIN FETCH tải luôn Giáo viên của lớp trong 1 câu SQL.
+            // Tránh việc tý nữa gọi c.getTeacher().getFullName() bị bắn thêm N câu SQL.
+            classrooms = classroomRepository.findByTeacherIdWithTeacher(user.getId()).stream()
                     .filter(c -> c.getStatus() != vn.edu.hust.quizflow.entity.ClassroomStatus.ARCHIVED)
-                    .map(c -> {
-                        int unread = classChatStateRepository.findByUserIdAndClassroomId(user.getId(), c.getId())
-                                .map(vn.edu.hust.quizflow.entity.ClassChatState::getUnreadCount)
-                                .orElse(0);
-                        return mapToResponse(c, classMemberRepository.findByClassroomId(c.getId()).size(), unread);
-                    })
                     .collect(Collectors.toList());
         } else {
-            return classMemberRepository.findByStudentId(user.getId()).stream()
+            // [CÁCH MỚI - Tối ưu 1]: Dùng JOIN FETCH tải luôn Lớp học + Giáo viên của Học sinh đó trong 1 SQL.
+            classrooms = classMemberRepository.findByStudentIdWithClassroomAndTeacher(user.getId()).stream()
                     .map(ClassMember::getClassroom)
                     .filter(c -> c.getStatus() != vn.edu.hust.quizflow.entity.ClassroomStatus.ARCHIVED)
-                    .map(c -> {
-                        int unread = classChatStateRepository.findByUserIdAndClassroomId(user.getId(), c.getId())
-                                .map(vn.edu.hust.quizflow.entity.ClassChatState::getUnreadCount)
-                                .orElse(0);
-                        return mapToResponse(c, classMemberRepository.findByClassroomId(c.getId()).size(), unread);
-                    })
                     .collect(Collectors.toList());
         }
+
+        if (classrooms.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+
+        // Bốc ID của tất cả các lớp ra thành một mảng (Ví dụ: [1, 2, 3... 10])
+        List<Long> classIds = classrooms.stream().map(Classroom::getId).collect(Collectors.toList());
+
+        // [CÁCH MỚI - Tối ưu 2]: BATCH QUERY ĐẾM SĨ SỐ
+        // Thay vì chạy 10 câu SQL đếm sĩ số cho 10 lớp, ta bắn 1 câu SQL gom nhóm (IN).
+        // Database sẽ trả về List<Object[]> chứa [class_id, count].
+        // Sau đó dùng Streams biến nó thành Map (Từ điển) để tra cứu siêu tốc trong RAM.
+        java.util.Map<Long, Long> memberCounts = classMemberRepository.countMembersByClassroomIds(classIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
+
+        // [CÁCH MỚI - Tối ưu 3]: BATCH QUERY ĐẾM TIN NHẮN
+        // Tương tự, bắn 1 câu SQL gom nhóm lấy toàn bộ tin nhắn chưa đọc của 10 lớp đó.
+        // Biến nó thành Map (Từ điển) {class_id : số_tin_nhắn}.
+        java.util.Map<Long, Integer> unreadCounts = classChatStateRepository.findByUserIdAndClassroomIdIn(user.getId(), classIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        state -> state.getClassroom().getId(),
+                        vn.edu.hust.quizflow.entity.ClassChatState::getUnreadCount
+                ));
+
+        // [RÁP DỮ LIỆU]: Lúc này toàn bộ dữ liệu đã nằm trên RAM (trong List và Map).
+        // Vòng lặp mapToResponse() sẽ chạy với tốc độ ánh sáng mà KHÔNG CẦN CHẠY THÊM BẤT KỲ CÂU SQL NÀO!
+        return classrooms.stream()
+                .map(c -> mapToResponse(
+                        c, 
+                        memberCounts.getOrDefault(c.getId(), 0L), 
+                        unreadCounts.getOrDefault(c.getId(), 0)
+                ))
+                .collect(Collectors.toList());
     }
 
     @Transactional
