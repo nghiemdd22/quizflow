@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Script bẻ khóa "Con gà và quả trứng" cho Nginx và Certbot
 
@@ -15,10 +15,11 @@ fi
 
 echo "### BƯỚC 1: Xây dựng chứng chỉ GIẢ mạo để Nginx chịu khởi động..."
 docker compose run --rm --entrypoint "\
+  sh -c 'mkdir -p /etc/letsencrypt/live/${domains[0]} && \
   openssl req -x509 -nodes -newkey rsa:$rsa_key_size -days 1 \
-    -keyout '/etc/letsencrypt/live/${domains[0]}/privkey.pem' \
-    -out '/etc/letsencrypt/live/${domains[0]}/fullchain.pem' \
-    -subj '/CN=localhost'" certbot
+    -keyout /etc/letsencrypt/live/${domains[0]}/privkey.pem \
+    -out /etc/letsencrypt/live/${domains[0]}/fullchain.pem \
+    -subj /CN=localhost'" certbot
 
 echo "### BƯỚC 2: Tải về các thuật toán mã hóa (SSL Options)..."
 docker compose run --rm --entrypoint "\
@@ -30,9 +31,9 @@ docker compose up -d frontend
 
 echo "### BƯỚC 4: Hủy chứng chỉ GIẢ mạo..."
 docker compose run --rm --entrypoint "\
-  rm -Rf /etc/letsencrypt/live/${domains[0]} && \
+  sh -c 'rm -Rf /etc/letsencrypt/live/${domains[0]} && \
   rm -Rf /etc/letsencrypt/archive/${domains[0]} && \
-  rm -Rf /etc/letsencrypt/renewal/${domains[0]}.conf" certbot
+  rm -Rf /etc/letsencrypt/renewal/${domains[0]}.conf'" certbot
 
 echo "### BƯỚC 5: Mời Let's Encrypt cấp chứng chỉ THẬT..."
 domain_args=""
