@@ -69,8 +69,22 @@ services:
     restart: always
     ports:
       - "80:80" # Mở cổng 80 chuẩn của Website ra thế giới
+      - "443:443" # Mở cổng 443 cho HTTPS
+    volumes:
+      - certbot-etc:/etc/letsencrypt # Mount thư mục chứa chứng chỉ
+      - certbot-www:/var/www/certbot # Mount thư mục xác thực Let's Encrypt
     depends_on:
       - backend # Đợi Backend chạy xong thì mới bật Web lên
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+    # Lệnh này giúp Certbot ngủ đông và cứ 12 tiếng thức dậy 1 lần để kiểm tra hạn sử dụng chứng chỉ. 
+    # Nếu sắp hết hạn (còn dưới 30 ngày), nó sẽ tự động gia hạn (Auto-renew).
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
 # Khai báo các "Ổ cứng ảo" để dữ liệu không bị bay hơi mỗi lần cập nhật code
 volumes:
@@ -78,3 +92,5 @@ volumes:
   redis_data:
   rabbitmq_data:
   meilisearch_data:
+  certbot-etc:
+  certbot-www:

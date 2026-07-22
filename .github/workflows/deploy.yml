@@ -61,7 +61,7 @@ jobs:
           host: ${{ secrets.VPS_IP }}             # IP máy chủ của bạn
           username: ${{ secrets.VPS_USERNAME }}   # Tên đăng nhập
           key: ${{ secrets.VPS_SSH_KEY }}         # Chìa khóa riêng tư để lén vào nhà không cần Pass
-          source: "docker-compose.prod.yml,rabbitmq_enabled_plugins" # Chỉ copy đúng 2 thứ này
+          source: "docker-compose.prod.yml,rabbitmq_enabled_plugins,init-letsencrypt.sh" # Chỉ copy đúng 3 thứ này
           target: "~/quizflow"                    # Đích đến trên máy chủ
 
       - name: Bước 6 - Ra lệnh cho máy chủ qua giao thức SSH
