@@ -6,7 +6,10 @@
 domains=(quizflow.systems www.quizflow.systems)
 rsa_key_size=4096
 email="doduongnghiem03@gmail.com" # Email để nhận cảnh báo nếu chứng chỉ sắp hết hạn
-staging=1 # Đặt bằng 1 nếu bạn sợ cấu hình sai bị khóa IP (Mặc định 0 là chạy thật)
+staging=0 # Đặt bằng 1 nếu bạn sợ cấu hình sai bị khóa IP (Mặc định 0 là chạy thật)
+
+# Sửa lỗi: Cấp biến môi trường tên đăng nhập DockerHub để docker-compose chạy được
+export DOCKERHUB_USERNAME=nghiemdd
 
 if ! [ -x "$(command -v docker)" ]; then
   echo 'Lỗi: Máy chủ chưa cài đặt Docker.' >&2
