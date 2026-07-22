@@ -23,8 +23,8 @@ docker compose run --rm --entrypoint "\
 
 echo "### BƯỚC 2: Tải về các thuật toán mã hóa (SSL Options)..."
 docker compose run --rm --entrypoint "\
-  sh -c 'curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf > /etc/letsencrypt/options-ssl-nginx.conf && \
-         curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem > /etc/letsencrypt/ssl-dhparams.pem'" certbot
+  sh -c 'wget -q -O /etc/letsencrypt/options-ssl-nginx.conf https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf && \
+         wget -q -O /etc/letsencrypt/ssl-dhparams.pem https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem'" certbot
 
 echo "### BƯỚC 3: Bật công tắc Nginx..."
 docker compose up -d frontend
