@@ -13,6 +13,9 @@ if ! [ -x "$(command -v docker)" ]; then
   exit 1
 fi
 
+# Rất quan trọng: Di chuyển vào đúng thư mục chứa docker-compose.yml
+cd "$(dirname "$0")"
+
 echo "### BƯỚC 1: Xây dựng chứng chỉ GIẢ mạo để Nginx chịu khởi động..."
 docker compose run --rm --entrypoint "\
   sh -c 'mkdir -p /etc/letsencrypt/live/${domains[0]} && \
