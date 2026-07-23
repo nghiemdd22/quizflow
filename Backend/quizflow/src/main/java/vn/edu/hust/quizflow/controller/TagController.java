@@ -20,8 +20,4 @@ public class TagController {
         return ResponseEntity.ok(tagService.getAllTags());
     }
 
-    @PostMapping
-    public ResponseEntity<TagResponse> createTag(@RequestParam String name) {
-        return ResponseEntity.ok(tagService.createTag(name));
-    }
 }

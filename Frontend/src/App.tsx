@@ -29,6 +29,7 @@ import { AdminDashboard } from './pages/AdminDashboard'
 import { AdminUserManagement } from './pages/AdminUserManagement'
 import { AdminPinManagement } from './pages/AdminPinManagement'
 import { AdminSubjectManagement } from './pages/AdminSubjectManagement'
+import { AdminTagManagement } from './pages/AdminTagManagement'
 import type { Course } from './types'
 import { useAuthStore } from './store/authStore'
 
@@ -184,6 +185,7 @@ function App() {
               <Route path="admin/users" element={<ProtectedRoute allowedRoles={['ADMIN']}><PageWrapper><AdminUserManagement /></PageWrapper></ProtectedRoute>} />
               <Route path="admin/pins" element={<ProtectedRoute allowedRoles={['ADMIN']}><PageWrapper><AdminPinManagement /></PageWrapper></ProtectedRoute>} />
               <Route path="admin/subjects" element={<ProtectedRoute allowedRoles={['ADMIN']}><PageWrapper><AdminSubjectManagement /></PageWrapper></ProtectedRoute>} />
+              <Route path="admin/tags" element={<ProtectedRoute allowedRoles={['ADMIN']}><PageWrapper><AdminTagManagement /></PageWrapper></ProtectedRoute>} />
 
               {/* Common Routes */}
               <Route path="/about" element={<PageWrapper><AboutPage /></PageWrapper>} />
